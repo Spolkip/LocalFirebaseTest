@@ -7,15 +7,14 @@ import './styles/effects.css';
 import './styles/map.css';
 import './styles/panels.css';
 import './styles/tooltips.css';
-import './components/ReportsView.css'; // Import the new CSS file
-import './components/map/MovementModal.css'; // Import the new CSS file
-import './components/map/OtherCityModal.css'; // Import the new CSS file
-import './components/map/MapOverlay.css'; // #comment Import the new overlay CSS
-import './components/city/ResearchQueue.css'; // Import the new CSS file
-import './components/shared/Notification.css'; // Import Notification CSS
+import './components/ReportsView.css';
+import './components/map/MovementModal.css';
+import './components/map/OtherCityModal.css';
+import './components/map/MapOverlay.css';
+import './components/city/ResearchQueue.css';
+import './components/shared/Notification.css';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
