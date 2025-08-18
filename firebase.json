@@ -1,7 +1,11 @@
 {
   "hosting": {
-    "public": "build",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
       {
         "source": "**",
@@ -10,9 +14,28 @@
     ]
   },
   "emulators": {
-    "hosting": { "host": "127.0.0.1", "port": 5000 },
-    "auth": { "host": "127.0.0.1", "port": 9099 },
-    "firestore": { "host": "127.0.0.1", "port": 8090 },
-    "ui": { "host": "127.0.0.1", "port": 4000 }
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8090,
+      "rules": "firestore.rules"
+    },
+    "functions": {
+      "port": 5001
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "eur3",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   }
 }
