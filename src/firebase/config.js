@@ -17,22 +17,15 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const functions = getFunctions(app);
+export const functions = getFunctions(app );
+export const appId = "default-grepolis-clone";
 
-// Avoid 'no-restricted-globals': use window.location, not bare `location`.
-const isLocalhost =
-  typeof window !== "undefined" &&
-  (window.location.hostname === "localhost" ||
-   window.location.hostname === "127.0.0.1" ||
-   window.location.hostname === "::1");
-
-// Route SDKs to emulators only in local dev:
-if (isLocalhost) {
+// #comment Connect to emulators if running locally
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
   connectAuthEmulator(auth, "http://127.0.0.1:9099");
-  // Firestore is on 8090 per your emulator output
+  // #comment Corrected the Firestore emulator port from 8080 to 8090
   connectFirestoreEmulator(db, "127.0.0.1", 8090);
   connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 }
 
-export const appId = "default-grepolis-clone";
 export default app;
