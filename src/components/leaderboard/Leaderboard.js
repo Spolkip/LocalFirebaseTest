@@ -5,12 +5,14 @@ import { useGame } from '../../contexts/GameContext';
 import allianceResearch from '../../gameData/allianceResearch.json';
 import battlePointsImage from '../../images/battle_points.png';
 import './Leaderboard.css';
+
 let leaderboardCache = {
     playerLeaderboard: null,
     allianceLeaderboard: null,
     fightersLeaderboard: null,
     lastFetchTimestamp: 0,
 };
+
 export const clearLeaderboardCache = () => {
     leaderboardCache = {
         playerLeaderboard: null,
@@ -19,6 +21,7 @@ export const clearLeaderboardCache = () => {
         lastFetchTimestamp: 0,
     };
 };
+
 const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
     const { worldId, worldState } = useGame();
     const [playerLeaderboard, setPlayerLeaderboard] = useState([]);
@@ -26,11 +29,14 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
     const [fightersLeaderboard, setFightersLeaderboard] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('players');
+
     const fetchAllPlayerData = useCallback(async () => {
         if (!worldId || !worldState) return new Map();
+
         const gamesGroupRef = collectionGroup(db, 'games');
         const q = query(gamesGroupRef, where('worldName', '==', worldState.name));
         const gamesSnapshot = await getDocs(q);
+
         const userIds = [];
         const gameDataMap = new Map();
         gamesSnapshot.forEach(gameDoc => {
@@ -38,7 +44,9 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
             userIds.push(userId);
             gameDataMap.set(userId, gameDoc.data());
         });
+
         if (userIds.length === 0) return new Map();
+
         const usersMap = new Map();
         const userDocsPromises = [];
         for (let i = 0; i < userIds.length; i += 30) {
@@ -46,12 +54,14 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
             const usersQuery = query(collection(db, 'users'), where('__name__', 'in', chunk));
             userDocsPromises.push(getDocs(usersQuery));
         }
+        
         const userDocsSnapshots = await Promise.all(userDocsPromises);
         userDocsSnapshots.forEach(snapshot => {
             snapshot.forEach(userDoc => {
                 usersMap.set(userDoc.id, userDoc.data());
             });
         });
+
         const playersData = new Map();
         for (const [userId, gameData] of gameDataMap.entries()) {
             const userData = usersMap.get(userId);
@@ -67,14 +77,18 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
         }
         return playersData;
     }, [worldId, worldState]);
+
     useEffect(() => {
         const fetchLeaderboards = async () => {
             setLoading(true);
             const allPlayerData = await fetchAllPlayerData();
+
             const playersList = Array.from(allPlayerData.values());
             playersList.sort((a, b) => b.points - a.points);
+            
             const fightersList = Array.from(allPlayerData.values());
             fightersList.sort((a, b) => b.battlePoints - a.battlePoints);
+
             const alliancesData = [];
             if (worldId) {
                 const alliancesRef = collection(db, 'worlds', worldId, 'alliances');
@@ -87,10 +101,12 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
                             totalPoints += allPlayerData.get(member.uid).points;
                         }
                     });
+                    
                     const baseMax = 20;
                     const researchLevel = alliance.research?.expanded_charter?.level || 0;
                     const researchBonus = allianceResearch.expanded_charter.effect.value * researchLevel;
                     const maxMembers = baseMax + researchBonus;
+
                     alliancesData.push({
                         id: allianceDoc.id,
                         name: alliance.name,
@@ -102,9 +118,11 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
                 }
                 alliancesData.sort((a, b) => b.points - a.points);
             }
+
             setPlayerLeaderboard(playersList);
             setFightersLeaderboard(fightersList);
             setAllianceLeaderboard(alliancesData);
+
             leaderboardCache = {
                 playerLeaderboard: playersList,
                 allianceLeaderboard: alliancesData,
@@ -113,8 +131,10 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
             };
             setLoading(false);
         };
+
         const now = Date.now();
         const twentyMinutes = 20 * 60 * 1000;
+
         if (now - leaderboardCache.lastFetchTimestamp > twentyMinutes || !leaderboardCache.playerLeaderboard) {
             fetchLeaderboards();
         } else {
@@ -124,6 +144,8 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
             setLoading(false);
         }
     }, [worldId, fetchAllPlayerData]);
+
+    // #comment Render player table
     const renderPlayerTable = () => (
         <table className="leaderboard-table">
             <thead>
@@ -150,6 +172,8 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
             </tbody>
         </table>
     );
+
+    // #comment Render fighters table
     const renderFightersTable = () => (
         <table className="leaderboard-table">
             <thead>
@@ -179,6 +203,8 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
             </tbody>
         </table>
     );
+
+    // #comment Render alliance table
     const renderAllianceTable = () => (
         <table className="leaderboard-table">
             <thead>
@@ -207,6 +233,8 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
             </tbody>
         </table>
     );
+
+    // #comment Render content
     const renderContent = () => {
         if (loading) {
             return <p>Loading leaderboard...</p>;
@@ -222,6 +250,7 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
                 return renderPlayerTable();
         }
     };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
             <div className="leaderboard-container" onClick={e => e.stopPropagation()}>
@@ -239,4 +268,5 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
         </div>
     );
 };
+
 export default Leaderboard;

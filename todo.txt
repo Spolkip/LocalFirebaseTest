@@ -1,4 +1,11 @@
-
+- fix report
+- make requirements for more than one building to show on different rows
+- add the x button from left to the right
+- make all the windows floating
+- add the cities on leaderboard
+- remake messages
+- remake notifications
+- make manager for troops and research spells, puzzles and buildings with a lot of options
 
 Later:
 - make it unzoom more and show dots instead of the models
@@ -6,5 +13,3 @@ Later:
 
 
 Bugs:
-can't put in queue building if requere building is not already build even though it is in the queue
-requere do not say all build that are requere

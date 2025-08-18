@@ -10,10 +10,7 @@ import './ProfileView.css';
 import TextEditor from '../shared/TextEditor';
 import placeholder_profile from '../../images/placeholder_profile.png';
 
-// #comment Cache for player profile data.
 const profileCache = {};
-
-// #comment Function to clear the profile cache, exported for admin use.
 export const clearProfileCache = () => {
     for (const key in profileCache) {
         delete profileCache[key];
@@ -25,7 +22,7 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
     const { worldId } = useGame();
     const { playerAlliance } = useAlliance();
     const { calculateTotalPoints } = useCityState(worldId);
-
+    
     const [profileData, setProfileData] = useState(null);
     const [gameData, setGameData] = useState(null);
     const [cities, setCities] = useState([]);
@@ -33,7 +30,6 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
     const [totalAttack, setTotalAttack] = useState(0);
     const [totalDefense, setTotalDefense] = useState(0);
     const [loading, setLoading] = useState(true);
-
     const [newDescription, setNewDescription] = useState('');
     const [newImageUrl, setNewImageUrl] = useState('');
     const [isEditing, setIsEditing] = useState(false);
@@ -44,9 +40,8 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
         const fetchData = async () => {
             setLoading(true);
             const userId = viewUserId || currentUser.uid;
-
             try {
-                // Fetch user profile
+                // #comment Fetch user profile
                 const userDocRef = doc(db, "users", userId);
                 const userDocSnap = await getDoc(userDocRef);
                 let userData = null;
@@ -56,19 +51,16 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
                     setNewDescription(userData.description || '');
                     setNewImageUrl(userData.imageUrl || '');
                 }
-
-                // Fetch top-level game data (for alliance info)
+                // #comment Fetch top-level game data (for alliance info)
                 const gameDocRef = doc(db, `users/${userId}/games`, worldId);
                 const gameDocSnap = await getDoc(gameDocRef);
                 const gameData = gameDocSnap.exists() ? gameDocSnap.data() : null;
                 setGameData(gameData);
-
-                // Fetch all cities for the user in this world
+                // #comment Fetch all cities for the user in this world
                 const citiesColRef = collection(db, `users/${userId}/games`, worldId, 'cities');
                 const citiesSnap = await getDocs(citiesColRef);
                 const citiesList = citiesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 setCities(citiesList);
-
 
                 let calculatedPoints = 0;
                 let calculatedAttack = 0;
@@ -89,7 +81,6 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
                 setTotalAttack(calculatedAttack);
                 setTotalDefense(calculatedDefense);
 
-                // #comment Update cache
                 profileCache[userId] = {
                     data: {
                         profileData: userData,
@@ -101,7 +92,6 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
                     },
                     timestamp: Date.now(),
                 };
-
             } catch (error) {
                 console.error("Error fetching user data:", error);
             }
@@ -128,10 +118,10 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
         }
     }, [viewUserId, currentUser.uid, worldId, calculateTotalPoints]);
 
+    // #comment handle update profile
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
         if (!isOwnProfile) return;
-
         const profileUpdateData = {
             description: newDescription,
             imageUrl: newImageUrl,
@@ -144,22 +134,13 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
         }
     };
 
-    if (loading) {
-        return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-                <div className="text-white">Loading Profile...</div>
-            </div>
-        );
-    }
-
-    const displayProfile = isOwnProfile ? ownUserProfile : profileData;
-
+    // #comment get ocean
     const getOcean = (x, y) => {
         if (x === undefined || y === undefined) return '?';
         return `${Math.floor(y / 10)}${Math.floor(x / 10)}`;
     };
 
-
+    // #comment check if can invite
     const canInvite = (() => {
         if (!playerAlliance || isOwnProfile) {
             return false;
@@ -170,81 +151,105 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
         return rank?.permissions?.inviteMembers || false;
     })();
 
+    if (loading) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+                <div className="text-white">Loading Profile...</div>
+            </div>
+        );
+    }
+
+    const displayProfile = isOwnProfile ? ownUserProfile : profileData;
+
+    // #comment Render player information
+    const renderPlayerInfo = () => (
+        <div className="profile-box">
+            <div className="profile-box-header">{displayProfile?.username}</div>
+            <div className="player-info-content">
+                {gameData?.alliance ? (
+                    <button
+                        onClick={() => onOpenAllianceProfile(gameData.alliance)}
+                        className="text-blue-400 hover:underline font-bold"
+                    >
+                        [{gameData.alliance}]
+                    </button>
+                ) : 'No Alliance'}
+            </div>
+            <div className="player-stats">
+                <div className="stat-item"><span>⚔️ Attack Points</span> <span>{totalAttack.toLocaleString()}</span></div>
+                <div className="stat-item"><span>🛡️ Defense Points</span> <span>{totalDefense.toLocaleString()}</span></div>
+                <div className="stat-item"><span>🏆 Total Points</span> <span>{points.toLocaleString()}</span></div>
+            </div>
+        </div>
+    );
+
+    // #comment Render cities list
+    const renderCitiesList = () => (
+        <div className="profile-box flex-grow min-h-0">
+            <div className="profile-box-header flex justify-between items-center">
+                <span>Cities ({cities.length})</span>
+                <button className="text-xs bg-gray-500/50 px-2 py-0.5 rounded">BBCode</button>
+            </div>
+            <div className="cities-list overflow-y-auto">
+                {cities.length > 0 ? (
+                    cities.map(city => (
+                        <div key={city.id} className="city-item">
+                            <button onClick={() => onGoToCity(city.x, city.y)} className="city-name-btn">
+                                {city.cityName}
+                            </button>
+                            <span>{calculateTotalPoints(city).toLocaleString()} points | Ocean {getOcean(city.x, city.y)}</span>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-sm text-center p-4">No cities in this world.</p>
+                )}
+            </div>
+        </div>
+    );
+
+    // #comment Render profile description
+    const renderProfileDescription = () => (
+        <div className="profile-box h-full">
+            <div className="profile-box-header">Profile</div>
+            <div className="profile-description-box">
+                <img
+                    src={displayProfile?.imageUrl || placeholder_profile}
+                    onError={(e) => { e.target.onerror = null; e.target.src=placeholder_profile; }}
+                    alt="Profile Avatar"
+                    className="profile-avatar-large"
+                />
+                <div className="profile-description-text">
+                    {isEditing ? (
+                        <form onSubmit={handleUpdateProfile} className="h-full flex flex-col">
+                            <TextEditor value={newDescription} onChange={setNewDescription} />
+                            <input type="text" value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} placeholder="Image URL" className="w-full mt-2 bg-white/50 border border-yellow-800/50 p-1" />
+                            <div className="flex justify-end gap-2 mt-2">
+                                <button type="button" onClick={() => setIsEditing(false)} className="btn-cancel">Cancel</button>
+                                <button type="submit" className="btn-save">Save</button>
+                            </div>
+                        </form>
+                    ) : (
+                        <p>{displayProfile?.description || 'This player has not written a profile text.'}</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="profile-papyrus !h-auto max-h-[80vh]" onClick={e => e.stopPropagation()}>
+            <div className="profile-papyrus" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="profile-close-button">&times;</button>
                 <div className="profile-grid">
                     <div className="profile-left-column">
-                        <div className="profile-box">
-                            <div className="profile-box-header">{displayProfile?.username}</div>
-                            <div className="player-info-content">
-                                {gameData?.alliance ? (
-                                    <button
-                                        onClick={() => onOpenAllianceProfile(gameData.alliance)}
-                                        className="text-blue-400 hover:underline font-bold"
-                                    >
-                                        [{gameData.alliance}]
-                                    </button>
-                                ) : 'No Alliance'}
-                            </div>
-                            <div className="player-stats">
-                                <div className="stat-item"><span>⚔️ Attack Points</span> <span>{totalAttack.toLocaleString()}</span></div>
-                                <div className="stat-item"><span>🛡️ Defense Points</span> <span>{totalDefense.toLocaleString()}</span></div>
-                                <div className="stat-item"><span>🏆 Total Points</span> <span>{points.toLocaleString()}</span></div>
-                            </div>
-                        </div>
-                        {/* #comment Added flex-grow and min-h-0 to allow the cities list to grow and scroll */}
-                        <div className="profile-box flex-grow min-h-0">
-                            <div className="profile-box-header flex justify-between items-center">
-                                <span>Cities ({cities.length})</span>
-                                <button className="text-xs bg-gray-500/50 px-2 py-0.5 rounded">BBCode</button>
-                            </div>
-                            <div className="cities-list overflow-y-auto">
-                                {cities.length > 0 ? (
-                                    cities.map(city => (
-                                        <div key={city.id} className="city-item">
-                                            <button onClick={() => onGoToCity(city.x, city.y)} className="city-name-btn">
-                                                {city.cityName}
-                                            </button>
-                                            <span>{calculateTotalPoints(city).toLocaleString()} points | Ocean {getOcean(city.x, city.y)}</span>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p className="text-sm text-center p-4">No cities in this world.</p>
-                                )}
-                            </div>
-                        </div>
+                        {renderPlayerInfo()}
+                        {renderCitiesList()}
                     </div>
                     <div className="profile-right-column">
-                        <div className="profile-box">
-                            <div className="profile-box-header">Profile</div>
-                            <div className="profile-description-box">
-                                <img 
-                                    src={displayProfile?.imageUrl || placeholder_profile} 
-                                    onError={(e) => { e.target.onerror = null; e.target.src=placeholder_profile; }}
-                                    alt="Profile Avatar" 
-                                    className="profile-avatar-large" 
-                                />
-                                <div className="profile-description-text">
-                                    {isEditing ? (
-                                        <form onSubmit={handleUpdateProfile} className="h-full flex flex-col">
-                                            <TextEditor value={newDescription} onChange={setNewDescription} />
-                                            <input type="text" value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} placeholder="Image URL" className="w-full mt-2 bg-white/50 border border-yellow-800/50 p-1" />
-                                            <div className="flex justify-end gap-2 mt-2">
-                                                <button type="button" onClick={() => setIsEditing(false)} className="btn-cancel">Cancel</button>
-                                                <button type="submit" className="btn-save">Save</button>
-                                            </div>
-                                        </form>
-                                    ) : (
-                                        <p>{displayProfile?.description || 'This player has not written a profile text.'}</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                        {renderProfileDescription()}
                     </div>
                 </div>
-                 {isOwnProfile && !isEditing && (
+                {isOwnProfile && !isEditing && (
                     <button onClick={() => setIsEditing(true)} className="profile-edit-button">Edit Profile</button>
                 )}
                 {canInvite && (

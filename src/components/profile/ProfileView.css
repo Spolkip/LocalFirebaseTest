@@ -1,59 +1,61 @@
 .profile-papyrus {
-    @apply w-11/12 max-w-4xl relative p-4 flex flex-col;
-    height: 500px;
-    background-image: linear-gradient(rgba(245, 222, 179, 0.95), rgba(245, 222, 179, 0.95)), url('https://www.transparenttextures.com/patterns/cracks.png');
-    background-color: #F5DEB3; /* wheat */
+    @apply w-11/12 max-w-4xl relative p-6 flex flex-col; /* Increased padding */
+    height: auto; /* Auto height */
+    max-height: 90vh; /* Max height */
+    background-image: linear-gradient(rgba(245, 222, 179, 0.98), rgba(245, 222, 179, 0.98)), url('https://www.transparenttextures.com/patterns/cracks.png');
+    background-color: #F5DEB3;
     border: 8px solid;
     border-image-slice: 1;
     border-image-source: linear-gradient(to right, #8B4513, #CD853F);
-    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    box-shadow: 0 0 25px rgba(0,0,0,0.7);
     color: #4a2c2a;
 }
 
 .profile-close-button {
-    @apply absolute top-2 right-4 text-4xl leading-none cursor-pointer hover:text-red-700 transition-colors;
+    @apply absolute top-4 right-6 text-4xl leading-none cursor-pointer hover:text-red-700 transition-colors z-10;
 }
 
 .profile-grid {
-    @apply grid grid-cols-5 gap-4 h-full;
+    @apply grid grid-cols-1 md:grid-cols-5 gap-6 h-full; /* Responsive grid */
 }
 
 .profile-left-column {
-    /* #comment Added min-h-0 to allow the column to shrink and enable scrolling in its flex children */
-    @apply col-span-2 flex flex-col gap-4 min-h-0;
+    @apply md:col-span-2 flex flex-col gap-4 min-h-0;
 }
 
 .profile-right-column {
-    @apply col-span-3;
+    @apply md:col-span-3;
 }
 
 .profile-box {
-    @apply p-3 rounded-sm flex flex-col;
-    background-color: rgba(210, 180, 140, 0.5); /* tan with transparency */
-    border: 1px solid #8B4513;
+    @apply p-4 rounded-md flex flex-col; /* Increased padding and rounded corners */
+    background-color: rgba(210, 180, 140, 0.4);
+    border: 1px solid #a17c48;
 }
+
 .profile-right-column .profile-box {
     @apply h-full;
 }
 
 .profile-box-header {
-    @apply font-bold text-center p-1 -m-3 mb-3;
-    background-color: #1e3a8a;
+    @apply font-title text-xl font-bold text-center p-2 -m-4 mb-4; /* Adjusted font size and padding */
+    background-color: rgba(30, 58, 138, 0.8);
     color: #f0e68c;
-    border-bottom: 1px solid #8B4513;
+    border-bottom: 2px solid #cd853f;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
 .player-info-content {
-    @apply text-xl font-bold p-2;
+    @apply text-xl font-bold text-center p-2; /* Centered text */
 }
 
 .player-stats {
-    @apply mt-auto pt-2 border-t border-solid;
-    border-color: #8B4513;
+    @apply mt-auto pt-3 border-t-2;
+    border-color: #a17c48;
 }
 
 .stat-item {
-    @apply flex justify-between items-center py-1;
+    @apply flex justify-between items-center py-1.5 text-sm; /* Increased padding */
 }
 
 .cities-list {
@@ -61,37 +63,43 @@
 }
 
 .city-item {
-    @apply flex justify-between p-1 text-sm;
+    @apply flex justify-between p-2 text-sm rounded-md; /* Added padding and rounded corners */
+}
+
+.city-item:hover {
+    background-color: rgba(139, 69, 19, 0.1);
 }
 
 .city-name-btn {
     @apply bg-transparent border-none font-bold cursor-pointer p-0 text-left;
     color: #1e3a8a;
 }
+
 .city-name-btn:hover {
     @apply underline;
 }
 
 .profile-description-box {
-    @apply h-full flex flex-col items-center;
+    @apply h-full flex flex-col items-center p-2; /* Added padding */
 }
 
 .profile-avatar-large {
-    @apply w-36 h-36 object-cover rounded-md mb-4;
-    border: 2px solid #8B4513;
+    @apply w-32 h-32 object-cover rounded-lg mb-4 shadow-lg; /* Rounded large, added shadow */
+    border: 3px solid #8B4513;
 }
 
 .profile-description-text {
-    @apply w-full flex-grow p-2 overflow-y-auto whitespace-pre-wrap text-sm;
-    background-color: rgba(255, 255, 255, 0.3);
+    @apply w-full flex-grow p-3 overflow-y-auto whitespace-pre-wrap text-sm rounded-md;
+    background-color: rgba(255, 255, 255, 0.4);
     border: 1px solid #d2b48c;
 }
 
 .profile-edit-button {
-    @apply absolute bottom-4 right-4 font-bold py-2 px-4 rounded-md transition-transform hover:scale-105;
+    @apply absolute bottom-6 right-6 font-bold py-2 px-4 rounded-md transition-transform hover:scale-105;
     background: #8B4513;
     color: #F5DEB3;
     border: 1px solid #4a2c2a;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 
 .btn-cancel, .btn-save {
@@ -99,4 +107,8 @@
     background: #8B4513;
     color: #F5DEB3;
     border: 1px solid #4a2c2a;
+}
+
+.btn-cancel:hover, .btn-save:hover {
+    background: #A0522D;
 }

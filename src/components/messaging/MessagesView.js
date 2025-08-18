@@ -283,7 +283,7 @@ const MessagesView = ({ onClose, initialRecipientId = null, initialRecipientUser
                                             <div className={`${msg.senderId === currentUser.uid ? 'papyrus-message-sent' : 'papyrus-message-received'}`}>
                                                 <p className="font-bold text-sm font-title">{msg.senderUsername}</p>
                                                 <div dangerouslySetInnerHTML={{ __html: parseBBCode(msg.text) }} />
-                                                <p className="text-xs text-gray-700/70 mt-1 text-right">{msg.timestamp?.toDate().toLocaleTimeString()}</p>
+                                                <p className="text-xs text-gray-100/70 mt-1 text-right">{msg.timestamp?.toDate().toLocaleTimeString()}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -300,7 +300,7 @@ const MessagesView = ({ onClose, initialRecipientId = null, initialRecipientUser
                             </>
                         ) : (
                             <div className="flex items-center justify-center h-full">
-                                <p className="text-gray-500 italic">Select a conversation or start a new one.</p>
+                                <p className="text-gray-100 italic">Select a conversation or start a new one.</p>
                             </div>
                         )}
                     </div>
