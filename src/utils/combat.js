@@ -63,8 +63,17 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
             let attack = unitInfo.attack;
             let defense = unitInfo.defense;
 
-            if (hero && hero.passive.effect.subtype === 'land_attack' && unitInfo.type === 'land') {
-                attack *= (1 + hero.passive.effect.value);
+            // #comment Apply hero passives correctly to attack or defense
+            if (hero && hero.passive.effect.type === 'city_buff' && unitInfo.type === 'land') {
+                const effect = hero.passive.effect;
+                const heroLevel = 1; // Placeholder: This should be passed in with hero data
+                const bonus = effect.baseValue + (heroLevel - 1) * effect.valuePerLevel;
+            
+                if (effect.subtype === 'land_attack') {
+                    // A "warrior's presence" should logically help in both attack and defense
+                    attack *= (1 + bonus);
+                    defense *= (1 + bonus);
+                }
             }
 
             // Apply counter bonuses
@@ -73,11 +82,9 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
                 if (opponentUnitCount > 0) {
                     const opponentUnitInfo = unitConfig[opponentUnitId];
                     if (unitInfo.counters && opponentUnitInfo && unitInfo.counters.includes(opponentUnitId)) {
-                        // If this unit counters the opponent unit, gain bonus attack
                         attack *= 1.2; // 20% attack bonus
                     }
                     if (opponentUnitInfo && opponentUnitInfo.counters && opponentUnitInfo.counters.includes(unitId)) {
-                        // If opponent unit counters this unit, this unit's defense is reduced
                         defense *= 0.8; // 20% defense penalty
                     }
                 }
@@ -100,78 +107,36 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
     const attackerStats = calculateEffectivePower(currentAttackingUnits, currentDefendingUnits, true, attackerPhalanx, attackerSupport, attackingHero);
     const defenderStats = calculateEffectivePower(currentDefendingUnits, currentAttackingUnits, false, defenderPhalanx, defenderSupport, defendingHero);
 
-    // Simplified combat rounds (can be expanded for more complexity)
-    // Phalanx units engage first
-    let initialAttackerPower = attackerStats.phalanxPower + attackerStats.supportPower * 0.5 + attackerStats.otherPower * 0.2; // Support and other units contribute less initially
-    let initialDefenderPower = defenderStats.phalanxPower + defenderStats.supportPower * 0.5 + defenderStats.otherPower * 0.2;
+    const attackerPower = (attackerStats.phalanxPower > 0 || attackerStats.supportPower > 0)
+        ? attackerStats.phalanxPower + attackerStats.supportPower * 0.5 + attackerStats.otherPower * 0.2
+        : attackerStats.totalPower;
 
-    // Determine initial losses based on overall power
-    const attackerLossRatio = Math.min(1, initialDefenderPower / (initialAttackerPower || 1));
-    const defenderLossRatio = Math.min(1, initialAttackerPower / (initialDefenderPower || 1));
+    const defenderPower = (defenderStats.phalanxPower > 0 || defenderStats.supportPower > 0)
+        ? defenderStats.phalanxPower + defenderStats.supportPower * 0.5 + defenderStats.otherPower * 0.2
+        : defenderStats.totalPower;
 
-    // Apply losses based on role: phalanx takes more, then support, then others
-    const applyLosses = (units, lossRatio, phalanx, support) => {
-        const totalUnits = Object.values(units).reduce((sum, count) => sum + count, 0);
-        if (totalUnits === 0) return {};
+    const attackerLossRatio = Math.min(1, defenderPower / (attackerPower || 1));
+    const defenderLossRatio = Math.min(1, attackerPower / (defenderPower || 1));
 
+    // #comment Simplified loss calculation for more robust and predictable outcomes.
+    const applyLosses = (units, lossRatio, unitType) => {
         const losses = {};
-        let remainingLosses = Math.floor(totalUnits * lossRatio);
-
-        // Prioritize losses for phalanx
-        if (phalanx && units[phalanx] && remainingLosses > 0) {
-            const phalanxLoss = Math.min(units[phalanx], Math.ceil(remainingLosses * 0.6)); // Phalanx takes 60% of initial losses
-            losses[phalanx] = phalanxLoss;
-            remainingLosses -= phalanxLoss;
-        }
-
-        // Then support
-        if (support && units[support] && remainingLosses > 0) {
-            const supportLoss = Math.min(units[support], Math.ceil(remainingLosses * 0.3)); // Support takes 30%
-            losses[support] = (losses[support] || 0) + supportLoss;
-            remainingLosses -= supportLoss;
-        }
-
-        // Distribute remaining losses proportionally among other units
-        const otherUnits = Object.keys(units).filter(id => id !== phalanx && id !== support && unitConfig[id]?.type === unitType);
-        if (remainingLosses > 0 && otherUnits.length > 0) {
-            let currentOtherUnitsTotal = otherUnits.reduce((sum, id) => sum + (units[id] || 0) - (losses[id] || 0), 0);
-            if (currentOtherUnitsTotal === 0) currentOtherUnitsTotal = 1; // Avoid division by zero
-
-            for (const unitId of otherUnits) {
-                if (remainingLosses > 0) {
-                    const unitCount = (units[unitId] || 0) - (losses[unitId] || 0);
-                    const proportionalLoss = Math.floor(remainingLosses * (unitCount / currentOtherUnitsTotal));
-                    const actualLoss = Math.min(unitCount, proportionalLoss);
-                    losses[unitId] = (losses[unitId] || 0) + actualLoss;
-                    remainingLosses -= actualLoss;
-                }
-            }
-            // Distribute any leftover losses to the largest remaining unit type
-            if (remainingLosses > 0) {
-                const largestRemainingUnit = otherUnits.reduce((largest, id) => {
-                    const currentCount = (units[id] || 0) - (losses[id] || 0);
-                    return currentCount > (units[largest] || 0) - (losses[largest] || 0) ? id : largest;
-                }, otherUnits[0]);
-                if (largestRemainingUnit) {
-                    losses[largestRemainingUnit] = (losses[largestRemainingUnit] || 0) + remainingLosses;
+        for (const unitId in units) {
+            const unitInfo = unitConfig[unitId];
+            if (unitInfo && unitInfo.type === unitType) {
+                const unitCount = units[unitId] || 0;
+                if (unitCount > 0) {
+                    const lostCount = Math.round(unitCount * lossRatio);
+                    losses[unitId] = Math.min(unitCount, lostCount);
                 }
             }
         }
-        
-        // #comment Final check to ensure losses don't exceed the number of units
-        for (const unitId in losses) {
-            if (losses[unitId] > (units[unitId] || 0)) {
-                losses[unitId] = units[unitId] || 0;
-            }
-        }
-
         return losses;
     };
 
-    const finalAttackerLosses = applyLosses(currentAttackingUnits, attackerLossRatio, attackerPhalanx, attackerSupport);
-    const finalDefenderLosses = applyLosses(currentDefendingUnits, defenderLossRatio, defenderPhalanx, defenderSupport);
+    const finalAttackerLosses = applyLosses(currentAttackingUnits, attackerLossRatio, unitType);
+    const finalDefenderLosses = applyLosses(currentDefendingUnits, defenderLossRatio, unitType);
 
-    // Update current units after losses for the next calculation (if multiple rounds were simulated)
     for (const unitId in finalAttackerLosses) {
         currentAttackingUnits[unitId] = Math.max(0, (currentAttackingUnits[unitId] || 0) - finalAttackerLosses[unitId]);
     }
@@ -179,11 +144,9 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
         currentDefendingUnits[unitId] = Math.max(0, (currentDefendingUnits[unitId] || 0) - finalDefenderLosses[unitId]);
     }
 
-    // Recalculate power with remaining units to determine winner
     const finalAttackerPower = calculateEffectivePower(currentAttackingUnits, currentDefendingUnits, true, null, null, attackingHero).totalPower;
     const finalDefenderPower = calculateEffectivePower(currentDefendingUnits, currentAttackingUnits, false, null, null, defendingHero).totalPower;
     
-    // Attacker wins on a tie (e.g., 0 vs 0 power)
     return {
         attackerWon: finalAttackerPower >= finalDefenderPower,
         attackerLosses: finalAttackerLosses,

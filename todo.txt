@@ -1,5 +1,3 @@
-- Seperate reports of attacker and diffenter
-- make it so you cant select the image of islands
 - make it unzoom more and show dots instead of the models
 - add an option to see the world map
 - check alliance research

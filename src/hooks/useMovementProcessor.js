@@ -437,16 +437,16 @@ export const useMovementProcessor = (worldId) => {
                         Object.keys(targetCityState.heroes || {}).find(id => targetCityState.heroes[id].cityId === movement.targetCityId) || null
                     );
 
-                    // --- START: MODIFIED CODE ---
-                    // Handle Hero Capture
+                    // #comment Handle Hero Capture only if conditions are met
                     if (result.capturedHero) {
                         const { heroId, capturedBy } = result.capturedHero;
                         const prisonerObject = {
-                            captureId: uuidv4(), // Assign a unique ID to this capture instance
+                            captureId: uuidv4(),
                             heroId,
                             capturedAt: serverTimestamp()
                         };
 
+                        let wasImprisoned = false;
                         if (capturedBy === 'attacker') {
                             prisonerObject.ownerId = movement.targetOwnerId;
                             prisonerObject.ownerUsername = movement.ownerUsername;
@@ -456,6 +456,7 @@ export const useMovementProcessor = (worldId) => {
                             const currentPrisoners = originCityState.prisoners?.length || 0;
                             if (prisonLevel > 0 && currentPrisoners < capacity) {
                                 batch.update(originCityRef, { prisoners: arrayUnion(prisonerObject) });
+                                wasImprisoned = true;
                             }
                         } else { // capturedBy === 'defender'
                             prisonerObject.ownerId = movement.originOwnerId;
@@ -466,10 +467,15 @@ export const useMovementProcessor = (worldId) => {
                             const currentPrisoners = targetCityState.prisoners?.length || 0;
                             if (prisonLevel > 0 && currentPrisoners < capacity) {
                                 batch.update(targetCityRef, { prisoners: arrayUnion(prisonerObject) });
+                                wasImprisoned = true;
                             }
                         }
+                        
+                        // If the hero was not actually imprisoned (no prison/capacity), nullify it in the result
+                        if (!wasImprisoned) {
+                            result.capturedHero = null;
+                        }
                     }
-                    // --- END: MODIFIED CODE ---
 
                     await runTransaction(db, async (transaction) => {
                         const attackerGameRef = doc(db, `users/${movement.originOwnerId}/games`, worldId);
@@ -514,6 +520,7 @@ export const useMovementProcessor = (worldId) => {
                         return unit && (unit.type === 'land' || unit.mythical);
                     });
 
+                    // #comment Generate a detailed, separate report for the attacker.
                     const attackerReport = {
                         type: 'attack',
                         title: `Attack on ${targetCityState.cityName}`,
@@ -536,7 +543,7 @@ export const useMovementProcessor = (worldId) => {
                             cityId: movement.targetCityId,
                             cityName: targetCityState.cityName,
                             units: hasSurvivingLandOrMythic ? targetCityState.units : {},
-                            hero: Object.keys(targetCityState.heroes || {}).find(id => targetCityState.heroes[id].cityId === movement.targetCityId) || null,
+                            hero: hasSurvivingLandOrMythic ? (Object.keys(targetCityState.heroes || {}).find(id => targetCityState.heroes[id].cityId === movement.targetCityId) || null) : null,
                             losses: hasSurvivingLandOrMythic ? result.defenderLosses : {},
                             ownerId: movement.targetOwnerId,
                             username: movement.ownerUsername || 'Unknown Player',
@@ -552,11 +559,34 @@ export const useMovementProcessor = (worldId) => {
                         attackerReport.outcome.message = "Your forces were annihilated. No information could be gathered from the battle.";
                     }
 
+                    // #comment Generate a detailed, separate report for the defender.
                     const defenderReport = {
-                        ...attackerReport,
-                        title: `Defense against ${originCityState.cityName}`,
-                        read: false,
-                        outcome: { ...result, attackerWon: !result.attackerWon },
+                        type: 'attack',
+                        title: `Defense of ${targetCityState.cityName}`,
+                        timestamp: serverTimestamp(),
+                        outcome: {
+                            attackerWon: !result.attackerWon,
+                            plunder: {}, // Defender does not see plunder details
+                            attackerLosses: result.attackerLosses,
+                            defenderLosses: result.defenderLosses,
+                            wounded: {}, // Defender does not see attacker's wounded
+                            attackerBattlePoints: result.attackerBattlePoints,
+                            defenderBattlePoints: result.defenderBattlePoints,
+                            capturedHero: result.capturedHero,
+                        },
+                        attacker: {
+                            cityId: movement.originCityId,
+                            cityName: originCityState.cityName,
+                            units: movement.units,
+                            hero: movement.hero || null,
+                            losses: result.attackerLosses,
+                            ownerId: movement.originOwnerId,
+                            username: movement.originOwnerUsername || 'Unknown Player',
+                            allianceId: originAllianceData ? originAllianceData.id : null,
+                            allianceName: originAllianceData ? originAllianceData.name : null,
+                            x: originCityState.x,
+                            y: originCityState.y
+                        },
                         defender: {
                             cityId: movement.targetCityId,
                             cityName: targetCityState.cityName,
@@ -569,8 +599,10 @@ export const useMovementProcessor = (worldId) => {
                             allianceName: targetAllianceData ? targetAllianceData.name : null,
                             x: targetCityState.x,
                             y: targetCityState.y
-                        }
+                        },
+                        read: false,
                     };
+
 
                     batch.update(targetCityRef, { units: newDefenderUnits, resources: newDefenderResources });
 

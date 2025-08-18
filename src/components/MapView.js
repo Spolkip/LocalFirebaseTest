@@ -685,6 +685,12 @@ const MapView = ({
                                             height: island.radius * 2 * TILE_SIZE,
                                             pointerEvents: 'none',
                                             zIndex: 1,
+                                            userSelect: 'none',
+                                            WebkitUserSelect: 'none',
+                                            MozUserSelect: 'none',
+                                            msUserSelect: 'none',
+                                            WebkitUserDrag: 'none',
+                                            userDrag: 'none',
                                         }}
                                     />
                                 ))}
