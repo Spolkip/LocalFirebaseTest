@@ -19,17 +19,21 @@
       "port": 4000
     },
     "hosting": {
-      "port": 5000
+      "port": 5000,
+      "host": "0.0.0.0"
     },
     "auth": {
-      "port": 9099
+      "port": 9099,
+      "host": "0.0.0.0",
+      "import": ".firebase/emulators-data",
+      "exportOnShutdown": true
     },
     "firestore": {
       "port": 8090,
-      "rules": "firestore.rules"
-    },
-    "functions": {
-      "port": 5001
+      "rules": "firestore.rules",
+      "import": ".firebase/emulators-data",
+      "exportOnShutdown": true,
+      "host": "0.0.0.0"
     }
   },
   "firestore": {
