@@ -1,10 +1,8 @@
-// src/config.ts (or config.js)
 import { initializeApp } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 
-// Use your existing env vars (unchanged)
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -15,24 +13,26 @@ const firebaseConfig = {
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
-// Init
 const app = initializeApp(firebaseConfig);
 
-// SDK instances
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const functions = getFunctions(app);
 
-// If you deploy/call functions in a specific region, set it here (default is "us-central1")
-export const functions = getFunctions(app /*, "us-central1" */);
+// Avoid 'no-restricted-globals': use window.location, not bare `location`.
+const isLocalhost =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname === "::1");
 
-export const appId = "default-grepolis-clone";
-
-// Route to emulators only in local dev
-if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-  // match the ports shown by `firebase emulators:start`
-  connectAuthEmulator(auth, "http://127.0.0.1:9099"); // Auth requires http:// scheme
-  connectFirestoreEmulator(db, "127.0.0.1", 8080);
+// Route SDKs to emulators only in local dev:
+if (isLocalhost) {
+  connectAuthEmulator(auth, "http://127.0.0.1:9099");
+  // Firestore is on 8090 per your emulator output
+  connectFirestoreEmulator(db, "127.0.0.1", 8090);
   connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 }
 
+export const appId = "default-grepolis-clone";
 export default app;
