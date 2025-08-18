@@ -1,0 +1,188 @@
+{
+    "greek": {
+        "Zeus": {
+            "name": "Zeus",
+            "description": "King of the Gods, master of lightning and the sky.",
+            "powers": [
+                {
+                    "name": "Divine Sign",
+                    "description": "Instantly send 250 silver to a target city.",
+                    "favorCost": 50,
+                    "effect": { "type": "add_resources", "resource": "silver", "amount": 250, "target": "both" }
+                },
+                {
+                    "name": "Lightning Bolt",
+                    "description": "Destroy a random enemy building level in a target city.",
+                    "favorCost": 200,
+                    "effect": { "type": "damage_building", "amount": 1, "target": "other" }
+                }
+            ],
+            "mythical_units": ["Minotaur", "Manticore"],
+            "image": "zeus.png"
+        },
+        "Hera": {
+            "name": "Hera",
+            "description": "Queen of the Gods, protector of marriage and family.",
+            "powers": [
+                {
+                    "name": "Wedding",
+                    "description": "Instantly send 250 wood to a target city.",
+                    "favorCost": 50,
+                    "effect": { "type": "add_resources", "resource": "wood", "amount": 250, "target": "both" }
+                },
+                {
+                    "name": "Satisfaction",
+                    "description": "Increase resource production by 10% for 1 hour in a target city.",
+                    "favorCost": 150,
+                    "effect": { "type": "resource_boost", "multiplier": 1.1, "duration": 3600, "target": "both" }
+                }
+            ],
+            "mythical_units": ["Harpy", "Medusa"],
+            "image": "hera.png"
+        },
+        "Athena": {
+            "name": "Athena",
+            "description": "Goddess of wisdom, courage, and strategic warfare.",
+            "powers": [
+                {
+                    "name": "City Protection",
+                    "description": "Your city cannot be attacked for 1 hour.",
+                    "favorCost": 300,
+                    "effect": { "type": "protection", "duration": 3600, "target": "self" }
+                },
+                {
+                    "name": "Wisdom",
+                    "description": "All your troops gain +10% attack for their next battle.",
+                    "favorCost": 180,
+                    "effect": { "type": "attack_boost", "multiplier": 1.1, "target": "self" }
+                }
+            ],
+            "mythical_units": ["Centaur", "Pegasus"],
+            "image": "athena.png"
+        }
+    },
+    "roman": {
+        "Jupiter": {
+            "name": "Jupiter",
+            "description": "The Roman equivalent of Zeus, god of the sky and thunder.",
+            "powers": [
+                {
+                    "name": "Divine Sign",
+                    "description": "Instantly send 250 silver to a target city.",
+                    "favorCost": 50,
+                    "effect": { "type": "add_resources", "resource": "silver", "amount": 250, "target": "both" }
+                },
+                {
+                    "name": "Lightning Bolt",
+                    "description": "Destroy a random enemy building level in a target city.",
+                    "favorCost": 200,
+                    "effect": { "type": "damage_building", "amount": 1, "target": "other" }
+                }
+            ],
+            "mythical_units": ["Minotaur", "Manticore"],
+            "image": "jupiter.png"
+        },
+        "Juno": {
+            "name": "Juno",
+            "description": "The Roman equivalent of Hera, protector of the Roman people.",
+            "powers": [
+                {
+                    "name": "Wedding",
+                    "description": "Instantly send 250 wood to a target city.",
+                    "favorCost": 50,
+                    "effect": { "type": "add_resources", "resource": "wood", "amount": 250, "target": "both" }
+                },
+                {
+                    "name": "Satisfaction",
+                    "description": "Increase resource production by 10% for 1 hour in a target city.",
+                    "favorCost": 150,
+                    "effect": { "type": "resource_boost", "multiplier": 1.1, "duration": 3600, "target": "both" }
+                }
+            ],
+            "mythical_units": ["Harpy", "Medusa"],
+            "image": "juno.png"
+        },
+        "Minerva": {
+            "name": "Minerva",
+            "description": "The Roman equivalent of Athena, goddess of wisdom and strategic warfare.",
+            "powers": [
+                {
+                    "name": "City Protection",
+                    "description": "Your city cannot be attacked for 1 hour.",
+                    "favorCost": 300,
+                    "effect": { "type": "protection", "duration": 3600, "target": "self" }
+                },
+                {
+                    "name": "Wisdom",
+                    "description": "All your troops gain +10% attack for their next battle.",
+                    "favorCost": 180,
+                    "effect": { "type": "attack_boost", "multiplier": 1.1, "target": "self" }
+                }
+            ],
+            "mythical_units": ["Centaur", "Pegasus"],
+            "image": "minerva.png"
+        }
+    },
+    "egyptian": {
+        "Anubis": {
+            "name": "Anubis",
+            "description": "God of the dead and the embalming process, protector of tombs.",
+            "powers": [
+                {
+                    "name": "Plague of Locusts",
+                    "description": "Reduce a target city's resource production by 20% for 1 hour.",
+                    "favorCost": 250,
+                    "effect": { "type": "production_debuff", "multiplier": 0.8, "duration": 3600, "target": "other" }
+                },
+                {
+                    "name": "Underworld's Favor",
+                    "description": "Revive 10% of your troops lost in the next battle.",
+                    "favorCost": 350,
+                    "effect": { "type": "revive_troops", "percentage": 0.1, "target": "self" }
+                }
+            ],
+            "mythical_units": ["Sphinx", "Scarab"],
+            "image": "anubis.png"
+        },
+        "Horus": {
+            "name": "Horus",
+            "description": "God of the sky, kingship, and order.",
+            "powers": [
+                {
+                    "name": "Favorable Winds",
+                    "description": "Your naval units travel 20% faster for 1 hour.",
+                    "favorCost": 120,
+                    "effect": { "type": "naval_speed_boost", "multiplier": 1.2, "duration": 3600, "target": "self" }
+                },
+                {
+                    "name": "Vision of the Sky",
+                    "description": "Reveal the number of incoming attacks on your city.",
+                    "favorCost": 80,
+                    "effect": { "type": "reveal_attacks", "target": "self" }
+                }
+            ],
+            "mythical_units": ["Griffin", "Phoenix"],
+            "image": "horus.png"
+        },
+        "Osiris": {
+            "name": "Osiris",
+            "description": "God of the afterlife, the underworld, and rebirth.",
+            "powers": [
+                {
+                    "name": "Resurrection",
+                    "description": "Instantly revive 5 of your most powerful deceased units.",
+                    "favorCost": 400,
+                    "effect": { "type": "revive_specific_troops", "amount": 5, "target": "self" }
+                },
+                {
+                    "name": "Bountiful Harvest",
+                    "description": "Instantly send 250 wood and 250 stone to a target city.",
+                    "favorCost": 100,
+                    "effect": { "type": "add_multiple_resources", "resources": { "wood": 250, "stone": 250 }, "target": "both" }
+                }
+            ],
+            "mythical_units": ["Mummy", "Serpopard"],
+            "image": "osiris.png"
+        }
+    }
+}

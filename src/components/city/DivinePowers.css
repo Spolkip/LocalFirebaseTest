@@ -1,0 +1,146 @@
+/* src/components/city/DivinePowers.css */
+.divine-powers-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.divine-powers-modal-content {
+    background-image: linear-gradient(rgba(245, 222, 179, 0.95), rgba(245, 222, 179, 0.95)), url('https://www.transparenttextures.com/patterns/cracks.png');
+    background-color: #F5DEB3; /* wheat */
+    border: 8px solid;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to right, #8B4513, #CD853F);
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    color: #4a2c2a;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    animation: fadeInScaleUp 0.3s ease-out forwards;
+}
+
+/* #comment New styles for the menu version */
+.divine-powers-menu-content {
+    background-image: linear-gradient(rgba(245, 222, 179, 0.95), rgba(245, 222, 179, 0.95)), url('https://www.transparenttextures.com/patterns/cracks.png');
+    background-color: #F5DEB3;
+    border: 4px solid;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to right, #8B4513, #CD853F);
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    color: #4a2c2a;
+    padding: 15px;
+    width: 350px;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: fadeInScaleUp 0.3s ease-out forwards;
+}
+
+.divine-powers-menu-content .divine-powers-header h2 {
+    font-size: 1.5rem;
+}
+
+.divine-powers-menu-content .powers-grid {
+    grid-template-columns: 1fr;
+}
+
+
+@keyframes fadeInScaleUp {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.divine-powers-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    color: #4a2c2a;
+    font-family: 'IM Fell English SC', serif;
+    border-bottom: 2px solid #cd853f;
+}
+
+.divine-powers-header h2 {
+    font-size: 2rem;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #4a2c2a;
+    font-size: 2rem;
+    cursor: pointer;
+}
+.close-button:hover {
+    color: #8B4513;
+}
+
+.powers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.power-card {
+    background-color: rgba(139, 69, 19, 0.1); /* saddlebrown transparent */
+    border: 1px solid #d2b48c; /* tan */
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.power-card h3 {
+    font-size: 1.25rem;
+    color: #8B4513; /* saddlebrown */
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.power-card p {
+    color: #4a2c2a;
+    font-size: 0.9rem;
+    flex-grow: 1;
+}
+
+.power-cost {
+    color: #6b4a2b; /* darker brown */
+    font-style: italic;
+    margin-top: 15px;
+}
+
+.cast-spell-button {
+    background: linear-gradient(to bottom, #f0e68c, #cd853f);
+    color: #4a2c2a;
+    padding: 10px 15px;
+    border: 2px solid #8B4513;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s;
+    font-weight: bold;
+}
+
+.cast-spell-button:hover:not(:disabled) {
+    background: linear-gradient(to bottom, #fff2b2, #d6914d);
+}
+
+.cast-spell-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #d2b48c;
+}

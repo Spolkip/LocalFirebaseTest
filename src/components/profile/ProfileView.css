@@ -1,0 +1,102 @@
+.profile-papyrus {
+    @apply w-11/12 max-w-4xl relative p-4 flex flex-col;
+    height: 500px;
+    background-image: linear-gradient(rgba(245, 222, 179, 0.95), rgba(245, 222, 179, 0.95)), url('https://www.transparenttextures.com/patterns/cracks.png');
+    background-color: #F5DEB3; /* wheat */
+    border: 8px solid;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to right, #8B4513, #CD853F);
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    color: #4a2c2a;
+}
+
+.profile-close-button {
+    @apply absolute top-2 right-4 text-4xl leading-none cursor-pointer hover:text-red-700 transition-colors;
+}
+
+.profile-grid {
+    @apply grid grid-cols-5 gap-4 h-full;
+}
+
+.profile-left-column {
+    /* #comment Added min-h-0 to allow the column to shrink and enable scrolling in its flex children */
+    @apply col-span-2 flex flex-col gap-4 min-h-0;
+}
+
+.profile-right-column {
+    @apply col-span-3;
+}
+
+.profile-box {
+    @apply p-3 rounded-sm flex flex-col;
+    background-color: rgba(210, 180, 140, 0.5); /* tan with transparency */
+    border: 1px solid #8B4513;
+}
+.profile-right-column .profile-box {
+    @apply h-full;
+}
+
+.profile-box-header {
+    @apply font-bold text-center p-1 -m-3 mb-3;
+    background-color: #1e3a8a;
+    color: #f0e68c;
+    border-bottom: 1px solid #8B4513;
+}
+
+.player-info-content {
+    @apply text-xl font-bold p-2;
+}
+
+.player-stats {
+    @apply mt-auto pt-2 border-t border-solid;
+    border-color: #8B4513;
+}
+
+.stat-item {
+    @apply flex justify-between items-center py-1;
+}
+
+.cities-list {
+    @apply flex-grow;
+}
+
+.city-item {
+    @apply flex justify-between p-1 text-sm;
+}
+
+.city-name-btn {
+    @apply bg-transparent border-none font-bold cursor-pointer p-0 text-left;
+    color: #1e3a8a;
+}
+.city-name-btn:hover {
+    @apply underline;
+}
+
+.profile-description-box {
+    @apply h-full flex flex-col items-center;
+}
+
+.profile-avatar-large {
+    @apply w-36 h-36 object-cover rounded-md mb-4;
+    border: 2px solid #8B4513;
+}
+
+.profile-description-text {
+    @apply w-full flex-grow p-2 overflow-y-auto whitespace-pre-wrap text-sm;
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid #d2b48c;
+}
+
+.profile-edit-button {
+    @apply absolute bottom-4 right-4 font-bold py-2 px-4 rounded-md transition-transform hover:scale-105;
+    background: #8B4513;
+    color: #F5DEB3;
+    border: 1px solid #4a2c2a;
+}
+
+.btn-cancel, .btn-save {
+    @apply font-bold py-1 px-3 rounded-md text-xs;
+    background: #8B4513;
+    color: #F5DEB3;
+    border: 1px solid #4a2c2a;
+}

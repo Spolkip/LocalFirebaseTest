@@ -1,0 +1,47 @@
+{
+  "great_forum": {
+    "name": "Great Forum",
+    "description": "A magnificent forum that fosters intellectual debate and civic engagement, significantly increasing the research speed of all alliance members.",
+    "bonus": {
+      "type": "research_boost",
+      "value": 0.20
+    },
+    "image": "great_forum.png"
+  },
+  "grand_arsenal": {
+    "name": "Grand Arsenal",
+    "description": "An enormous armory that provides the best weapons and armor, boosting the attack and defense of all alliance members' units.",
+    "bonus": {
+      "type": "unit_boost",
+      "value": 0.15
+    },
+    "image": "grand_arsenal.png"
+  },
+  "the_great_market": {
+    "name": "The Great Market",
+    "description": "A bustling hub of commerce that makes trade more efficient, increasing the market capacity and speed for all alliance members.",
+    "bonus": {
+      "type": "trade_efficiency",
+      "value": 0.25
+    },
+    "image": "the_great_market.png"
+  },
+  "shrine_of_the_ancestors": {
+    "name": "Shrine of the Ancestors",
+    "description": "A sacred shrine that inspires great loyalty, boosting city happiness and population growth across all alliance members' cities.",
+    "bonus": {
+      "type": "morale_boost",
+      "value": 0.10
+    },
+    "image": "shrine_of_the_ancestors.png"
+  },
+  "fortress_of_the_gods": {
+    "name": "Fortress of the Gods",
+    "description": "An impenetrable citadel that provides powerful defensive bonuses to all cities on the island held by the alliance.",
+    "bonus": {
+      "type": "fortification_boost",
+      "value": 0.20
+    },
+    "image": "fortress_of_the_gods.png"
+  }
+}

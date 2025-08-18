@@ -1,0 +1,61 @@
+{
+  "great_lighthouse": {
+    "name": "Great Lighthouse",
+    "description": "A beacon of hope for your navy, increasing the speed and attack power of all ships.",
+    "bonus": {
+      "type": "naval_boost",
+      "value": 0.10
+    },
+    "image": "great_lighthouse.png"
+  },
+  "colossus": {
+    "name": "Colossus",
+    "description": "A towering statue that inspires your armies, increasing the attack power of all land troops.",
+    "bonus": {
+      "type": "land_boost",
+      "value": 0.10
+    },
+    "image": "colossus.png"
+  },
+  "oracle": {
+    "name": "Oracle",
+    "description": "A mystical site that attracts powerful mythical creatures to your cause.",
+    "bonus": {
+      "type": "mythic_boost",
+      "value": 0.10
+    },
+    "image": "oracle.png"
+  },
+  "hanging_gardens": {
+    "name": "Hanging Gardens",
+    "description": "Lush gardens that boost population growth and city happiness.",
+    "bonus": {
+      "type": "population_boost",
+      "value": 0.10
+    },
+    "image": "hanging_gardens.png"
+  },
+  "merchant_guild": {
+    "name": "Merchant Guild",
+    "description": "Establishes powerful trade routes, increasing the speed and capacity of your trades.",
+    "bonus": {
+      "type": "trade_boost",
+      "value": 0.10
+    },
+    "image": "merchant_guild.png"
+  },
+  "library_of_alexandria": {
+    "name": "Library of Alexandria",
+    "description": "A center of knowledge that accelerates your research capabilities.",
+    "bonus": {
+      "type": "research_boost",
+      "value": 0.10
+    },
+    "image": "library_of_alexandria.png"
+  },
+  "alliance_wonders": {
+    "name": "Alliance Wonders",
+    "description": "A special building only available to alliances that control an entire island.",
+    "image": "alliance_wonders.png"
+  }
+}

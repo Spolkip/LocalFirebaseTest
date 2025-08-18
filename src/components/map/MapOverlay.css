@@ -1,0 +1,34 @@
+/* src/components/map/MapOverlay.css */
+.minimap-container {
+    position: absolute;
+    top: 40px; /* Position below the top bar */
+    left: 0,5rem;
+    z-index: 40;
+    pointer-events: all; /* Allow interaction with the canvas if needed in future */
+}
+
+.coords-info-container {
+    position: absolute;
+    top: 223px; /* Position below the minimap */
+    left: 1.1rem;
+    z-index: 40;
+    background-color: rgba(245, 222, 179, 0.8);
+    border: 2px solid #8B4513;
+    padding: 0.1rem 0.5rem;
+    border-radius: 6px;
+    color: #4a2c2a;
+    font-weight: bold;
+    font-size: 0.75rem; /* Made font smaller */
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+    pointer-events: none;
+    width: 150px; /* Match minimap width for alignment */
+}
+
+.minimap-canvas {
+    border: 3px solid #8B4513;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    background-color: #1e3a8a; /* Water color fallback */
+    border-radius: 50%; /* Make the minimap circular */
+    overflow: hidden; /* Ensure content stays within the circle */
+}

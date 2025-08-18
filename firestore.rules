@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // This rule allows the efficient collectionGroup query on the 'games' collection.
+    // It's needed for features like the global leaderboard.
+    match /{path=**}/games/{game} {
+      allow list: if true;
+    }
+
+    // Allow everyone to read, create, update, and delete user profiles and subcollections
+    match /users/{path=**} {
+      allow read, create, update, delete: if true;
+    }
+
+    // Allow everyone to read, create, update, and delete world data and all its subcollections
+    match /worlds/{path=**} {
+      allow read, create, update, delete: if true;
+    }
+  }
+}

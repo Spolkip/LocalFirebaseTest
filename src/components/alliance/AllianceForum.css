@@ -1,0 +1,175 @@
+.forum-container {
+    background-image: linear-gradient(rgba(245, 222, 179, 0.95), rgba(245, 222, 179, 0.95)), url('https://www.transparenttextures.com/patterns/cracks.png');
+    background-color: #F5DEB3; /* wheat */
+    border: 8px solid;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to right, #8B4513, #CD853F); /* saddlebrown to peru */
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    color: #4a2c2a; /* A dark, ink-like brown */
+    font-family: 'Inter', sans-serif;
+}
+
+.forum-tabs-container {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #1e3a8a;
+    padding: 4px;
+    border-bottom: 4px solid #8B4513;
+}
+
+.forum-tab {
+    padding: 8px 16px;
+    background: linear-gradient(to bottom, #f0e68c, #cd853f);
+    color: #4a2c2a;
+    border: 2px solid #8B4513;
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    margin-right: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.forum-tab:hover {
+    background: linear-gradient(to bottom, #fff2b2, #d6914d);
+}
+
+.forum-tab.active {
+    background: #F5DEB3;
+    color: #4a2c2a;
+}
+
+.new-forum-btn {
+    font-size: 1.2rem;
+    padding: 4px 12px;
+}
+
+.forum-header {
+    background-color: #1e3a8a; /* A dark blue */
+    color: #f0e68c; /* khaki */
+    padding: 0.5rem 1rem;
+    font-family: 'IM Fell English SC', serif;
+    font-size: 1.25rem;
+    border-bottom: 2px solid #cd853f; /* peru */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.forum-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.forum-table thead {
+    background-color: #1e3a8a;
+    color: #f0e68c;
+}
+
+.forum-table th {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 2px solid #cd853f;
+}
+
+.forum-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #d2b48c; /* tan */
+}
+
+.forum-table tr:hover td {
+    background-color: rgba(139, 69, 19, 0.1);
+    cursor: pointer;
+}
+
+.forum-btn {
+    background: linear-gradient(to bottom, #f0e68c, #cd853f);
+    color: #4a2c2a;
+    font-weight: bold;
+    border: 2px solid #8B4513;
+    border-radius: 4px;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.forum-btn:hover {
+    background: linear-gradient(to bottom, #fff2b2, #d6914d);
+}
+
+.post-view {
+    padding: 1rem;
+}
+
+.post-item {
+    background-color: rgba(139, 69, 19, 0.05);
+    border: 1px solid #d2b48c;
+    border-radius: 4px;
+    padding: 1rem;
+}
+
+.post-author {
+    font-weight: bold;
+    color: #8B4513;
+}
+
+.post-content {
+    white-space: pre-wrap;
+    margin-top: 0.5rem;
+    word-break: break-word; /* To wrap long words */
+}
+
+.bbcode-quote {
+    border-left: 4px solid #cd853f;
+    padding-left: 1rem;
+    margin: 0.5rem 0;
+    background-color: rgba(139, 69, 19, 0.1);
+    border-radius: 4px;
+    font-style: italic;
+}
+
+.bbcode-player {
+    font-weight: bold;
+    color: #1e3a8a;
+    cursor: pointer;
+}
+
+.bbcode-player:hover {
+    text-decoration: underline;
+}
+
+.post-timestamp {
+    font-size: 0.75rem;
+    color: #6b4a2b;
+    text-align: right;
+    margin-top: 0.5rem;
+}
+
+.reply-form textarea {
+    width: 100%;
+    min-height: 120px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1px solid #d2b48c;
+    border-radius: 4px;
+    padding: 0.5rem;
+    color: #4a2c2a;
+}
+
+.post-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.post-action-btn {
+    background: none;
+    border: none;
+    color: #8B4513;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.post-action-btn:hover {
+    text-decoration: underline;
+}

@@ -1,0 +1,89 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "citySlots",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "x",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "y",
+          "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "godTowns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "x",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "y",
+          "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "ruins",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "x",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "y",
+          "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "villages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "x",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "y",
+          "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "games",
+      "fieldPath": "worldName",
+      "ttl": false,
+      "indexes": [
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "arrayConfig": "CONTAINS",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        }
+      ]
+    }
+  ]
+}

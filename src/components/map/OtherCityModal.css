@@ -1,0 +1,84 @@
+/* src/components/map/OtherCityModal.css */
+
+.other-city-modal-container {
+    background-image: linear-gradient(rgba(245, 222, 179, 0.95), rgba(245, 222, 179, 0.95)), url('https://www.transparenttextures.com/patterns/cracks.png');
+    background-color: #F5DEB3; /* wheat */
+    border: 8px solid;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to right, #8B4513, #CD853F);
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    color: #4a2c2a;
+    width: 90%;
+    max-width: 400px;
+}
+
+.other-city-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background-color: #1e3a8a;
+    color: #f0e68c;
+    border-bottom: 2px solid #cd853f;
+}
+
+.other-city-modal-content {
+    padding: 1rem;
+}
+
+.info-box {
+    background-color: rgba(139, 69, 19, 0.1);
+    border: 1px solid #d2b48c;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.action-buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.action-btn {
+    @apply font-bold py-2 px-4 rounded-md transition-all duration-200 cursor-pointer transform;
+    color: #4a2c2a;
+    border: 2px solid #8B4513;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background: linear-gradient(to bottom, #f0e68c, #cd853f);
+}
+
+.action-btn:hover {
+    background: linear-gradient(to bottom, #fff2b2, #d6914d);
+}
+
+.action-btn.attack-btn {
+    background: linear-gradient(to bottom, #fca5a5, #ef4444);
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    border-color: #991b1b;
+}
+.action-btn.attack-btn:hover {
+    background: linear-gradient(to bottom, #fecaca, #f87171);
+}
+
+.action-btn.reinforce-btn {
+    background: linear-gradient(to bottom, #93c5fd, #3b82f6);
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    border-color: #1e40af;
+}
+.action-btn.reinforce-btn:hover {
+    background: linear-gradient(to bottom, #bfdbfe, #60a5fa);
+}
+
+.action-btn.spell-btn {
+    background: linear-gradient(to bottom, #d8b4fe, #a855f7);
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    border-color: #6b21a8;
+}
+.action-btn.spell-btn:hover {
+    background: linear-gradient(to bottom, #e9d5ff, #c084fc);
+}

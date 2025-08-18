@@ -1,0 +1,77 @@
+.leaderboard-container {
+    background-image: url('../../images/bg/leaderboard_bg.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: #4a2c2a;
+    width: 1000px;
+    height: 650px;
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+    border: none;
+    padding: 20px 35px 50px 35px; /* Added padding to fit content inside the background's border */
+}
+.leaderboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0 10px 0;
+    background-color: transparent;
+    color: #4a2c2a;
+    border-bottom: none;
+    height: 50px; /* Adjust height */
+}
+.leaderboard-tabs {
+    display: flex;
+    border-bottom: 2px solid #a17c48;
+    flex-wrap: wrap;
+    padding-left: 2rem; /* Add padding to move tabs to the right */
+}
+.leaderboard-tab-btn {
+    padding: 8px 16px;
+    background: #d2b48c;
+    color: #4a2c2a;
+    border: 2px solid #8B4513;
+    border-bottom: none;
+    margin-right: 4px;
+    margin-bottom: 0;
+    cursor: pointer;
+    font-weight: bold;
+}
+.leaderboard-tab-btn.active {
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    margin-left: 0.5rem;
+}
+.leaderboard-table {
+    width: 93%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    margin-left: 2.5rem;;
+}
+.leaderboard-table thead {
+    background-color: rgba(161, 124, 72, 0.2);
+}
+.leaderboard-table th {
+    padding: 0.75rem;
+    border-bottom: 2px solid #a17c48;
+    text-align: left;
+}
+.leaderboard-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #a17c48;
+}
+.player-name-btn {
+    background: none;
+    border: none;
+    color: #4a2c2a;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+}
+.player-name-btn:hover {
+    text-decoration: underline;
+}

@@ -1,0 +1,146 @@
+.reports-container {
+    background-image: url('../images/bg/reports_bg.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: #4a2c2a;
+    width: 1000px;
+    height: 650px;
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+    border: none;
+    padding: 20px 35px 50px 35px; /* Added padding to fit content inside the background's border */
+}
+.reports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0 10px 0;
+    background-color: transparent;
+    color: #f0e68c;
+    border-bottom: none;
+    height: 50px; /* Adjust height */
+}
+.close-btn {
+    background: none;
+    border: none;
+    color: #f0e68c;
+    font-size: 2.5rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* New classes for two-column layout */
+.reports-body {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+.reports-left-panel {
+    width: 35%;
+    display: flex;
+    flex-direction: column;
+    padding-right: 1rem;
+}
+.reports-right-panel {
+    width: 65%;
+    padding-left: 1rem;
+    border-left: 2px solid #a17c48; /* Separator line */
+    overflow-y: auto;
+}
+
+
+.reports-tabs {
+    display: flex;
+    background-color: transparent;
+    padding: 0;
+    border-bottom: 2px solid #a17c48;
+    flex-wrap: wrap;
+}
+.tab-btn {
+    padding: 8px 16px;
+    background: #d2b48c;
+    color: #4a2c2a;
+    border: 2px solid #8B4513;
+    border-bottom: none;
+    margin-right: 4px;
+    margin-bottom: 0;
+    cursor: pointer;
+    font-weight: bold;
+    position: relative;
+    flex-shrink: 0;
+}
+.tab-btn:last-child {
+    margin-right: 0;
+}
+.tab-btn.active {
+    background: transparent;
+    color: #4a2c2a;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+.reports-list {
+    overflow-y: auto;
+    flex-grow: 1;
+}
+.reports-list .report-item {
+    padding: 0.75rem;
+    cursor: pointer;
+    border-bottom: 1px solid #a17c48;
+    background-color: transparent;
+    color: #4a2c2a;
+}
+.report-item:hover {
+    background-color: rgba(139, 69, 19, 0.1);
+}
+.report-item.selected {
+    background-color: rgba(139, 69, 19, 0.2);
+    border-left: 4px solid #8B4513;
+}
+.report-item.unread {
+    font-weight: bold;
+    color: #000;
+}
+.delete-btn {
+    background: none;
+    border: none;
+    color: #a0522d;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+.glowing-tab {
+    animation: glowing-tab-border-animation 1.5s infinite;
+}
+@keyframes glowing-tab-border-animation {
+    0% {
+        box-shadow: 0 0 4px #fde047;
+        border-color: #fde047;
+    }
+    50% {
+        box-shadow: 0 0 12px #fef08a, 0 0 8px #fef08a;
+        border-color: #fef08a;
+    }
+    100% {
+        box-shadow: 0 0 4px #fde047;
+        border-color: #fde047;
+    }
+}
+.tab-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: bold;
+    border-radius: 9999px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid white;
+}

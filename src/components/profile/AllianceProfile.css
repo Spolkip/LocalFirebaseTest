@@ -1,0 +1,32 @@
+.alliance-profile {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid #4a4a6a;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.alliance-profile h2 {
+    color: #e94560;
+}
+
+.alliance-profile h3 {
+    color: #f1c40f;
+    border-bottom: 1px solid #4a4a6a;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.alliance-profile button {
+    transition: all 0.2s;
+}
+
+.alliance-profile textarea {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #4a4a6a;
+    color: white;
+}
+
+.alliance-profile textarea:focus {
+    outline: none;
+    border-color: #e94560;
+    background: rgba(255, 255, 255, 0.2);
+}

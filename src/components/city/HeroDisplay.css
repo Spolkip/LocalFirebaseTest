@@ -1,0 +1,20 @@
+.hero-display-container {
+    @apply w-40 p-1.5 flex flex-col gap-1.5;
+    background-image: url('../../images/bg/right_background.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: #4a2c2a;
+}
+.hero-display-header {
+    @apply font-title text-lg text-center mb-1;
+}
+.heroes-grid {
+    @apply grid grid-cols-3 gap-1;
+}
+.hero-item {
+    @apply w-full aspect-square bg-black/10 rounded-md overflow-hidden border border-transparent hover:border-yellow-600 transition-all;
+}
+.hero-item img {
+    @apply w-full h-full object-cover;
+}

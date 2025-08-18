@@ -1,0 +1,87 @@
+/* src/components/map/MovementsPanel.css */
+
+.movements-panel-bg {
+    /* Papyrus-like background */
+    background-color: #F5DEB3; /* wheat */
+    border: 8px solid;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to right, #8B4513, #CD853F); /* saddlebrown to peru */
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    color: #4a2c2a; /* A dark, ink-like brown */
+    font-family: 'Inter', sans-serif;
+}
+
+.movements-header {
+    background-color: #3b82f6; /* A blue similar to the image */
+    color: white;
+    padding: 0.5rem 1rem;
+    font-family: 'IM Fell English SC', serif;
+    font-size: 1.25rem;
+    border-bottom: 2px solid #2563eb;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.movement-item-row {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #D2B48C; /* tan */
+    gap: 1rem;
+}
+
+.movement-item-row:last-child {
+    border-bottom: none;
+}
+
+.movement-type-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.movement-details {
+    flex-grow: 1;
+}
+
+.movement-details .title {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.movement-details .timing {
+    font-size: 0.8rem;
+    color: #6b4a2b;
+}
+
+.cancel-button {
+    background: none;
+    border: none;
+    color: #dc2626; /* red-600 */
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.cancel-button:hover {
+    color: #ef4444; /* red-500 */
+}
+
+.cancel-button:disabled {
+    color: #9ca3af; /* gray-400 */
+    cursor: not-allowed;
+}
+
+.unit-icons-container {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.unit-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    background-color: rgba(0,0,0,0.1);
+    border-radius: 4px;
+    padding: 2px;
+}

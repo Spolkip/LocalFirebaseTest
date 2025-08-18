@@ -1,0 +1,70 @@
+{
+  "achilles": {
+    "name": "Achilles",
+    "description": "A legendary warrior whose skill in battle is unmatched. He inspires troops to fight with greater ferocity.",
+    "image": "achilles.png",
+    "cost": { "silver": 5000, "favor": 100 },
+    "maxLevel": 10,
+    "xpPerLevel": [100, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000],
+    "levelUpCost": { "silver": 1000, "favor": 20 },
+    "passive": {
+        "name": "Warrior's Presence",
+        "description": "Increases land unit attack by 5% (+1% per level) in this city.",
+        "effect": { "type": "city_buff", "subtype": "land_attack", "baseValue": 0.05, "valuePerLevel": 0.01 }
+    },
+    "skills": [
+      {
+        "name": "Warcry",
+        "type": "battle",
+        "description": "Boosts the attack of all land units by 10% (+2% per level) for the next battle.",
+        "cost": { "favor": { "base": 50, "perLevel": 5 } },
+        "cooldown": 3600,
+        "icon": "warcry.png",
+        "effect": { "type": "troop_buff", "subtype": "attack", "baseValue": 0.10, "valuePerLevel": 0.02, "unit_type": "land" }
+      },
+      {
+        "name": "Rapid Mobilization",
+        "type": "city",
+        "description": "Reduces recruitment time in the Barracks by 15% (+1% per level) for 1 hour.",
+        "cost": { "favor": { "base": 30, "perLevel": 3 } },
+        "cooldown": 7200,
+        "icon": "rapid_mobilization.png",
+        "effect": { "type": "city_buff", "subtype": "recruitment_speed", "baseValue": 0.15, "valuePerLevel": 0.01, "duration": 3600 }
+      }
+    ]
+  },
+  "odysseus": {
+    "name": "Odysseus",
+    "description": "A cunning strategist known for his intellect and trickery. He excels at espionage and naval tactics.",
+    "image": "odysseus.png",
+    "cost": { "silver": 4500, "favor": 120 },
+    "maxLevel": 10,
+    "xpPerLevel": [100, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000],
+    "levelUpCost": { "silver": 900, "favor": 25 },
+    "passive": {
+        "name": "Cunning Mind",
+        "description": "Increases silver production by 10% (+1.5% per level) in this city.",
+        "effect": { "type": "city_buff", "subtype": "silver_production", "baseValue": 0.10, "valuePerLevel": 0.015 }
+    },
+    "skills": [
+      {
+        "name": "Naval Superiority",
+        "type": "battle",
+        "description": "Boosts the speed of all naval units by 15% (+1% per level) for the next battle.",
+        "cost": { "favor": { "base": 40, "perLevel": 4 } },
+        "cooldown": 3600,
+        "icon": "naval_superiority.png",
+        "effect": { "type": "troop_buff", "subtype": "speed", "baseValue": 0.15, "valuePerLevel": 0.01, "unit_type": "naval" }
+      },
+      {
+        "name": "Master Spy",
+        "type": "city",
+        "description": "Increases the effectiveness of spies by 20% (+2% per level) for 2 hours.",
+        "cost": { "favor": { "base": 60, "perLevel": 6 } },
+        "cooldown": 7200,
+        "icon": "master_spy.png",
+        "effect": { "type": "city_buff", "subtype": "spy_effectiveness", "baseValue": 0.20, "valuePerLevel": 0.02, "duration": 7200 }
+      }
+    ]
+  }
+}

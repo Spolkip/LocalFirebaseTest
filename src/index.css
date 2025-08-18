@@ -1,0 +1,128 @@
+/* src/index.css */
+/* All @import statements have been moved to index.js */
+
+/* --- Auth Card Flip --- */
+.perspective {
+    perspective: 1000px;
+}
+.auth-card {
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+    position: relative;
+    width: 100%;
+    max-width: 448px; /* max-w-md */
+    min-height: 550px;
+}
+.auth-card.flipped {
+    transform: rotateY(180deg);
+}
+.auth-card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+.auth-card-back {
+    transform: rotateY(180deg);
+}
+
+/* --- City View --- */
+.city-viewport {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    overflow: hidden;
+    position: relative;
+}
+.city-viewport:active {
+    cursor: grabbing;
+}
+.city-grid {
+    flex-grow: 1;
+    display: grid;
+    height: 100%;
+    width: 100%;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 0.75rem;
+    grid-template-areas:
+        "wall wall wall wall wall wall wall wall"
+        ". timber timber senate senate quarry quarry ."
+        "silver silver warehouse warehouse market market . ."
+        "barracks barracks farm farm . . academy academy"
+        "cave cave temple temple . . . ."
+        "shipyard shipyard . . . . . ."
+        ". . . . . . . ."
+        ". . . . . . . .";
+    background: linear-gradient(to bottom, 
+        #2a623d 0%,
+        #2a623d 65%,
+        #1e3a8a 65%,
+        #1e3a8a 100%
+    );
+    padding: 1.5rem;
+    position: relative;
+}
+
+/* Building Plot Styles */
+.building-plot {
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background-color: rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    grid-area: var(--grid-area);
+}
+.building-plot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.7) 100%);
+}
+.building-plot:hover {
+    transform: translateY(-4px) scale(1.03);
+    border-color: #f0e0c0;
+    box-shadow: 0 0 25px rgba(255, 235, 192, 0.5);
+}
+.building-plot-empty {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+.building-plot-empty:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Specific Building Styles */
+#plot-city_wall { min-height: 60px; }
+#plot-senate { border: 4px solid #a17c48; border-radius: 12px; }
+#plot-shipyard {
+    align-self: end;
+    min-height: 120px;
+    border: 3px solid #6b4a2b;
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    background: linear-gradient(to bottom, #5d4037 0%, #5d4037 60%, #1e3a8a 60%, #1e3a8a 100%);
+}
+#plot-temple { clip-path: polygon(50% 0%, 100% 25%, 100% 100%, 0 100%, 0 25%); background-color: #8d6e63; }
+#plot-cave { background-color: #5d4037; }
+#plot-farm { background-color: #689f38; grid-area: farm; }
+#plot-timber_camp { grid-area: timber; }
+#plot-quarry { grid-area: quarry; }
+#plot-silver_mine { grid-area: silver; }
+#plot-warehouse { grid-area: warehouse; }
+#plot-market { grid-area: market; }
+#plot-barracks { grid-area: barracks; }
+#plot-academy { grid-area: academy; }

@@ -1,0 +1,75 @@
+/* src/components/AuthScreen.css */
+.auth-screen-container {
+    background-image: url('../images/login.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* New styles for the login/register window */
+.auth-window {
+    background-color: rgba(10, 10, 20, 0.85); /* Dark, semi-transparent background */
+    border: 1px solid #a17c48; /* Gold-like border */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 10px;
+    color: #f0e68c; /* Khaki text color */
+    padding: 2rem;
+    width: 100%;
+    max-width: 28rem; /* max-w-md */
+}
+
+.auth-window h1, .auth-window h2 {
+    color: #f0e68c;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+}
+
+.auth-window label {
+    color: #d2b48c; /* Tan color */
+}
+
+.auth-window input {
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid #a17c48;
+    color: #f0e68c;
+    border-radius: 0.5rem; /* rounded-lg */
+    padding: 0.5rem 1rem; /* px-4 py-2 */
+    width: 100%;
+}
+
+.auth-window input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #a17c48;
+}
+
+.auth-window .btn-primary {
+    background: #a17c48;
+    border: 1px solid #f0e68c;
+    color: #1a1a2e;
+    font-weight: bold;
+    padding: 0.75rem; /* py-3 */
+    border-radius: 0.5rem; /* rounded-lg */
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.auth-window .btn-primary:hover {
+     background: #f0e68c;
+}
+
+.auth-window .link-button {
+    color: #a17c48;
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.auth-window .link-button:hover {
+    color: #f0e68c;
+}
+
+.auth-window p {
+    color: #d2b48c; /* Tan color for paragraphs */
+}

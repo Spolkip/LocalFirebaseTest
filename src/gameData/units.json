@@ -1,0 +1,340 @@
+{
+   "swordsman": {
+    "name": "Swordsman",
+    "description": "A basic melee unit, effective in close combat.",
+    "cost": {
+      "wood": 50,
+      "stone": 30,
+      "silver": 20,
+      "population": 1,
+      "time": 30
+    },
+    "heal_cost": { "wood": 15, "stone": 10, "silver": 6 },
+"heal_time": 10,
+    "attack": 10,
+    "defense": 15,
+    "speed": 5,
+    "type": "land",
+    "counters": ["archer"],
+    "image": "swordman.png"
+  },
+  "archer": {
+    "name": "Archer",
+    "description": "A ranged unit that can attack from a distance.",
+    "cost": {"wood": 30,"stone": 40,"silver": 35,"population": 1,"time": 45},
+    "heal_cost": { "wood": 9, "stone": 12, "silver": 10 },"heal_time": 15,
+    "attack": 12,"defense": 8,"speed": 6,"type": "land", "counters": ["swordsman"],"image": "archers.png"
+  },
+  "hoplite": {
+    "name": "Hoplite",
+    "description": "Heavily armored infantry, strong defensive unit.",
+    "cost": {
+      "wood": 70,
+      "stone": 60,
+      "silver": 40,
+      "population": 2,
+      "time": 60
+    },
+    "heal_cost": { "wood": 21, "stone": 18, "silver": 12 },
+    "heal_time": 20,
+    "attack": 15,
+    "defense": 25,
+    "speed": 4,
+    "type": "land",
+    "counters": ["cavalry"],
+    "image": "hospite.png"
+  },
+  "cavalry": {
+    "name": "Cavalry",
+    "description": "Fast and powerful mounted units, good for flanking.",
+    "cost": {
+      "wood": 80,
+      "stone": 50,
+      "silver": 70,
+      "population": 3,
+      "time": 90
+    },
+    "heal_cost": { "wood": 24, "stone": 15, "silver": 21 },
+    "heal_time": 30,
+    "attack": 20,
+    "defense": 18,
+    "speed": 10,
+    "type": "land",
+    "counters": ["archer", "slinger"],
+    "image": "cavalry.png"
+  },
+  "swordsman_athenian": {
+    "name": "Athenian Swordsman",
+    "description": "A versatile melee unit from Athens, balanced in attack and defense.",
+    "cost": { "wood": 50, "stone": 30, "silver": 20, "population": 1, "time": 30 },
+    "heal_cost": { "wood": 15, "stone": 10, "silver": 6 }, "heal_time": 10,
+    "attack": 10, "defense": 15, "speed": 5, "type": "land", "nation": "Athenian",
+    "image": "athenian_swordsman.png"
+  },
+  "archer_athenian": {
+    "name": "Athenian Archer",
+    "description": "A skilled archer from Athens, known for precision.",
+    "cost": { "wood": 30, "stone": 40, "silver": 35, "population": 1, "time": 45 },
+    "heal_cost": { "wood": 9, "stone": 12, "silver": 10 }, "heal_time": 15,
+    "attack": 12, "defense": 8, "speed": 6, "type": "land", "nation": "Athenian",
+    "image": "athenian_archer.png"
+  },
+  "hoplite_athenian": {
+    "name": "Athenian Hoplite",
+    "description": "The backbone of the Athenian army, well-armored and reliable.",
+    "cost": { "wood": 70, "stone": 60, "silver": 40, "population": 2, "time": 60 },
+    "heal_cost": { "wood": 21, "stone": 18, "silver": 12 }, "heal_time": 20,
+    "attack": 15, "defense": 25, "speed": 4, "type": "land", "nation": "Athenian",
+    "image": "athenian_hoplite.png"
+  },
+  "cavalry_athenian": {
+    "name": "Athenian Cavalry",
+    "description": "Noble horsemen of Athens, effective for flanking maneuvers.",
+    "cost": { "wood": 80, "stone": 50, "silver": 70, "population": 3, "time": 90 },
+    "heal_cost": { "wood": 24, "stone": 15, "silver": 21 }, "heal_time": 30,
+    "attack": 20, "defense": 18, "speed": 10, "type": "land", "nation": "Athenian",
+    "image": "athenian_cavalry.png"
+  },
+  "trireme_athenian": {
+    "name": "Athenian Trireme",
+    "description": "A powerful and versatile warship from the Athenian navy.",
+    "cost": { "wood": 300, "stone": 150, "silver": 200, "population": 8, "time": 300 },
+    "attack": 25, "defense": 30, "speed": 8, "type": "naval", "nation": "Athenian",
+    "image": "athenian_trireme.png"
+  },
+  "swordsman_spartan": {
+    "name": "Spartan Hoplite",
+    "description": "A disciplined and heavily armored warrior from Sparta, excelling in defense.",
+    "cost": { "wood": 60, "stone": 40, "silver": 25, "population": 1, "time": 35 },
+    "heal_cost": { "wood": 18, "stone": 12, "silver": 7 }, "heal_time": 12,
+    "attack": 8, "defense": 20, "speed": 4, "type": "land", "nation": "Spartan",
+    "image": "spartan_hoplite.png"
+  },
+  "archer_spartan": {
+    "name": "Spartan Helot Archer",
+    "description": "A lightly armored but disciplined archer serving the Spartan army.",
+    "cost": { "wood": 35, "stone": 45, "silver": 30, "population": 1, "time": 50 },
+    "heal_cost": { "wood": 10, "stone": 13, "silver": 9 }, "heal_time": 17,
+    "attack": 10, "defense": 10, "speed": 5, "type": "land", "nation": "Spartan",
+    "image": "spartan_archer.png"
+  },
+  "hoplite_spartan": {
+    "name": "Royal Spartan Guard",
+    "description": "The elite of the Spartan phalanx, nearly unbreakable in defense.",
+    "cost": { "wood": 80, "stone": 70, "silver": 50, "population": 2, "time": 70 },
+    "heal_cost": { "wood": 24, "stone": 21, "silver": 15 }, "heal_time": 23,
+    "attack": 16, "defense": 30, "speed": 3, "type": "land", "nation": "Spartan",
+    "image": "spartan_hoplite_elite.png"
+  },
+  "cavalry_spartan": {
+    "name": "Spartan Rider",
+    "description": "A heavy cavalry unit focused on breaking enemy lines.",
+    "cost": { "wood": 90, "stone": 60, "silver": 80, "population": 3, "time": 100 },
+    "heal_cost": { "wood": 27, "stone": 18, "silver": 24 }, "heal_time": 33,
+    "attack": 22, "defense": 22, "speed": 9, "type": "land", "nation": "Spartan",
+    "image": "spartan_cavalry.png"
+  },
+  "trireme_spartan": {
+    "name": "Spartan Diekplous",
+    "description": "A sturdy warship designed for ramming and boarding actions.",
+    "cost": { "wood": 320, "stone": 180, "silver": 200, "population": 8, "time": 320 },
+    "attack": 28, "defense": 35, "speed": 7, "type": "naval", "nation": "Spartan",
+    "image": "spartan_trireme.png"
+  },
+  "swordsman_corinthian": {
+    "name": "Corinthian Marine",
+    "description": "A swift and aggressive fighter from Corinth, trained for rapid assaults.",
+    "cost": { "wood": 45, "stone": 25, "silver": 30, "population": 1, "time": 28 },
+    "heal_cost": { "wood": 13, "stone": 7, "silver": 9 }, "heal_time": 9,
+    "attack": 12, "defense": 12, "speed": 6, "type": "land", "nation": "Corinthian",
+    "image": "corinthian_marine.png"
+  },
+  "archer_corinthian": {
+    "name": "Corinthian Skirmisher",
+    "description": "A fast-moving archer that excels at harassing enemy forces.",
+    "cost": { "wood": 28, "stone": 38, "silver": 40, "population": 1, "time": 42 },
+    "heal_cost": { "wood": 8, "stone": 11, "silver": 12 }, "heal_time": 14,
+    "attack": 13, "defense": 7, "speed": 7, "type": "land", "nation": "Corinthian",
+    "image": "corinthian_archer.png"
+  },
+  "hoplite_corinthian": {
+    "name": "Corinthian Phalanx",
+    "description": "A well-equipped hoplite, more mobile than its counterparts.",
+    "cost": { "wood": 65, "stone": 55, "silver": 45, "population": 2, "time": 55 },
+    "heal_cost": { "wood": 19, "stone": 16, "silver": 13 }, "heal_time": 18,
+    "attack": 16, "defense": 22, "speed": 5, "type": "land", "nation": "Corinthian",
+    "image": "corinthian_hoplite.png"
+  },
+  "cavalry_corinthian": {
+    "name": "Corinthian Hippeus",
+    "description": "Light and swift cavalry, perfect for raiding and quick strikes.",
+    "cost": { "wood": 75, "stone": 45, "silver": 75, "population": 3, "time": 85 },
+    "heal_cost": { "wood": 22, "stone": 13, "silver": 22 }, "heal_time": 28,
+    "attack": 21, "defense": 16, "speed": 12, "type": "land", "nation": "Corinthian",
+    "image": "corinthian_cavalry.png"
+  },
+  "trireme_corinthian": {
+    "name": "Corinthian Bireme",
+    "description": "A fast and maneuverable warship, ideal for controlling the seas.",
+    "cost": { "wood": 280, "stone": 140, "silver": 220, "population": 8, "time": 280 },
+    "attack": 26, "defense": 28, "speed": 10, "type": "naval", "nation": "Corinthian",
+    "image": "corinthian_trireme.png"
+  },
+  "swordsman_roman": {
+    "name": "Legionary",
+    "description": "A disciplined soldier of the Roman legions, balanced and effective.",
+    "cost": { "wood": 50, "stone": 30, "silver": 20, "population": 1, "time": 30 },
+    "heal_cost": { "wood": 15, "stone": 10, "silver": 6 }, "heal_time": 10,
+    "attack": 10, "defense": 15, "speed": 5, "type": "land", "nation": "Julian",
+    "image": "legionary.png"
+  },
+  "archer_roman": {
+    "name": "Roman Archer",
+    "description": "A disciplined archer providing ranged support for the legions.",
+    "cost": { "wood": 30, "stone": 40, "silver": 35, "population": 1, "time": 45 },
+    "heal_cost": { "wood": 9, "stone": 12, "silver": 10 }, "heal_time": 15,
+    "attack": 12, "defense": 8, "speed": 6, "type": "land", "nation": "Julian",
+    "image": "roman_archer.png"
+  },
+  "hoplite_roman": {
+    "name": "Praetorian Guard",
+    "description": "An elite unit of the Roman Army, formidable in both attack and defense.",
+    "cost": { "wood": 70, "stone": 60, "silver": 40, "population": 2, "time": 60 },
+    "heal_cost": { "wood": 21, "stone": 18, "silver": 12 }, "heal_time": 20,
+    "attack": 18, "defense": 26, "speed": 4, "type": "land", "nation": "Julian",
+    "image": "praetorian_guard.png"
+  },
+  "cavalry_roman": {
+    "name": "Equites",
+    "description": "Roman cavalry, effective at charging and disrupting enemy formations.",
+    "cost": { "wood": 80, "stone": 50, "silver": 70, "population": 3, "time": 90 },
+    "heal_cost": { "wood": 24, "stone": 15, "silver": 21 }, "heal_time": 30,
+    "attack": 20, "defense": 18, "speed": 10, "type": "land", "nation": "Julian",
+    "image": "equites.png"
+  },
+  "trireme_roman": {
+    "name": "Roman Quinquereme",
+    "description": "A large and powerful Roman warship, built for dominating naval battles.",
+    "cost": { "wood": 300, "stone": 150, "silver": 200, "population": 8, "time": 300 },
+    "attack": 30, "defense": 32, "speed": 8, "type": "naval", "nation": "Julian",
+    "image": "roman_quinquereme.png"
+  },
+  "slinger": {
+    "name": "Slinger",
+    "description": "Light ranged unit, good against unarmored foes.",
+    "cost": { "wood": 25, "stone": 20, "silver": 15, "population": 1, "time": 25 },
+    "heal_cost": { "wood": 8, "stone": 6, "silver": 5 }, "heal_time": 8,
+    "attack": 8, "defense": 10, "speed": 7, "type": "land",
+    "image": "slinger.png"
+  },
+  "transport_ship": {
+    "name": "Transport Ship",
+    "description": "Standard transport for land units across seas. Slower but higher capacity.",
+    "cost": { "wood": 200, "stone": 100, "silver": 150, "population": 5, "time": 180 },
+    "attack": 0, "defense": 20, "speed": 10, "type": "naval", "capacity": 16,
+    "image": "transport_ship.png"
+  },
+  "fast_transport_ship": {
+    "name": "Fast Transport Ship",
+    "description": "Faster transport for land units, but with less capacity.",
+    "cost": { "wood": 250, "stone": 120, "silver": 180, "population": 6, "time": 240 },
+    "attack": 0, "defense": 15, "speed": 15, "type": "naval", "capacity": 10,
+    "image": "fast_transport_ship.png"
+  },
+  "minotaur": {
+    "name": "Minotaur",
+    "description": "A fearsome beast with the body of a man and the head of a bull.",
+    "cost": { "wood": 300, "stone": 250, "silver": 400, "population": 10, "time": 600, "favor": 50 },
+    "heal_cost": { "wood": 90, "stone": 75, "silver": 120 }, "heal_time": 200,
+    "attack": 50, "defense": 40, "speed": 4, "type": "land", "mythical": true, "god": "Zeus",
+    "image": "minotaur.png"
+  },
+   "manticore": {
+    "name": "Manticore",
+    "description": "A terrifying creature with the body of a lion, a human head, and a tail of venomous spines.",
+    "cost": { "wood": 450, "stone": 150, "silver": 350, "population": 12, "time": 750, "favor": 65 },
+    "heal_cost": { "wood": 135, "stone": 45, "silver": 105 }, "heal_time": 250,
+    "attack": 60, "defense": 30, "speed": 7, "type": "land", "flying": true,"mythical": true, "god": "Zeus",
+    "image": "manticore.png"
+  },
+  "harpy": {
+    "name": "Harpy",
+    "description": "A winged spirit of sharp claws and sharper temper.",
+    "cost": { "wood": 150, "stone": 300, "silver": 200, "population": 8, "time": 450, "favor": 40 },
+     "heal_cost": { "wood": 45, "stone": 90, "silver": 60 }, "heal_time": 150,
+    "attack": 35, "defense": 25, "speed": 14, "type": "land", "flying": true, "mythical": true, "god": "Hera",
+    "image": "harpy.png"
+  },
+  "medusa": {
+    "name": "Medusa",
+    "description": "A creature whose gaze can turn warriors to stone.",
+    "cost": { "wood": 200, "stone": 400, "silver": 350, "population": 12, "time": 700, "favor": 60 },
+     "heal_cost": { "wood": 60, "stone": 120, "silver": 105 }, "heal_time": 230,
+    "attack": 40, "defense": 60, "speed": 3, "type": "land", "mythical": true, "god": "Hera",
+    "image": "medusa.png"
+  },
+  "centaur": {
+    "name": "Centaur",
+    "description": "A skilled archer with the body of a horse, swift and deadly.",
+    "cost": { "wood": 250, "stone": 150, "silver": 300, "population": 9, "time": 500, "favor": 45 },
+    "heal_cost": { "wood": 75, "stone": 45, "silver": 90 }, "heal_time": 170,
+    "attack": 45, "defense": 30, "speed": 9, "type": "land", "mythical": true, "god": "Athena",
+    "image": "centaur.png"
+  },
+  "pegasus": {
+    "name": "Pegasus",
+    "description": "A divine winged stallion, the fastest scout in the land.",
+    "cost": { "wood": 100, "stone": 100, "silver": 500, "population": 15, "time": 800, "favor": 70 },
+    "heal_cost": { "wood": 30, "stone": 30, "silver": 150 }, "heal_time": 270,
+    "attack": 10, "defense": 50, "speed": 25, "type": "land", "flying": true, "mythical": true, "god": "Athena",
+    "image": "pegasus.png"
+  },
+  "sphinx": {
+    "name": "Sphinx",
+    "description": "A mythical creature with the head of a human, the body of a lion, and the wings of a falcon.",
+    "cost": { "wood": 350, "stone": 200, "silver": 300, "population": 11, "time": 650, "favor": 55 },
+    "heal_cost": { "wood": 105, "stone": 60, "silver": 90 }, "heal_time": 220,
+    "attack": 55, "defense": 45, "speed": 16, "type": "land", "flying": true, "mythical": true, "god": "Anubis",
+    "image": "sphinx.png"
+  },
+  "scarab": {
+    "name": "Scarab",
+    "description": "A large, heavily armored beetle that moves slowly but is incredibly resilient.",
+    "cost": { "wood": 100, "stone": 500, "silver": 150, "population": 7, "time": 400, "favor": 35 },
+    "heal_cost": { "wood": 30, "stone": 150, "silver": 45 }, "heal_time": 130,
+    "attack": 20, "defense": 70, "speed": 2, "type": "land", "mythical": true, "god": "Anubis",
+    "image": "scarab.png"
+  },
+  "griffin": {
+    "name": "Griffin",
+    "description": "A legendary creature with the body, tail, and back legs of a lion; the head and wings of an eagle.",
+    "cost": { "wood": 400, "stone": 200, "silver": 250, "population": 13, "time": 720, "favor": 62 },
+    "heal_cost": { "wood": 120, "stone": 60, "silver": 75 }, "heal_time": 240,
+    "attack": 65, "defense": 35, "speed": 18, "type": "land", "flying": true, "mythical": true, "god": "Horus",
+    "image": "griffin.png"
+  },
+  "phoenix": {
+    "name": "Phoenix",
+    "description": "A long-lived bird that cyclically regenerates or is otherwise born again.",
+    "cost": { "wood": 100, "stone": 100, "silver": 600, "population": 18, "time": 900, "favor": 80 },
+    "heal_cost": { "wood": 30, "stone": 30, "silver": 180 }, "heal_time": 300,
+    "attack": 30, "defense": 60, "speed": 22, "type": "land", "flying": true, "mythical": true, "god": "Horus",
+    "image": "phoenix.png"
+  },
+  "mummy": {
+    "name": "Mummy",
+    "description": "An undead creature wrapped in bandages, cursed to serve its master.",
+    "cost": { "wood": 50, "stone": 350, "silver": 250, "population": 6, "time": 350, "favor": 30 },
+    "heal_cost": { "wood": 15, "stone": 105, "silver": 75 }, "heal_time": 120,
+    "attack": 25, "defense": 55, "speed": 3, "type": "land", "mythical": true, "god": "Osiris",
+    "image": "mummy.png"
+  },
+  "serpopard": {
+    "name": "Serpopard",
+    "description": "A mythical animal with the body of a leopard and the long neck of a serpent.",
+    "cost": { "wood": 300, "stone": 150, "silver": 400, "population": 10, "time": 620, "favor": 58 },
+    "heal_cost": { "wood": 90, "stone": 45, "silver": 120 }, "heal_time": 210,
+    "attack": 58, "defense": 42, "speed": 8, "type": "land", "mythical": true, "god": "Osiris",
+    "image": "serpopard.png"
+  }
+}

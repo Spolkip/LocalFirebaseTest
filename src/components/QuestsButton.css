@@ -1,0 +1,59 @@
+/* src/components/QuestsButton.css */
+.quests-button-container {
+    position: absolute;
+    top: 90px;
+    left: 11rem;
+    z-index: 50;
+    width: 80px;
+    height: 80px;
+}
+
+.quests-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/quests/quest_spritesheet.png');
+    background-size: 380% 105%;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    transition: all 0.3s ease-in-out;
+    image-rendering: pixelated;
+    opacity: 0.3; /* Default transparency */
+    transform: scale(0.9); /* Slightly smaller by default */
+}
+
+.quests-button:hover {
+    opacity: 1; /* Full opacity on hover */
+    transform: scale(1.1); /* Grow on hover */
+}
+
+/* State-specific styles with hover enhancement */
+.quests-button.unclaimed {
+    animation: glowing-border-animation 2s infinite;
+    background-position: 0% 0%;
+}
+
+.quests-button.idle {
+    background-position: 50% 0%;
+}
+
+.quests-button.completed {
+    background-position: 100% 0%;
+    animation: none;
+}
+
+/* Make the glow more visible during hover */
+.quests-button.unclaimed:hover {
+    animation: glowing-border-animation 1s infinite;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) brightness(1.2);
+}
+
+@keyframes glowing-border-animation {
+    0% { box-shadow: 0 0 3px #fde047; }
+    50% { box-shadow: 0 0 15px #fef08a; }
+    100% { box-shadow: 0 0 3px #fde047; }
+}

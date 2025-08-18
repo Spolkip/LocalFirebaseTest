@@ -1,0 +1,51 @@
+
+Game Stuff:
+- make manager for troops and research spells, puzzles and buildings with a lot of options
+- add more research and make them to actually work
+
+
+
+
+
+
+
+
+
+
+========================================================================================================================
+Ideas:
+- make Tabs for different command like folders lists
+- 
+
+
+
+
+
+
+
+
+========================================================================================================================
+Admin panel Bugs:
+- When going to map view admin cheats get disable
+- When putting resources it shows the amout you put for a second and then reverts itself to storage amount
+- Admin Cheats don't work on Wonders
+- Place dummy destoys cities mapS
+- Cheat Code to work with demolish
+
+
+========================================================================================================================
+
+- EventTrigger
+
+
+
+
+
+
+
+
+
+AdminCheatMenu
+useAdminActions
+CityView
+GameContext

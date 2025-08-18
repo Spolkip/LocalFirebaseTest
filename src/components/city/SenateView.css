@@ -1,0 +1,75 @@
+.senate-view-container {
+    background-image: url('../../images/bg/senate_view_bg.png');
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #4a2c2a; /* Dark brown text for readability on parchment */
+}
+
+/* Make inner containers semi-transparent to show the background */
+.senate-view-container .bg-gray-900,
+.senate-view-container .bg-gray-800,
+.senate-view-container .bg-gray-700,
+.senate-view-container .bg-gray-700\/80 {
+    background-color: rgba(245, 222, 179, 0.6) !important; /* Semi-transparent wheat color */
+    border-color: #8B4513 !important; /* Saddle brown for borders */
+}
+
+/* Adjust text colors for better contrast on the new background */
+.senate-view-container .text-white,
+.senate-view-container .text-gray-300,
+.senate-view-container .text-gray-400 {
+    color: #4a2c2a !important; /* Dark brown */
+}
+
+.senate-view-container .text-yellow-300 {
+    color: #8B4513 !important; /* Saddle brown for titles */
+}
+
+.senate-view-container .text-yellow-400 {
+    color: #5D4037 !important; /* Darker brown for main titles */
+}
+
+.senate-view-container .text-green-400 {
+    color: #228B22 !important; /* Forest green for positive numbers */
+}
+
+.senate-view-container .text-blue-300 {
+    color: #00008B !important; /* Dark blue */
+}
+
+
+/* Style the tabs to look like old paper/stone */
+.senate-view-container .flex-1.p-2.text-lg.font-bold {
+    background-color: rgba(210, 180, 140, 0.7) !important; /* Tan color */
+    border-bottom: 2px solid transparent !important;
+}
+
+.senate-view-container .flex-1.p-2.text-lg.font-bold.bg-gray-700 {
+    background-color: rgba(139, 69, 19, 0.7) !important; /* Saddle brown for active tab */
+    border-bottom-color: #f0e68c !important; /* Khaki for active indicator */
+    color: #f0e68c !important;
+}
+
+/* Style building cards */
+.building-card-senate {
+    background-color: rgba(210, 180, 140, 0.8) !important;
+    border: 2px solid #8B4513 !important;
+}
+
+.btn-upgrade-senate {
+    background: linear-gradient(to bottom, #f0e68c, #cd853f);
+    color: #4a2c2a;
+}
+
+.btn-disabled-senate {
+    background: #d2b48c !important;
+    color: #6b4a2b !important;
+}
+
+.dependency-line {
+    stroke: #d4af37; /* Gold color */
+    stroke-width: 2;
+    filter: drop-shadow(0 0 3px #fde047) drop-shadow(0 0 5px #fef08a);
+    transition: all 0.3s ease;
+}

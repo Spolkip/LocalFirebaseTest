@@ -1,0 +1,188 @@
+/* src/styles/map.css */
+
+/* --- Map & Tile Styles --- */
+.map-surface {
+  background-image: url('../images/water.png');
+  background-repeat: repeat;
+  background-size: 250px;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.map-viewport {
+    @apply absolute inset-0 w-full h-full cursor-grab overflow-hidden;
+}
+.map-viewport:active {
+    @apply cursor-grabbing;
+}
+
+.map-border {
+    @apply absolute bg-red-500 pointer-events-none z-40 transition-opacity duration-200;
+}
+.map-border.top { @apply top-0 left-0 right-0 h-1; }
+.map-border.bottom { @apply bottom-0 left-0 right-0 h-1; }
+.map-border.left { @apply top-0 bottom-0 left-0 w-1; }
+.map-border.right { @apply top-0 bottom-0 right-0 w-1; }
+
+.map-grid {
+    @apply grid;
+}
+
+.map-tile {
+    @apply flex items-center justify-center relative;
+}
+
+/* City Slot Styles */
+.city-slot {
+    @apply w-6 h-6 rounded-full m-1 cursor-pointer relative transition-transform duration-150;
+}
+
+.city-sprite {
+    @apply absolute w-12 h-10; /* 48px width, 40px height */
+    bottom: -5px; /* Adjust vertical position */
+    left: 50%;
+    transform: translateX(-50%);
+    background-repeat: no-repeat;
+    pointer-events: none; /* Make sure it doesn't interfere with clicks */
+    z-index: 10;
+}
+
+
+.city-slot:hover {
+    @apply scale-125 ring-2 ring-white z-20;
+}
+.city-slot:hover .city-sprite {
+    filter: drop-shadow(0 0 5px white);
+}
+
+.city-slot:hover .map-object-tooltip {
+    @apply visible opacity-100;
+}
+.empty-slot {
+    @apply bg-gray-500 border border-dashed border-gray-400;
+}
+.my-city {
+    @apply bg-transparent border-2 border-yellow-200;
+}
+.alliance-city { /* Your own alliance */
+    @apply bg-transparent border-2 border-blue-300;
+}
+.ally-city { /* Allied alliances */
+    @apply bg-transparent border-2 border-green-300;
+}
+.enemy-city {
+    @apply bg-transparent border-2 border-red-300;
+}
+.neutral-city {
+    @apply bg-transparent border-2 border-amber-500;
+}
+.dummy-city-plot {
+    @apply bg-purple-500 border-2 border-purple-300;
+}
+.dummy-placement-plot {
+    @apply bg-gray-500 border-2 border-dashed border-yellow-400 cursor-crosshair animate-pulse;
+}
+.ghost-city {
+    @apply bg-gray-600 border-2 border-gray-800;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgba(255,255,255,0.5)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9c.83 0 1.5-.67 1.5-1.5S7.83 8 7 8s-1.5.67-1.5 1.5S6.17 11 7 11zm10 0c.83 0 1.5-.67 1.5-1.5S17.83 8 17 8s-1.5.67-1.5 1.5S16.17 11 17 11zm-5 4c-1.66 0-3-1.34-3-3h6c0 1.66-1.34 3-3 3z"/></svg>');
+    background-size: 70%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+/* Farming Village Styles */
+.village-slot {
+    @apply w-20 h-6 m-0 cursor-pointer relative transition-transform duration-150 bg-no-repeat;
+    background-image: url('../images/villages.png');
+    background-size: 300% 350%;
+    /* Add a subtle shadow to blend with the terrain */
+    filter: drop-shadow(2px 4px 3px rgba(0,0,0,0.4));
+}
+.village-slot:hover {
+    @apply scale-125 z-20;
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));
+}
+.village-slot:hover .map-object-tooltip {
+    @apply visible opacity-100;
+}
+
+/* #comment Define background positions for each village level */
+.village-level-1 { background-position: 0% 0%; }
+.village-level-2 { background-position: 100% 0%; }
+.village-level-3 { background-position: 0% 50%; }
+.village-level-4 { background-position: 100% 50%; }
+.village-level-5 { background-position: 0% 100%; }
+.village-level-6 { background-position: 100% 100%; }
+
+
+.my-village {
+    /* No special filter needed now */
+}
+.other-village-plot {
+   /* No special filter needed now */
+}
+
+/* Ruin Styles */
+.ruin-slot {
+    @apply w-12 h-12 m-1 cursor-pointer relative transition-transform duration-150 bg-no-repeat;
+    background-image: url('../images/ruins.png');
+    background-size: 200% 100%;
+    filter: drop-shadow(2px 4px 3px rgba(0,0,0,0.4));
+}
+.ruin-slot:hover {
+    @apply scale-125 z-20;
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));
+}
+.ruin-slot:hover .map-object-tooltip {
+    @apply visible opacity-100;
+}
+
+.ruin-unoccupied {
+    background-position: 0% 0%;
+}
+
+.ruin-occupied {
+    background-position: 100% 0%;
+}
+/* God Town Styles */
+.god-town-slot {
+    @apply w-8 h-8 m-1 cursor-pointer relative transition-transform duration-150;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+.god-town-slot:hover {
+    @apply scale-125 ring-2 ring-yellow-300 z-20;
+}
+.god-town-slot:hover .map-object-tooltip {
+    @apply visible opacity-100;
+}
+.god-town-slot.ruins {
+    filter: hue-rotate(280deg) brightness(1.2);
+}
+.god-town-slot.city {
+    filter: drop-shadow(0 0 8px #fde047);
+}
+
+/* Wonder Styles */
+.wonder-spot-tile {
+    @apply w-8 h-8 rounded-full relative bg-gray-600/50 border-2 border-gray-500;
+}
+
+.wonder-spot-tile.active {
+    @apply cursor-pointer bg-yellow-400/50 border-yellow-300;
+    animation: glowing-wonder-spot 2s infinite;
+}
+
+@keyframes glowing-wonder-spot {
+    0% { box-shadow: 0 0 5px #fde047; }
+    50% { box-shadow: 0 0 20px #fef08a, 0 0 10px #fef08a; }
+    100% { box-shadow: 0 0 5px #fde047; }
+}
+
+.constructing-wonder-tile {
+    @apply w-8 h-8 cursor-pointer relative;
+    background-image: url('../images/special_buildings/alliance_wonders.jpg');
+    background-size: contain;
+}

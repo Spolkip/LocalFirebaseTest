@@ -1,0 +1,137 @@
+.top-bar-container {
+    background-image: linear-gradient(rgba(245, 222, 179, 0.95), rgba(245, 222, 179, 0.95)), url('https://www.transparenttextures.com/patterns/cracks.png');
+    background-color: #F5DEB3;
+    border-bottom: 2px solid #8B4513;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.5);
+    color: #4a2c2a;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.city-name-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.city-name-dropdown-btn {
+    background-color: rgba(0,0,0,0.1);
+    border: 1px solid #8B4513;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    font-size: 1rem;
+}
+.city-name-dropdown-btn:hover {
+    background-color: rgba(0,0,0,0.2);
+}
+
+.city-list-dropdown {
+    background-image: linear-gradient(rgba(245, 222, 179, 0.98), rgba(245, 222, 179, 0.98)), url('https://www.transparenttextures.com/patterns/cracks.png');
+    background-color: #F5DEB3;
+    border: 2px solid #8B4513;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    color: #4a2c2a;
+    max-height: 320px;
+    overflow-y: auto;
+}
+.city-list-item {
+    @apply w-full text-left px-4 py-2 hover:bg-amber-300/50;
+}
+.city-list-item.active {
+    @apply bg-amber-400/60 font-bold;
+}
+.weather-display {
+    background: rgba(0,0,0,0.1);
+    border: 1px solid #8B4513;
+    border-radius: 9999px;
+    padding: 0.1rem 0.5rem;
+    display: flex;
+    align-items: center;
+}
+.resource-display {
+    display: flex;
+    align-items: center;
+    background: rgba(0,0,0,0.1);
+    padding: 0.1rem 0.25rem;
+    border-radius: 4px;
+    border: 1px solid #8B4513;
+}
+.resource-display:hover {
+    background: rgba(0,0,0,0.2);
+}
+.activity-tracker-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0,0,0,0.1);
+    border: 1px solid #8B4513;
+    border-radius: 9999px;
+    padding: 0.1rem 0.25rem;
+    margin-right: 1rem;
+}
+.activity-icon {
+    position: relative;
+    font-size: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.2rem;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+.activity-icon-image-container {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.1rem;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    width: 2rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.activity-icon-image-container:hover {
+    background-color: rgba(0,0,0,0.1);
+}
+.activity-icon-image {
+    width: 1.8rem;
+    height:1.8rem;
+}
+.activity-icon:hover {
+    background-color: rgba(0,0,0,0.1);
+}
+.activity-badge {
+    position: absolute;
+    top: -2px;
+    right: -3px;
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.5rem;
+    font-weight: bold;
+    border-radius: 9999px;
+    width: 12px;
+    height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid white;
+}
+.glowing-attack-icon {
+    animation: glowing-icon-animation 1.5s infinite;
+}
+@keyframes glowing-icon-animation {
+    0% {
+        text-shadow: 0 0 3px #ef4444;
+    }
+    50% {
+        text-shadow: 0 0 10px #f87171, 0 0 5px #f87171;
+    }
+    100% {
+        text-shadow: 0 0 3px #ef4444;
+    }
+}

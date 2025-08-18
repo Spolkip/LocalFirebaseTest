@@ -1,0 +1,130 @@
+.papyrus-bg {
+    background-image: url('../../images/bg/messages_bg.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: #4a2c2a;
+    width: 1000px;
+    height: 650px;
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+    border: none;
+    padding: 20px 35px 50px 35px;
+}
+.messages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0 10px 0;
+    background-color: transparent;
+    color: #4a2c2a;
+    border-bottom: none;
+    height: 50px;
+}
+.messages-body {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+.messages-left-panel {
+    width: 35%;
+    display: flex;
+    flex-direction: column;
+    padding-right: 1rem;
+}
+.messages-right-panel {
+    width: 65%;
+    padding-left: 1rem;
+    border-left: 2px solid #a17c48;
+    display: flex;
+    flex-direction: column;
+}
+.papyrus-text {
+    color: #4a2c2a;
+    font-family: 'Kalam', cursive;
+}
+.papyrus-header {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 1.5rem;
+    color: #4a2c2a;
+}
+.papyrus-input {
+    background-color: transparent;
+    border-bottom: 2px solid #8B4513;
+    color: #4a2c2a;
+}
+.papyrus-input:focus {
+    outline: none;
+    border-color: #5D4037;
+}
+.papyrus-input::placeholder {
+    color: #856a69;
+}
+.papyrus-btn {
+    background-color: #8B4513;
+    color: #F5DEB3;
+    font-weight: bold;
+    border-radius: 2px;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.papyrus-btn:hover {
+    background-color: #A0522D;
+}
+.papyrus-list-item {
+    padding: 0.75rem;
+    cursor: pointer;
+    border: 1px solid #a17c48;
+    margin-top: -1px;
+    color: #4a2c2a;
+}
+.papyrus-list-item:hover {
+    background-color: rgba(139, 69, 19, 0.1);
+}
+.papyrus-list-item.selected {
+    background-color: rgba(139, 69, 19, 0.2);
+}
+.papyrus-list-item.unread {
+    font-weight: bold;
+    color: #000;
+}
+.glowing-message {
+    animation: glowing-message-animation 1.5s infinite;
+}
+@keyframes glowing-message-animation {
+    0% {
+        box-shadow: 0 0 3px #fde047;
+    }
+    50% {
+        box-shadow: 0 0 10px #fef08a, 0 0 5px #fef08a;
+    }
+    100% {
+        box-shadow: 0 0 3px #fde047;
+    }
+}
+.papyrus-message-sent {
+    background-color: rgba(211, 184, 144, 0.8);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    max-width: 80%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.papyrus-message-received {
+    background-color: rgba(230, 203, 168, 0.8);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    max-width: 80%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.bbcode-action {
+    color: #1e3a8a;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.bbcode-action:hover {
+    color: #3b82f6;
+}

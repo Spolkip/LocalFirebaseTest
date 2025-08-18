@@ -1,0 +1,17 @@
+{
+  "qol_research_0": {
+    "name": "Advanced Cartography",
+    "description": "Your troops travel 5% faster on the world map.",
+    "effect": { "type": "speed_boost_all", "value": 0.05 }
+  },
+  "qol_research_1": {
+    "name": "Efficient Logistics",
+    "description": "Your transport ships can carry 10% more units.",
+    "effect": { "type": "transport_capacity_boost", "value": 0.10 }
+  },
+  "qol_research_2": {
+    "name": "Scouting Techniques",
+    "description": "Your scouts are 10% more effective.",
+    "effect": { "type": "scout_power_boost", "value": 0.10 }
+  }
+}

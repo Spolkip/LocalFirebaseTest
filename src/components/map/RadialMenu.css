@@ -1,0 +1,52 @@
+.radial-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+}
+.radial-menu-container {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid #8B4513;
+    box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+.radial-menu-item {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+.radial-menu-icon-wrapper {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: linear-gradient(to bottom, #f0e68c, #cd853f);
+    color: #4a2c2a;
+    border: 1px solid #8B4513;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.radial-menu-item:hover .radial-menu-icon-wrapper {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+.radial-menu-icon {
+    font-size: 18px;
+}
+.radial-menu-center-button {
+    position: absolute;
+    z-index: 11; /* Above other items */
+}

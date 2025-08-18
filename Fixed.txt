@@ -1,0 +1,21 @@
+
+
+Fixed: 
+- Indicator visual on both people (✅)
+- Alliance doesn't work on all cities (❌)
+- Demolish goes to 0 and not lowering by 1 level (✅)
+- Defult troops need to be remove (✅)
+- Ruins attack icon movement doesn't happen after arriving (✅)
+- Chat has no limit in text (✅)
+- Cave at lvl 10 is just 10k not infinite (also make it autoroctect to the amount to fill the cave) (✅)
+- Can accept OLD Allince Invite (✅)
+- Farm Need population to build (✅)
+- Market Spaming Click Create Offer makes more (✅)
+- Trading on with your other cities is not working (✅)
+- Attacks show all troops in enemy cities (❌ doesn't shows ships now) 
+- Agrotika xoria icons are Wrong (✅)
+- Academy demolish it always with research and does not deletes them
+- spamming building before they reach their max level can bypass it
+- Can have the same allince in to allies and Enemies
+- Building can be build and going population negative it does not stop before going negative
+- Barracks last number does not get deleted there is always 1 number left when using backspace

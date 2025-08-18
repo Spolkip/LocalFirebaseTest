@@ -1,0 +1,77 @@
+.troop-display-container {
+    @apply w-40 p-1.5 flex flex-col gap-1.5;
+    background-image: url('../images/bg/right_background.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: #4a2c2a;
+}
+.troop-section {
+    @apply bg-black/5 rounded p-1;
+}
+.troop-section-header {
+    @apply font-bold text-xs text-center pb-1 mb-1 border-b border-[#8B4513];
+}
+.troop-grid {
+    @apply grid grid-cols-3 gap-1;
+}
+.troop-item {
+    @apply relative w-full aspect-square bg-black/10 rounded-md overflow-hidden border border-transparent hover:border-yellow-600 transition-all;
+}
+.troop-image {
+    @apply w-full h-full object-cover;
+}
+.troop-count {
+    @apply absolute bottom-0 right-0.5 font-bold text-sm;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
+}
+.worship-display-container {
+    @apply w-40 p-1.5;
+    background-image: url('../images/bg/right_background.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: #4a2c2a;
+}
+.worship-display-header {
+    @apply font-title text-lg text-center mb-1;
+}
+.worship-display-container img {
+    @apply w-16 h-16;
+}
+.spells-button {
+    @apply rounded-full w-8 h-8 mt-1 mx-auto overflow-hidden transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-yellow-400 flex justify-center items-center;
+    background-color: rgba(0,0,0,0.1);
+    border: 2px solid #8B4513;
+}
+.spells-button img {
+    @apply w-6 h-6 object-contain;
+}
+.alliance-text-light {
+    color: #000000;
+}
+.alliance-text-dark {
+    color: #ffffff;
+}
+.alliance-bg-light {
+    background-color: #f0e68c;
+}
+.alliance-bg-dark {
+    background-color: #0d202b;
+}
+.status-badge {
+    @apply px-2 py-1 rounded-full text-xs font-bold ml-2;
+}
+.status-open {
+    background-color: #4ade80;
+    color: #000000;
+}
+.status-invite_only {
+    background-color: #fbbf24;
+    color: #000000;
+}
+.status-closed {
+    background-color: #f87171;
+    color: #000000;
+}

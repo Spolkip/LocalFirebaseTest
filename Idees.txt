@@ -1,0 +1,15 @@
+Ideas:
+If ships dont die to show enemy ships.
+- be able to surrender if you have one city and you are about to lose it 
+- filter islands to send messages on alliance- enemies etc only
+- change city/map view three instead of button to have two icons, one that takes you to the city or out and one that zooms completely out
+
+Idea 1:
+There will be 2 special units called agents, one will be able to sabotage enemy city and lower their morale, if the morale of one city goes to -100% a revolt will start and if the player
+doesnt have the troops to stop it, it will become a ghost city. The player that sends the agent will get updated with the troops of the city and with the morale. 
+
+If the city becomes a ghost town, any player can send the other agent with troops to hold the city for 5 hours. Anyone that scout the city will be able to see the unit and the time left
+for it to get conquered.
+
+For a player to found a city we need the second agent to go inside the city with at least one villager, the more the villager the less time it will take for the city to be found.
+

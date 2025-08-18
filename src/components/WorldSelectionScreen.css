@@ -1,0 +1,62 @@
+/* src/components/WorldSelectionScreen.css */
+.world-selection-container {
+    background-image: url('../images/world_selection_screen.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.world-selection-window {
+    background-color: rgba(10, 10, 20, 0.8); /* Dark, semi-transparent background */
+    border: 1px solid #a17c48; /* Gold-like border */
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 10px;
+    color: #f0e68c; /* Khaki text color */
+}
+
+.world-selection-window h1, .world-selection-window h2 {
+    color: #f0e68c;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+}
+
+.world-selection-window .selection-card {
+    background-color: rgba(0, 0, 0, 0.25);
+    border: 1px solid #a17c48;
+    transition: all 0.2s ease-in-out;
+    color: #f0e68c;
+}
+
+.world-selection-window .selection-card:hover {
+    background-color: rgba(161, 124, 72, 0.4);
+    border-color: #f0e68c;
+}
+
+.world-selection-window .selection-card h3 {
+     color: #f0e68c;
+}
+
+.world-selection-window p {
+    color: #d2b48c; /* Tan color for paragraphs */
+}
+
+.world-selection-window .btn-danger {
+    background: #991b1b;
+}
+
+.world-selection-window .btn-confirm {
+    background: #a17c48;
+    border-color: #f0e68c;
+    color: #1a1a2e;
+}
+
+.world-selection-window .btn-confirm:hover {
+     background: #f0e68c;
+}
+
+.world-selection-window input {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    border-color: #a17c48 !important;
+    color: #f0e68c !important;
+}

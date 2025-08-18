@@ -1,0 +1,22 @@
+{
+  "build_timber_camp_2": {
+    "title": "First Steps",
+    "description": "Secure your wood supply by upgrading your Timber Camp.",
+    "type": "building",
+    "targetId": "timber_camp",
+    "targetLevel": 2,
+    "rewards": {
+      "resources": { "wood": 100 }
+    }
+  },
+  "build_timber_camp_5": {
+    "title": "Woody",
+    "description": "Get that wood.",
+    "type": "building",
+    "targetId": "timber_camp",
+    "targetLevel": 5,
+    "rewards": {
+      "resources": { "wood": 200 }
+    }
+  }
+}

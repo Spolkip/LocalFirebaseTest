@@ -1,0 +1,158 @@
+/* src/components/map/AllianceModal.css */
+.alliance-modal {
+    background-image: linear-gradient(rgba(245, 222, 179, 0.95), rgba(245, 222, 179, 0.95)), url('https://www.transparenttextures.com/patterns/cracks.png');
+    background-color: #F5DEB3; /* wheat */
+    border: 8px solid;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to right, #8B4513, #CD853F);
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    color: #000;
+    border-radius: 0;
+    width: 1000px;
+    height: 700px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.alliance-modal-header {
+    background-color: #1e3a8a;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #cd853f;
+    color: #f0e68c;
+    cursor: move;
+}
+
+.alliance-modal-header h2 {
+    font-family: 'IM Fell English SC', serif;
+}
+
+.alliance-modal-tabs {
+    display: flex;
+    background: #1e3a8a;
+    border-bottom: 4px solid #8B4513;
+    flex-wrap: wrap; /* Allow tabs to wrap */
+    padding: 4px;
+}
+
+.alliance-modal-tabs button {
+    padding: 0.8rem 1.5rem;
+    background: linear-gradient(to bottom, #f0e68c, #cd853f);
+    border: 2px solid #8B4513;
+    border-bottom: none;
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    margin-right: 4px;
+    margin-bottom: 4px; /* Add margin for wrapped tabs */
+}
+
+.alliance-modal-tabs button:hover {
+    background: linear-gradient(to bottom, #fff2b2, #d6914d);
+}
+
+.alliance-modal-tabs button.active {
+    color: #000;
+    background: #F5DEB3;
+}
+
+.alliance-modal-content {
+    padding: 1.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: #F5DEB3; /* Added solid background color */
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #f0e68c;
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-button:hover {
+    color: white;
+}
+
+/* Settings specific styles */
+.settings-section {
+    background: rgba(139, 69, 19, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #d2b48c;
+}
+
+.settings-section h3 {
+    color: #8B4513;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-family: 'IM Fell English SC', serif;
+}
+
+.settings-input {
+    width: 100%;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid #d2b48c;
+    border-radius: 4px;
+    color: #000;
+    margin-bottom: 1rem;
+}
+
+.settings-input:focus {
+    outline: none;
+    border-color: #8B4513;
+}
+
+.settings-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.save-button {
+    background: linear-gradient(to bottom, #f0e68c, #cd853f);
+    color: #000;
+    border: 2px solid #8B4513;
+    padding: 0.8rem 1.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.save-button:hover {
+    background: linear-gradient(to bottom, #fff2b2, #d6914d);
+}
+
+/* Status badge */
+.status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.status-open {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+.status-invite_only {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+}
+
+.status-closed {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+}

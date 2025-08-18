@@ -1,0 +1,42 @@
+{
+    "master_of_arms": {
+        "name": "Master of Arms",
+        "description": "Increases the attack power of all alliance members' troops.",
+        "maxLevel": 10,
+        "baseCost": { "wood": 100000, "stone": 100000, "silver": 50000 },
+        "costMultiplier": 1.5,
+        "effect": { "type": "attack_boost", "value": 0.01 }
+    },
+    "fortification_experts": {
+        "name": "Fortification Experts",
+        "description": "Increases the defensive power of all alliance members' troops.",
+        "maxLevel": 10,
+        "baseCost": { "wood": 100000, "stone": 150000, "silver": 25000 },
+        "costMultiplier": 1.5,
+        "effect": { "type": "defense_boost", "value": 0.01 }
+    },
+    "logistics_specialists": {
+        "name": "Logistics Specialists",
+        "description": "Increases the travel speed of all alliance members' troops.",
+        "maxLevel": 5,
+        "baseCost": { "wood": 120000, "stone": 80000, "silver": 80000 },
+        "costMultiplier": 1.8,
+        "effect": { "type": "speed_boost", "value": 0.02 }
+    },
+    "expanded_charter": {
+        "name": "Expanded Charter",
+        "description": "Increases the maximum number of members in the alliance.",
+        "maxLevel": 5,
+        "baseCost": { "wood": 250000, "stone": 250000, "silver": 100000 },
+        "costMultiplier": 2,
+        "effect": { "type": "max_members", "value": 5 }
+    },
+    "reinforced_vaults": {
+        "name": "Reinforced Vaults",
+        "description": "Increases the capacity of the alliance bank.",
+        "maxLevel": 10,
+        "baseCost": { "wood": 150000, "stone": 200000, "silver": 150000 },
+        "costMultiplier": 1.6,
+        "effect": { "type": "bank_capacity", "value": 50000 }
+    }
+}

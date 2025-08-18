@@ -1,0 +1,14 @@
+- Seperate reports of attacker and diffenter
+- make it so you cant select the image of islands
+- make it unzoom more and show dots instead of the models
+- add an option to see the world map
+- check alliance research
+
+
+
+
+
+
+Bugs:
+can't put in queue building if requere building is not already build even though it is in the queue
+requere do not say all build that are requere

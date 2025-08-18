@@ -1,0 +1,44 @@
+/* src/components/map/TradesTooltip.css */
+.activity-tooltip {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%; /* #comment Center the tooltip */
+    transform: translateX(-50%); /* #comment Adjust for centering */
+    width: 450px; /* Wider to accommodate movement items */
+    background-color: #F5DEB3;
+    border: 8px solid;
+    border-image-slice: 1;
+    border-image-source: linear-gradient(to right, #8B4513, #CD853F);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    z-index: 100;
+    color: #4a2c2a;
+    /* #comment Removed conflicting relative positioning */
+}
+
+.activity-tooltip .movements-header {
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.5rem 1rem;
+    font-family: 'IM Fell English SC', serif;
+    font-size: 1.25rem;
+    border-bottom: 2px solid #2563eb;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.tooltip-lock-timer {
+    position: absolute;
+    bottom: -14px; /* #comment Position half outside */
+    right: -14px; /* #comment Position half outside */
+    width: 28px;
+    height: 28px;
+    background-color: #4a2c2a;
+    color: #f0e68c;
+    border: 2px solid #8B4513;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}

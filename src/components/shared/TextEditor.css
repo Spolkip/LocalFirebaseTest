@@ -1,0 +1,90 @@
+.text-editor-container {
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1px solid #d2b48c;
+    border-radius: 4px;
+    color: #4a2c2a;
+}
+
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+    padding: 4px;
+    background-color: #e6cba8;
+    border-bottom: 1px solid #d2b48c;
+}
+
+.toolbar-btn {
+    background-color: #f0e68c;
+    border: 1px solid #8B4513;
+    color: #4a2c2a;
+    font-weight: bold;
+    width: 28px;
+    height: 28px;
+    margin: 2px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.toolbar-btn:hover {
+    background-color: #fff2b2;
+}
+
+.toolbar-btn.italic {
+    font-style: italic;
+}
+
+.toolbar-btn.underline {
+    text-decoration: underline;
+}
+
+.editor-textarea {
+    width: 100%;
+    min-height: 120px;
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem;
+    color: #4a2c2a;
+    resize: vertical;
+}
+
+.editor-textarea:focus {
+    outline: none;
+}
+
+/* --- Mention Input Popup --- */
+.mention-input-popup {
+    position: fixed; /* Use fixed positioning to break out of containers */
+    z-index: 120;
+    background-color: #e6cba8;
+    border: 1px solid #8B4513;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.mention-input {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1px solid #d2b48c;
+    color: #4a2c2a;
+}
+
+.mention-suggestions {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0 0;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.mention-suggestions li {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.mention-suggestions li:hover {
+    background-color: #d2b48c;
+}
