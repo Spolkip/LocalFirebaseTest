@@ -1,11 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import buildingConfig from '../../gameData/buildings.json';
 
+// #comment This hook provides actions related to building management in a city.
 export const useBuildingActions = ({
     cityGameState, setCityGameState, saveGameState, worldId,
     getUpgradeCost, getFarmCapacity, calculateUsedPopulation, isInstantBuild,
     setMessage, closeModal
 }) => {
+    // #comment Handles the logic for upgrading or constructing a building.
     const handleUpgrade = async (buildingId) => {
         const currentState = cityGameState;
         if (!currentState || !worldId) return;
@@ -26,22 +28,34 @@ export const useBuildingActions = ({
 
         const nextLevelToQueue = effectiveCurrentLevel + 1;
         const config = buildingConfig[buildingId];
-
         if (config && nextLevelToQueue > config.maxLevel) {
             setMessage("Building is already at its maximum level or queued to be.");
             return;
         }
 
-        // #comment Check building requirements
+        // #comment Check all building and research requirements, including those in the queue.
         const requirements = config.requirements;
         if (requirements) {
+            const unmetRequirements = [];
             for (const reqBuildingId in requirements) {
                 const requiredLevel = requirements[reqBuildingId];
-                const currentBuildingLevel = currentState.buildings[reqBuildingId]?.level || 0;
-                if (currentBuildingLevel < requiredLevel) {
-                    setMessage(`Requires ${buildingConfig[reqBuildingId].name} Level ${requiredLevel}.`);
-                    return;
+                
+                let finalQueuedLevel = currentState.buildings[reqBuildingId]?.level || 0;
+                currentQueue.forEach(task => {
+                    if (task.buildingId === reqBuildingId && task.type !== 'demolish' && task.level > finalQueuedLevel) {
+                        finalQueuedLevel = task.level;
+                    }
+                });
+
+                if (finalQueuedLevel < requiredLevel) {
+                    unmetRequirements.push(`${buildingConfig[reqBuildingId].name} Level ${requiredLevel}`);
                 }
+            }
+
+            if (unmetRequirements.length > 0) {
+                // #comment Join with newline characters for multi-line display in the modal.
+                setMessage(`Requires:\n${unmetRequirements.join('\n')}`);
+                return;
             }
         }
 
@@ -63,7 +77,7 @@ export const useBuildingActions = ({
             }
         });
 
-        const currentUsedPopulation = calculateUsedPopulation(currentState.buildings, currentState.units, currentState.specialBuilding);
+        const currentUsedPopulation = calculateUsedPopulation(currentState);
         const maxPopulation = getFarmCapacity(currentState.buildings.farm.level);
         const newTotalPopulation = currentUsedPopulation + populationInQueue + cost.population;
         const hasEnoughPopulation = newTotalPopulation <= maxPopulation;
@@ -100,7 +114,6 @@ export const useBuildingActions = ({
             level: nextLevelToQueue,
             endTime: endTime,
         };
-
         newGameState.buildQueue = [...currentQueue, newQueueItem];
 
         try {
@@ -161,7 +174,7 @@ export const useBuildingActions = ({
             const taskToUpdate = newQueue[i];
             let taskTime;
             if (taskToUpdate.isSpecial) {
-                taskTime = 7200;
+                taskTime = 7200; 
             } else if (taskToUpdate.type === 'demolish') {
                 const costConfig = buildingConfig[taskToUpdate.buildingId].baseCost;
                 const calculatedTime = Math.floor(costConfig.time * Math.pow(1.25, taskToUpdate.currentLevel - 1));
@@ -170,7 +183,6 @@ export const useBuildingActions = ({
             else {
                 taskTime = getUpgradeCost(taskToUpdate.buildingId, taskToUpdate.level).time;
             }
-
             const newEndTime = new Date(previousTaskEndTime + taskTime * 1000);
             newQueue[i] = { ...taskToUpdate, endTime: newEndTime };
         }
@@ -178,7 +190,7 @@ export const useBuildingActions = ({
         await saveGameState(newGameState);
         setCityGameState(newGameState);
     };
-
+    
     const handleDemolish = async (buildingId) => {
         const currentState = cityGameState;
         if (!currentState || !worldId) return;
@@ -208,6 +220,7 @@ export const useBuildingActions = ({
 
         const levelToDemolishFrom = finalLevel;
         const targetLevel = finalLevel - 1;
+
         const costConfig = buildingConfig[buildingId].baseCost;
         const calculatedTime = Math.floor(costConfig.time * Math.pow(1.25, levelToDemolishFrom - 1));
         const demolitionTime = isInstantBuild ? 1 : Math.floor(calculatedTime / 2);
@@ -244,7 +257,7 @@ export const useBuildingActions = ({
             setMessage("Could not start demolition. Please try again.");
         }
     };
-
+    
     const handleBuildSpecialBuilding = async (buildingId, cost) => {
         const currentState = cityGameState;
         if (currentState.specialBuilding || (currentState.buildQueue || []).some(task => task.isSpecial)) {
@@ -258,7 +271,7 @@ export const useBuildingActions = ({
             return;
         }
 
-        const currentUsedPopulation = calculateUsedPopulation(currentState.buildings, currentState.units, currentState.specialBuilding);
+        const currentUsedPopulation = calculateUsedPopulation(currentState);
         const maxPopulation = getFarmCapacity(currentState.buildings.farm.level);
         const availablePopulation = maxPopulation - currentUsedPopulation;
 
@@ -298,7 +311,7 @@ export const useBuildingActions = ({
             id: uuidv4(),
             buildingId: buildingId,
             isSpecial: true,
-            level: 1,
+            level: 1, 
             endTime: endTime,
         };
 
