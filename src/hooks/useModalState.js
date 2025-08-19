@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+// #comment Manages the state of all modals in the map view.
 export const useModalState = () => {
     const [modalState, setModalState] = useState({
         selectedCity: null,
@@ -27,8 +28,11 @@ export const useModalState = () => {
         isEventTriggerOpen: false,
         viewingProfileId: null,
         viewingAllianceId: null,
+        isEmptyCityModalOpen: false,
+        emptyCityModalData: null,
     });
 
+    // #comment Opens a modal of a given type with optional data.
     const openModal = (type, data) => {
         setModalState(prevState => {
             switch (type) {
@@ -52,11 +56,13 @@ export const useModalState = () => {
                 case 'eventTrigger': return { ...prevState, isEventTriggerOpen: true };
                 case 'withdraw': return { ...prevState, isWithdrawModalOpen: true, withdrawModalData: data };
                 case 'reinforcements': return { ...prevState, isReinforcementsModalOpen: true, reinforcementsModalData: data };
+                case 'emptyCity': return { ...prevState, isEmptyCityModalOpen: true, emptyCityModalData: data };
                 default: return prevState;
             }
         });
     };
 
+    // #comment Closes a modal of a given type.
     const closeModal = (type) => {
         setModalState(prevState => {
             switch (type) {
@@ -80,6 +86,7 @@ export const useModalState = () => {
                 case 'eventTrigger': return { ...prevState, isEventTriggerOpen: false };
                 case 'withdraw': return { ...prevState, isWithdrawModalOpen: false, withdrawModalData: null };
                 case 'reinforcements': return { ...prevState, isReinforcementsModalOpen: false, reinforcementsModalData: null };
+                case 'emptyCity': return { ...prevState, isEmptyCityModalOpen: false, emptyCityModalData: null };
                 default: return prevState;
             }
         });

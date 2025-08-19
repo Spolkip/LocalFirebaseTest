@@ -1,6 +1,5 @@
 
 Game Stuff:
-- make manager for troops and research spells, puzzles and buildings with a lot of options
 - add more research and make them to actually work
 
 

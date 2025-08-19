@@ -1,4 +1,3 @@
-// src/components/city/CityModals.js
 import React from 'react';
 import AdminCheatMenu from './AdminCheatMenu';
 import BarracksMenu from './BarracksMenu';
@@ -58,7 +57,9 @@ const CityModals = ({
   onAssignHero,
   onUnassignHero,
   onApplyWorkerPreset,
-  onReleaseHero, // --- ADDED PROP ---
+  onReleaseHero,
+  onRecruitAgent,
+  onAssignAgent,
 }) => {
   const {
     selectedBuildingId,
@@ -227,17 +228,17 @@ const CityModals = ({
             onClose={() => closeModal('isHeroesAltarOpen')}
             onAssignHero={onAssignHero}
             onUnassignHero={onUnassignHero}
+            onRecruitAgent={onRecruitAgent}
+            onAssignAgent={onAssignAgent}
         />
       )}
-      {/* --- START: MODIFIED CODE --- */}
       {isPrisonMenuOpen && (
         <PrisonMenu
           cityGameState={cityGameState}
           onClose={() => closeModal('isPrisonMenuOpen')}
-          onReleaseHero={onReleaseHero} 
+          onReleaseHero={onReleaseHero}
         />
       )}
-      {/* --- END: MODIFIED CODE --- */}
       {isCheatMenuOpen && userProfile?.is_admin && (
         <AdminCheatMenu
           onCheat={handleCheat}
@@ -249,5 +250,4 @@ const CityModals = ({
     </>
   );
 };
-
 export default CityModals;

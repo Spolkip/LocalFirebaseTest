@@ -1,11 +1,9 @@
-// src/components/city/BarracksMenu.js
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import unitConfig from '../../gameData/units.json';
 import UnitQueue from './UnitQueue';
 import Modal from '../shared/Modal';
 import { getTrainableUnits } from '../../utils/nationality';
 
-// Dynamically import all unit images
 const unitImages = {};
 const imageContext = require.context('../../images/troops', false, /\.(png|jpe?g|svg)$/);
 imageContext.keys().forEach((item) => {
@@ -25,9 +23,8 @@ const UnitStats = ({ unit }) => (
 
 const BarracksMenu = ({ resources, availablePopulation, onTrain, onFire, onClose, cityGameState, unitQueue, onCancelTrain }) => {
     const [activeTab, setActiveTab] = useState('train');
-    
     const barracksRef = useRef(null);
-    const [position, setPosition] = useState({ 
+    const [position, setPosition] = useState({
         x: (window.innerWidth - 1000) / 2,
         y: (window.innerHeight - 700) / 2
     });
@@ -35,7 +32,6 @@ const BarracksMenu = ({ resources, availablePopulation, onTrain, onFire, onClose
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
     const handleMouseDown = (e) => {
-        // Only allow dragging from the header area
         if (e.target.classList.contains('barracks-header') || e.target.parentElement.classList.contains('barracks-header')) {
             setIsDragging(true);
             setDragStart({
@@ -71,37 +67,37 @@ const BarracksMenu = ({ resources, availablePopulation, onTrain, onFire, onClose
             window.removeEventListener('mouseup', handleMouseUp);
         };
     }, [isDragging, handleMouseMove]);
-    
-    const landUnits = useMemo(() => getTrainableUnits(cityGameState.playerInfo.nation), [cityGameState.playerInfo.nation]);
 
-    const [selectedUnitId, setSelectedUnitId] = useState(landUnits[0] || null);
+    const landUnits = useMemo(() => getTrainableUnits(cityGameState.playerInfo.nation).filter(id => !unitConfig[id].passive), [cityGameState.playerInfo.nation]);
+    const passiveUnits = useMemo(() => Object.keys(unitConfig).filter(id => unitConfig[id].passive && unitConfig[id].type === 'land'), []);
+
+    const [selectedUnitId, setSelectedUnitId] = useState(landUnits[0] || passiveUnits[0] || null);
     const [trainAmount, setTrainAmount] = useState('');
     const [fireAmounts, setFireAmounts] = useState({});
-    
+
     useEffect(() => {
         setTrainAmount('');
     }, [selectedUnitId]);
-    
+
     const cityUnits = cityGameState?.units || {};
-    
-    // #comment If there are no trainable land units for this nation, show a message.
-    if (landUnits.length === 0) {
+
+    if (landUnits.length === 0 && passiveUnits.length === 0) {
         return (
             <Modal message="Your nation has no specific land units that can be trained in the Barracks." onClose={onClose} />
         );
     }
-    
+
     const selectedUnit = selectedUnitId ? unitConfig[selectedUnitId] : null;
     const barracksUnitQueue = (unitQueue || []).filter(item => unitConfig[item.unitId]?.type === 'land' && !unitConfig[item.unitId]?.mythical);
-    
     const numericTrainAmount = parseInt(trainAmount, 10) || 0;
+
     const totalCost = {
         wood: selectedUnit ? selectedUnit.cost.wood * numericTrainAmount : 0,
         stone: selectedUnit ? selectedUnit.cost.stone * numericTrainAmount : 0,
         silver: selectedUnit ? selectedUnit.cost.silver * numericTrainAmount : 0,
         population: selectedUnit ? selectedUnit.cost.population * numericTrainAmount : 0,
     };
-    
+
     const canAfford = resources.wood >= totalCost.wood &&
                     resources.stone >= totalCost.stone &&
                     resources.silver >= totalCost.silver &&
@@ -130,6 +126,24 @@ const BarracksMenu = ({ resources, availablePopulation, onTrain, onFire, onClose
         }
     };
 
+    const renderUnitButton = (unitId) => {
+        const unit = unitConfig[unitId];
+        const isSelected = selectedUnitId === unitId;
+        return (
+            <button
+                key={unitId}
+                onClick={() => setSelectedUnitId(unitId)}
+                className={`flex items-center p-2 rounded border-2 transition-colors w-full ${isSelected ? 'bg-gray-600 border-yellow-500' : 'bg-gray-700 border-gray-600 hover:border-yellow-400'}`}
+            >
+                <img src={unitImages[unit.image]} alt={unit.name} className="w-12 h-12 mr-3 object-contain" />
+                <div>
+                    <p className="font-bold text-left text-white">{unit.name}</p>
+                    <p className="text-sm text-left text-gray-400">In City: {cityUnits[unitId] || 0}</p>
+                </div>
+            </button>
+        );
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
             <div
@@ -146,27 +160,12 @@ const BarracksMenu = ({ resources, availablePopulation, onTrain, onFire, onClose
                     <button onClick={() => setActiveTab('train')} className={`flex-1 p-2 text-lg font-bold transition-colors ${activeTab === 'train' ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}>Train</button>
                     <button onClick={() => setActiveTab('fire')} className={`flex-1 p-2 text-lg font-bold transition-colors ${activeTab === 'fire' ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}>Dismiss</button>
                 </div>
-
                 {activeTab === 'train' && selectedUnit && (
                     <div className="flex-grow flex gap-4 overflow-y-auto">
                         <div className="w-1/3 flex flex-col gap-2">
-                            {landUnits.map(unitId => {
-                                const unit = unitConfig[unitId];
-                                const isSelected = selectedUnitId === unitId;
-                                return (
-                                    <button
-                                        key={unitId}
-                                        onClick={() => setSelectedUnitId(unitId)}
-                                        className={`flex items-center p-2 rounded border-2 transition-colors w-full ${isSelected ? 'bg-gray-600 border-yellow-500' : 'bg-gray-700 border-gray-600 hover:border-yellow-400'}`}
-                                    >
-                                        <img src={unitImages[unit.image]} alt={unit.name} className="w-12 h-12 mr-3 object-contain" />
-                                        <div>
-                                            <p className="font-bold text-left text-white">{unit.name}</p>
-                                            <p className="text-sm text-left text-gray-400">In City: {cityUnits[unitId] || 0}</p>
-                                        </div>
-                                    </button>
-                                );
-                            })}
+                            {landUnits.map(renderUnitButton)}
+                            {passiveUnits.length > 0 && <h4 className="font-bold text-center text-white mt-4">Passive Units</h4>}
+                            {passiveUnits.map(renderUnitButton)}
                         </div>
                         <div className="w-2/3 flex flex-col gap-4">
                             <div className="bg-gray-700 p-4 rounded-lg">
@@ -208,7 +207,6 @@ const BarracksMenu = ({ resources, availablePopulation, onTrain, onFire, onClose
                         </div>
                     </div>
                 )}
-                
                 {activeTab === 'fire' && (
                     <div className="flex-grow overflow-y-auto pr-2">
                         <h4 className="text-xl font-semibold text-yellow-400 mb-2">Dismiss Units</h4>
@@ -252,11 +250,9 @@ const BarracksMenu = ({ resources, availablePopulation, onTrain, onFire, onClose
                         )}
                     </div>
                 )}
-
                 <UnitQueue unitQueue={barracksUnitQueue} onCancel={(item) => onCancelTrain(item, 'barracks')} title="Land Unit Queue" />
             </div>
         </div>
     );
 };
-
 export default BarracksMenu;

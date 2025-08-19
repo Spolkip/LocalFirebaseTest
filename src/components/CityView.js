@@ -1,4 +1,3 @@
-// src/components/CityView.js
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Modal from './shared/Modal';
@@ -8,7 +7,8 @@ import DivinePowers from './city/DivinePowers';
 import { useCityState } from '../hooks/useCityState';
 import { useGame } from '../contexts/GameContext';
 import { useCityActions } from '../hooks/useCityActions';
-import { useHeroActions } from '../hooks/actions/useHeroActions'; // Import useHeroActions
+import { useHeroActions } from '../hooks/actions/useHeroActions';
+import { useAgentActions } from '../hooks/actions/useAgentActions';
 import SidebarNav from './map/SidebarNav';
 import TopBar from './map/TopBar';
 import QuestsButton from './QuestsButton';
@@ -46,24 +46,20 @@ const CityView = ({
     const {isInstantResearch, setIsInstantResearch} = useGame();
     const {isInstantUnits, setIsInstantUnits} = useGame();
     const [message, setMessage] = useState('');
-
     const {
         cityGameState, setCityGameState, getUpgradeCost, getFarmCapacity,
         calculateUsedPopulation, getProductionRates, getWarehouseCapacity,
         getHospitalCapacity, saveGameState, getResearchCost, calculateHappiness,
         getMaxWorkerSlots, getMarketCapacity,
     } = useCityState(worldId, isInstantBuild, isInstantResearch, isInstantUnits);
-
     const actions = useCityActions({
         cityGameState, setCityGameState, saveGameState, worldId, userProfile, currentUser,
         getUpgradeCost, getResearchCost, getFarmCapacity, calculateUsedPopulation, isInstantUnits,
         setMessage, openModal: openCityModal, closeModal: closeCityModal, setModalState: setCityModalState,
         setIsInstantBuild, setIsInstantResearch, setIsInstantUnits, getMaxWorkerSlots
     });
-
-    // --- START: MODIFIED CODE ---
     const { onRecruitHero, onActivateSkill, onAssignHero, onUnassignHero, onReleaseHero } = useHeroActions(cityGameState, saveGameState, setMessage);
-    // --- END: MODIFIED CODE ---
+    const { onRecruitAgent, onAssignAgent } = useAgentActions(cityGameState, saveGameState, setMessage);
 
     const { availablePopulation, happiness } = useMemo(() => {
         if (!cityGameState) return { availablePopulation: 0, happiness: 0 };
@@ -86,12 +82,10 @@ const CityView = ({
     return (
         <div className="w-full h-screen bg-gray-900 city-view-wrapper relative">
             <Modal message={message} onClose={() => setMessage('')} />
-
             <QuestsButton
                 onOpenQuests={() => openModal('quests')}
                 quests={quests}
             />
-
             <SidebarNav
                 onToggleView={showMap}
                 view="city"
@@ -113,7 +107,6 @@ const CityView = ({
                 onOpenHeroesAltar={() => openCityModal('isHeroesAltarOpen')}
                 onOpenManagementPanel={onOpenManagementPanel}
             />
-
             <div className="h-full w-full flex flex-col">
                 <TopBar
                     view="city"
@@ -142,7 +135,6 @@ const CityView = ({
                     onOpenSpecialBuildingMenu={() => openCityModal('isSpecialBuildingMenuOpen')}
                 />
             </div>
-
             <CityModals
                 cityGameState={cityGameState}
                 worldId={worldId}
@@ -185,7 +177,9 @@ const CityView = ({
                 onAssignHero={onAssignHero}
                 onUnassignHero={onUnassignHero}
                 onApplyWorkerPreset={actions.applySenateWorkerPreset}
-                onReleaseHero={onReleaseHero} // --- ADDED PROP ---
+                onReleaseHero={onReleaseHero}
+                onRecruitAgent={onRecruitAgent}
+                onAssignAgent={onAssignAgent}
             />
             {cityModalState.isDivinePowersOpen && (
                 <DivinePowers

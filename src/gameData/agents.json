@@ -1,0 +1,18 @@
+{
+  "architect": {
+    "name": "Architect",
+    "description": "A master builder who can found new cities on empty plots.",
+    "image": "architect.png",
+    "cost": {
+      "wood": 1000,
+      "stone": 1000,
+      "silver": 2000
+    },
+    "abilities": [
+      {
+        "name": "Found City",
+        "description": "Travels to an empty plot to start the construction of a new city. The founding time is reduced by the number of villagers sent with him."
+      }
+    ]
+  }
+}

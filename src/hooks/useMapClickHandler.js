@@ -1,7 +1,7 @@
-// src/hooks/useMapClickHandler.js
 import { calculateDistance } from '../utils/travel';
 import { getVillageTroops } from '../utils/combat';
 
+// #comment Handles clicks on different map objects like city slots, villages, and ruins.
 export const useMapClickHandler = ({
     playerCity,
     isPlacingDummyCity,
@@ -12,14 +12,16 @@ export const useMapClickHandler = ({
     setMessage,
     conqueredVillages,
     conqueredRuins,
+    cityGameState,
 }) => {
-
+    // #comment Logic for clicking on a city slot.
     const onCitySlotClick = (e, slotData) => {
         if (!playerCity) {
             setMessage("Your city data is still loading. Please wait a moment.");
             return;
         }
         closeModal('village');
+
         if (isPlacingDummyCity && !slotData.ownerId) {
             handleCreateDummyCity(slotData.id, slotData);
             return;
@@ -28,25 +30,25 @@ export const useMapClickHandler = ({
         if (slotData.ownerId) {
              const distance = calculateDistance(playerCity, slotData);
              setTravelTimeInfo({ distance });
-
-            // The slotData is already the complete, merged data object for the city.
             const cityData = slotData;
-            
-            // #comment Get the position of the click to place the radial menu
             const rect = e.currentTarget.getBoundingClientRect();
             const position = {
                 x: rect.left + rect.width / 2,
                 y: rect.top + rect.height / 2,
             };
-
             const modalData = { ...cityData, position };
             openModal('city', modalData);
-
         } else {
-            setMessage('This plot is empty. Future updates will allow colonization!');
+            const hasArchitect = cityGameState.agents?.architect > 0;
+            if (hasArchitect) {
+                openModal('emptyCity', slotData);
+            } else {
+                setMessage('You need an Architect to found a new city. Recruit one at the Heroes Altar.');
+            }
         }
     };
 
+    // #comment Logic for clicking on a farming village.
     const onVillageClick = (e, villageData) => {
         if (!playerCity) {
             setMessage("Your city data is still loading. Please wait a moment.");
@@ -57,9 +59,7 @@ export const useMapClickHandler = ({
             setMessage("You can only interact with villages on islands where you have a city.");
             return;
         }
-
         const isConqueredByPlayer = conqueredVillages && conqueredVillages[villageData.id];
-
         if (isConqueredByPlayer) {
             openModal('village', { ...villageData, ...conqueredVillages[villageData.id] });
         } else {
@@ -85,6 +85,7 @@ export const useMapClickHandler = ({
         }
     };
 
+    // #comment Logic for clicking on ruins.
     const onRuinClick = (e, ruinData) => {
         if (!playerCity) {
             setMessage("Your city data is still loading. Please wait a moment.");
@@ -94,9 +95,7 @@ export const useMapClickHandler = ({
         closeModal('village');
         const distance = calculateDistance(playerCity, ruinData);
         setTravelTimeInfo({ distance });
-
         const isConqueredByYou = conqueredRuins && conqueredRuins[ruinData.id];
-
         const targetData = {
             id: ruinData.id,
             name: ruinData.name,

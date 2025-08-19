@@ -336,5 +336,22 @@
     "heal_cost": { "wood": 90, "stone": 45, "silver": 120 }, "heal_time": 210,
     "attack": 58, "defense": 42, "speed": 8, "type": "land", "mythical": true, "god": "Osiris",
     "image": "serpopard.png"
+  },
+      "villager": {
+    "name": "Villager",
+    "description": "A passive troop that helps in founding new cities faster.",
+    "cost": {
+      "wood": 40,
+      "stone": 40,
+      "silver": 40,
+      "population": 1,
+      "time": 20
+    },
+    "attack": 0,
+    "defense": 5,
+    "speed": 5,
+    "type": "land",
+    "passive": true,
+    "image": "villager.png"
   }
 }
