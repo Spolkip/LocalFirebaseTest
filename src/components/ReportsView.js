@@ -9,10 +9,10 @@ import godsConfig from '../gameData/gods.json';
 import ruinsResearch from '../gameData/ruinsResearch.json';
 import heroesConfig from '../gameData/heroes.json';
 import { parseBBCode } from '../utils/bbcodeParser';
-import battlePointsImage from '../images/battle_points.png'; // Import the new image
+import battlePointsImage from '../images/battle_points.png';
 import './ReportsView.css';
 
-
+// #comment Pre-load all necessary images for reports
 const images = {};
 const imageContexts = [
     require.context('../images/troops', false, /\.(png|jpe?g|svg)$/),
@@ -41,12 +41,13 @@ const ReportsView = ({ onClose, onActionClick }) => {
     const [activeTab, setActiveTab] = useState('Combat');
     const [message, setMessage] = useState('');
     const reportsRef = useRef(null);
-    const [position, setPosition] = useState({ 
+    const [position, setPosition] = useState({
         x: (window.innerWidth - 1000) / 2, // Center horizontally
         y: (window.innerHeight - 650) / 2  // Center vertically
     });
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
     const tabs = {
         'Combat': ['attack', 'attack_village', 'attack_ruin', 'attack_god_town'],
         'Reinforce': ['reinforce'],
@@ -55,6 +56,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         'Misc': ['return', 'spell_cast', 'spell_received', 'spell_fail'],
     };
 
+    // #comment Handle dragging the modal window
     const handleMouseDown = (e) => {
         if (e.target.classList.contains('reports-header') || e.target.parentElement.classList.contains('reports-header')) {
             setIsDragging(true);
@@ -92,7 +94,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         };
     }, [isDragging, handleMouseMove]);
 
-
+    // #comment Fetch reports from Firestore in real-time
     useEffect(() => {
         if (!currentUser || !worldId) return;
         const reportsQuery = query(collection(db, 'users', currentUser.uid, 'worlds', worldId, 'reports'), orderBy('timestamp', 'desc'));
@@ -103,6 +105,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         return () => unsubscribe();
     }, [currentUser, worldId]);
 
+    // #comment Handle selecting a report and marking it as read
     const handleSelectReport = async (report) => {
         setSelectedReport(report);
         if (!report.read) {
@@ -111,6 +114,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         }
     };
 
+    // #comment Handle deleting a report
     const handleDeleteReport = async (reportId) => {
         const reportRef = doc(db, 'users', currentUser.uid, 'worlds', worldId, 'reports', reportId);
         await deleteDoc(reportRef);
@@ -119,33 +123,15 @@ const ReportsView = ({ onClose, onActionClick }) => {
         }
     };
 
-
+    // #comment Handle sharing a report by creating a shared document and copying BBCode
     const handleShareReport = async (report) => {
         setMessage('');
         try {
             const sharedReportRef = doc(db, 'worlds', worldId, 'shared_reports', report.id);
             await setDoc(sharedReportRef, report);
-
-            let bbCode = `[report]${report.id}[/report]`;
-
-            if (report.type === 'attack' || report.type === 'attack_village' || report.type === 'attack_ruin' || report.type === 'attack_god_town') {
-                const attacker = report.attacker || {};
-                const defender = report.defender || {};
-                const defenderName = defender.username || defender.villageName || defender.ruinName || 'The Gods';
-                const defenderCityName = defender.cityName || defender.villageName || defender.ruinName || 'City of the Gods';
-                bbCode = `[attack attacker="${attacker.username}" attacker_city="${attacker.cityName}" defender="${defenderName}" defender_city="${defenderCityName}"][/attack]`;
-            } else if (report.type === 'trade') {
-                const originPlayer = report.originPlayer || {};
-                const targetPlayer = report.targetPlayer || {};
-                bbCode = `[trade from_player="${originPlayer.username}" from_city="${report.originCityName}" to_player="${targetPlayer.username}" to_city="${report.targetCityName}"][/trade]`;
-            } else if (report.type === 'scout' && report.scoutSucceeded) {
-                const attacker = report.attacker || {};
-                const defender = report.defender || {};
-                bbCode = `[scout attacker="${attacker.username}" attacker_city="${attacker.cityName}" attacker_alliance="${attacker.allianceName || 'N/A'}" defender="${defender.username}" defender_city="${defender.cityName}" defender_alliance="${defender.allianceName || 'N/A'}"][/scout]`;
-            }
-
+            // This is the corrected part: always use the generic [report] tag with the ID
+            const bbCode = `[report]${report.id}[/report]`;
             navigator.clipboard.writeText(bbCode);
-
             setMessage('Report shared! BBCode copied to clipboard.');
             setTimeout(() => setMessage(''), 3000);
         } catch (error) {
@@ -159,12 +145,11 @@ const ReportsView = ({ onClose, onActionClick }) => {
         setSelectedReport(null);
     };
 
-    // #comment This function handles clicks inside the report content area
+    // #comment This function handles clicks inside the report content area for BBCode actions
     const handleContentClick = (e) => {
         const target = e.target;
         if (target.classList.contains('bbcode-action') && onActionClick) {
             let { actionType, actionId, actionOwnerId, actionCoordsX, actionCoordsY } = target.dataset;
-
             if (actionType === 'city_link') {
                 onActionClick(actionType, { cityId: actionId, ownerId: actionOwnerId, coords: { x: actionCoordsX, y: actionCoordsY } });
             } else {
@@ -173,6 +158,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         }
     };
 
+    // #comment Determine the color of the report title based on its type and outcome
     const getReportTitleColor = (report) => {
         switch (report.type) {
             case 'attack':
@@ -199,6 +185,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         }
     };
 
+    // #comment Get the display title for a report
     const getReportTitle = (report) => {
         let title = report.title || 'Untitled Report';
         if (report.type === 'attack' || report.type === 'attack_village' || report.type === 'attack_ruin' || report.type === 'attack_god_town') {
@@ -207,6 +194,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         return title;
     };
 
+    // #comment Render a list of units, optionally styled as losses
     const renderUnitList = (units, isLosses = false) => {
         if (!units || Object.keys(units).length === 0) return 'None';
         const content = Object.entries(units)
@@ -215,6 +203,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         return isLosses ? <span className="text-red-600 font-semibold">{content}</span> : content;
     };
 
+    // #comment Safely get an image URL from the pre-loaded images map
     const getImageUrl = (imageName) => {
         if (!imageName || !images[imageName]) {
             console.warn(`Image not found: ${imageName}`);
@@ -223,6 +212,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         return images[imageName];
     };
 
+    // #comment Render a grid of troop icons with counts
     const renderTroopDisplay = (units) => {
         if (!units || Object.keys(units).length === 0) return null;
         return (
@@ -244,6 +234,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         );
     };
 
+    // #comment Render hero display in a report
     const renderHeroDisplay = (heroId) => {
         if (!heroId) return null;
         const hero = heroesConfig[heroId];
@@ -260,6 +251,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         );
     };
 
+    // #comment Render resource icons with amounts
     const renderResourceIcons = (resources) => {
         return Object.entries(resources || {}).map(([res, amount]) => {
             const imagePath = `resources/${res}.png`;
@@ -273,6 +265,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
         });
     };
 
+    // #comment Render building icons with levels
     const renderBuildingDisplay = (buildings) => {
         if (!buildings || Object.keys(buildings).length === 0) return null;
         return (
@@ -294,10 +287,12 @@ const ReportsView = ({ onClose, onActionClick }) => {
         );
     };
 
+    // #comment Main function to render the detailed content of a selected report
     const renderReportOutcome = (report) => {
         const outcome = report.outcome || {};
         const attacker = report.attacker || {};
         const defender = report.defender || {};
+
         switch (report.type) {
             case 'attack_god_town':
             case 'attack':
@@ -329,6 +324,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
                                 )}
                             </div>
                         </div>
+
                         <div className="w-full grid grid-cols-2 gap-4 text-sm mt-4">
                             <div className="p-3 bg-black/5 rounded flex flex-col items-center">
                                 <h4 className="font-semibold text-lg text-yellow-700 mb-2">Attacker Units</h4>
@@ -352,6 +348,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
                                 )}
                             </div>
                         </div>
+
                         {outcome.attackerWon && outcome.plunder && (
                             <div className="w-full p-3 bg-green-800/10 rounded mt-4 text-center">
                                 <h4 className="font-semibold text-lg text-green-700 mb-2">Plundered Resources</h4>
@@ -366,6 +363,7 @@ const ReportsView = ({ onClose, onActionClick }) => {
                                 <p>{heroesConfig[outcome.capturedHero.heroId]?.name} was captured by the {outcome.capturedHero.capturedBy}.</p>
                             </div>
                         )}
+
                         {typeof battlePointsGained === 'number' && (
                             <div className="w-full p-3 bg-blue-800/10 rounded mt-4 text-center">
                                 <h4 className="font-semibold text-lg text-blue-700 mb-2">Battle Points Gained</h4>
