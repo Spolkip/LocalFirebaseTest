@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useGame } from '../../contexts/GameContext';
 import unitConfigData from '../../gameData/units.json';
 import researchConfigData from '../../gameData/research.json';
 import buildingConfigData from '../../gameData/buildings.json';
