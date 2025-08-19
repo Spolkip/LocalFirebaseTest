@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo} from 'react';
 import agentsConfig from '../../gameData/agents.json';
 import unitConfig from '../../gameData/units.json';
 import { useGame } from '../../contexts/GameContext';
