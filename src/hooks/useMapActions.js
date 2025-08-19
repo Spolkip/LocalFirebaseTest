@@ -8,13 +8,11 @@ import { calculateDistance, calculateTravelTime } from '../utils/travel';
 import unitConfig from '../gameData/units.json';
 import buildingConfig from '../gameData/buildings.json';
 
-// #comment Provides actions available on the map view.
 export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCache, setMessage) => {
     const { currentUser, userProfile } = useAuth();
     const { worldId, gameState, playerCity, setGameState, worldState, playerCities } = useGame();
     const [travelTimeInfo, setTravelTimeInfo] = useState(null);
 
-    // #comment Handles clicks on action buttons in map modals.
     const handleActionClick = useCallback((mode, targetCity) => {
         if (['attack', 'reinforce', 'scout', 'trade'].includes(mode)) {
             openModal('action', { mode, city: targetCity });
@@ -37,7 +35,6 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
         }
     }, [openModal, closeModal, setMessage]);
 
-    // #comment Creates and sends a new unit movement.
     const handleSendMovement = useCallback(async (movementDetails) => {
         const { mode, targetCity, units, resources, attackFormation, hero } = movementDetails;
         if (!playerCity) {
@@ -245,7 +242,6 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
         }
     }, [currentUser, userProfile, worldId, gameState, playerCity, setGameState, setMessage, worldState]);
 
-    // #comment Cancels a movement that is still in its grace period.
     const handleCancelMovement = useCallback(async (movementId) => {
         const movementRef = doc(db, 'worlds', worldId, 'movements', movementId);
         try {
@@ -279,7 +275,6 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
         }
     }, [worldId, setMessage]);
 
-    // #comment Creates a dummy city on an empty plot (admin only).
     const handleCreateDummyCity = useCallback(async (citySlotId, slotData) => {
         if (!userProfile?.is_admin) {
             setMessage("You are not authorized to perform this action.");
@@ -327,17 +322,18 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
         }
     }, [userProfile, worldId, invalidateChunkCache, setMessage]);
 
-    // #comment Handles founding a new city on an empty plot.
-    const handleFoundCity = useCallback(async (plot, agentId, villagers) => {
-        if (!playerCity) {
+    // #comment handle founding a new city
+    const handleFoundCity = useCallback(async (plot, agentId, units) => {
+        if (!playerCity || !gameState) {
             setMessage("Cannot found city: Your city data could not be found.");
             return;
         }
         const newMovementRef = doc(collection(db, 'worlds', worldId, 'movements'));
         const batch = writeBatch(db);
-        const baseFoundingTime = 86400; // 24 hours
-        const reductionPerVillager = 3600; // 1 hour
-        const foundingTimeSeconds = Math.max(3600, baseFoundingTime - (villagers * reductionPerVillager)); // Minimum 1 hour
+        const baseFoundingTime = 86400;
+        const reductionPerVillager = 3600;
+        const villagers = units.villager || 0;
+        const foundingTimeSeconds = Math.max(3600, baseFoundingTime - (villagers * reductionPerVillager));
         const arrivalTime = new Date(Date.now() + foundingTimeSeconds * 1000);
         const movementData = {
             type: 'found_city',
@@ -347,7 +343,7 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
             originCityName: playerCity.cityName,
             targetSlotId: plot.id,
             targetCoords: { x: plot.x, y: plot.y },
-            units: { villager: villagers },
+            units: units,
             agent: agentId,
             departureTime: serverTimestamp(),
             arrivalTime: arrivalTime,
@@ -357,7 +353,9 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
         batch.set(newMovementRef, movementData);
         const gameDocRef = doc(db, `users/${currentUser.uid}/games`, worldId, 'cities', playerCity.id);
         const updatedUnits = { ...gameState.units };
-        updatedUnits.villager = (updatedUnits.villager || 0) - villagers;
+        for (const unitId in units) {
+            updatedUnits[unitId] = (updatedUnits[unitId] || 0) - units[unitId];
+        }
         const updatedAgents = { ...gameState.agents };
         updatedAgents[agentId] = (updatedAgents[agentId] || 0) - 1;
         batch.update(gameDocRef, {
@@ -372,14 +370,13 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
         try {
             await batch.commit();
             setGameState(newGameState);
-            setMessage(`Your architect and villagers are on their way to found a new city at (${plot.x}, ${plot.y})!`);
+            setMessage(`Your architect and troops are on their way to found a new city at (${plot.x}, ${plot.y})!`);
         } catch (error) {
             console.error("Error sending founding party:", error);
             setMessage(`Failed to send founding party: ${error.message}`);
         }
     }, [currentUser, worldId, gameState, playerCity, setGameState, setMessage]);
 
-    // #comment Handles withdrawing troops from a reinforced city.
     const handleWithdrawTroops = useCallback(async (reinforcedCity, withdrawalData) => {
         if (!reinforcedCity || !reinforcedCity.ownerId) {
             setMessage("Invalid city data for withdrawal.");

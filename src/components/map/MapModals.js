@@ -6,6 +6,8 @@ import MovementModal from './MovementModal';
 import MovementsPanel from './MovementsPanel';
 import ReinforcementModal from '../city/ReinforcementModal';
 import { useAuth } from '../../contexts/AuthContext';
+import EmptyCityModal from './EmptyCityModal';
+
 const MapModals = ({
     modalState,
     closeModal,
@@ -29,10 +31,10 @@ const MapModals = ({
     onEnterCity,
     onSwitchCity,
     onWithdraw,
+    onFoundCity,
 }) => {
     const { currentUser } = useAuth();
     const { selectedCity } = modalState;
-
     const renderCityInteraction = () => {
         if (!selectedCity) return null;
         if (selectedCity.isRuinTarget || selectedCity.isVillageTarget) {
@@ -51,11 +53,9 @@ const MapModals = ({
                 />
             );
         }
-
         const isOwn = selectedCity.ownerId === currentUser.uid;
         const isActive = gameState?.id === selectedCity.id;
         const hasReinforcements = selectedCity.reinforcements && Object.keys(selectedCity.reinforcements).length > 0;
-
         let allActions = [];
         if (isOwn) {
             if (isActive) {
@@ -86,10 +86,8 @@ const MapModals = ({
                 { label: 'Profile', icon: '👤', handler: () => handleActionClick('profile', selectedCity) },
             ];
         }
-
         const centerAction = allActions.find(a => a.label === 'Select City');
         const radialActions = allActions.filter(a => a.label !== 'Select City');
-
         return (
             <RadialMenu
                 actions={radialActions}
@@ -141,6 +139,14 @@ const MapModals = ({
                     city={modalState.reinforcementsModalData}
                     onClose={() => closeModal('reinforcements')}
                     onOpenWithdraw={onWithdraw}
+                />
+            )}
+            {modalState.isEmptyCityModalOpen && (
+                <EmptyCityModal
+                    plot={modalState.emptyCityModalData}
+                    onClose={() => closeModal('emptyCity')}
+                    onFoundCity={onFoundCity}
+                    cityGameState={gameState}
                 />
             )}
         </>

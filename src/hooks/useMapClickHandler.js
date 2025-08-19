@@ -1,7 +1,6 @@
 import { calculateDistance } from '../utils/travel';
 import { getVillageTroops } from '../utils/combat';
 
-// #comment Handles clicks on different map objects like city slots, villages, and ruins.
 export const useMapClickHandler = ({
     playerCity,
     isPlacingDummyCity,
@@ -14,19 +13,16 @@ export const useMapClickHandler = ({
     conqueredRuins,
     cityGameState,
 }) => {
-    // #comment Logic for clicking on a city slot.
     const onCitySlotClick = (e, slotData) => {
         if (!playerCity) {
             setMessage("Your city data is still loading. Please wait a moment.");
             return;
         }
         closeModal('village');
-
         if (isPlacingDummyCity && !slotData.ownerId) {
             handleCreateDummyCity(slotData.id, slotData);
             return;
         }
-
         if (slotData.ownerId) {
              const distance = calculateDistance(playerCity, slotData);
              setTravelTimeInfo({ distance });
@@ -39,6 +35,11 @@ export const useMapClickHandler = ({
             const modalData = { ...cityData, position };
             openModal('city', modalData);
         } else {
+            // #comment check if there is an active city before attempting to found a new one
+            if (!cityGameState) {
+                setMessage("You must have an active city to found a new one. Please select one from the top bar.");
+                return;
+            }
             const hasArchitect = cityGameState.agents?.architect > 0;
             if (hasArchitect) {
                 openModal('emptyCity', slotData);
@@ -48,7 +49,6 @@ export const useMapClickHandler = ({
         }
     };
 
-    // #comment Logic for clicking on a farming village.
     const onVillageClick = (e, villageData) => {
         if (!playerCity) {
             setMessage("Your city data is still loading. Please wait a moment.");
@@ -85,7 +85,6 @@ export const useMapClickHandler = ({
         }
     };
 
-    // #comment Logic for clicking on ruins.
     const onRuinClick = (e, ruinData) => {
         if (!playerCity) {
             setMessage("Your city data is still loading. Please wait a moment.");

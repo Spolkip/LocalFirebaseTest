@@ -103,7 +103,7 @@
     "image": "athenian_trireme.png"
   },
   "swordsman_spartan": {
-    "name": "Spartan Hoplite",
+    "name": "Spartan Helot Archer",
     "description": "A disciplined and heavily armored warrior from Sparta, excelling in defense.",
     "cost": { "wood": 60, "stone": 40, "silver": 25, "population": 1, "time": 35 },
     "heal_cost": { "wood": 18, "stone": 12, "silver": 7 }, "heal_time": 12,
@@ -111,7 +111,7 @@
     "image": "spartan_hoplite.png"
   },
   "archer_spartan": {
-    "name": "Spartan Helot Archer",
+    "name": "Spartan Hoplite",
     "description": "A lightly armored but disciplined archer serving the Spartan army.",
     "cost": { "wood": 35, "stone": 45, "silver": 30, "population": 1, "time": 50 },
     "heal_cost": { "wood": 10, "stone": 13, "silver": 9 }, "heal_time": 17,
