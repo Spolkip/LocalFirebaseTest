@@ -350,11 +350,17 @@ const GameDataEditor = ({ dataType }) => {
         if (!selectedItem) return <div className="text-center p-8">Select an item to edit.</div>;
         switch (dataType) {
             case 'troops':
+                // #comment Get the base unit type by splitting the ID string.
+                const genericType = selectedItemId.split('_')[0];
                 return (
                     <div className="p-2">
                         <div className="flex flex-col mb-2">
                             <label className="text-sm font-semibold mb-1">ID</label>
                             <input value={selectedItemId} readOnly className="p-1 rounded bg-amber-100/50 border border-amber-700" />
+                        </div>
+                        <div className="flex flex-col mb-2">
+                            <label className="text-sm font-semibold mb-1">Base Type</label>
+                            <input value={genericType} readOnly className="p-1 rounded bg-amber-100/50 border border-amber-700" />
                         </div>
                         <EditableField label="Name" value={selectedItem.name} onChange={(e) => handleFieldChange('name', e.target.value)} />
                         <EditableField label="Nation" value={selectedItem.nation || 'None'} onChange={(e) => handleFieldChange('nation', e.target.value)} type="select" options={['None', ...allNations]} />
