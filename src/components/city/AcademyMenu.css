@@ -13,6 +13,8 @@
     max-height: 700px; /* Set a max-height */
     display: flex;
     flex-direction: column;
+    position: fixed;
+    z-index: 50;
 }
 
 .academy-header {
@@ -26,6 +28,7 @@
     font-size: 1.5rem;
     border-bottom: 2px solid #cd853f;
     flex-shrink: 0; /* Prevent header from shrinking */
+    cursor: move;
 }
 
 .academy-header .close-btn {

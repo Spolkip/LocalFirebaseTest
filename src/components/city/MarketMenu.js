@@ -1,5 +1,5 @@
 // src/components/city/MarketMenu.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { db } from '../../firebase/config';
 import { collection, query,onSnapshot, serverTimestamp, doc, runTransaction, orderBy } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
@@ -30,6 +30,52 @@ const MarketMenu = ({ onClose, cityGameState, worldId, marketCapacity }) => {
     const [offerAmount, setOfferAmount] = useState('');
     const [demandResource, setDemandResource] = useState('stone');
     const [demandAmount, setDemandAmount] = useState('');
+    
+    const marketRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 800) / 2,
+        y: (window.innerHeight - 600) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('market-header') || e.target.parentElement.classList.contains('market-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
+
 
     // #comment fetch trade offers from firestore
     useEffect(() => {
@@ -241,7 +287,13 @@ const MarketMenu = ({ onClose, cityGameState, worldId, marketCapacity }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="market-container" onClick={e => e.stopPropagation()}>
+            <div
+                ref={marketRef}
+                className="market-container"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
                 <div className="market-header">
                     <h2>Marketplace</h2>
                     <button onClick={onClose} className="close-btn">&times;</button>

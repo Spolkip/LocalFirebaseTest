@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../../firebase/config';
 import { collection, getDocs, collectionGroup, query, where } from 'firebase/firestore';
 import { useGame } from '../../contexts/GameContext';
@@ -29,6 +29,51 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
     const [fightersLeaderboard, setFightersLeaderboard] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('players');
+
+    const leaderboardRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2,
+        y: (window.innerHeight - 650) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('leaderboard-header') || e.target.parentElement.classList.contains('leaderboard-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
 
     const fetchAllPlayerData = useCallback(async () => {
         if (!worldId || !worldState) return new Map();
@@ -262,8 +307,16 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="leaderboard-container" onClick={e => e.stopPropagation()}>
+            <div
+                ref={leaderboardRef}
+                className="leaderboard-container"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
                 <div className="leaderboard-header">
+                    <h2 className="font-title text-3xl">Leaderboard</h2>
+                    <button onClick={onClose} className="close-btn">&times;</button>
                 </div>
                 <div className="leaderboard-tabs">
                     <button onClick={() => setActiveTab('players')} className={`leaderboard-tab-btn ${activeTab === 'players' ? 'active' : ''}`}>Players</button>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { db } from '../../firebase/config';
 import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, setDoc, deleteDoc, getDocs, writeBatch } from 'firebase/firestore';
@@ -50,6 +50,52 @@ const AllianceForum = ({ onClose, onActionClick }) => {
     const postContainerRef = useRef(null); // Ref for the post container
 
     const isLeader = currentUser?.uid === playerAlliance?.leader?.uid;
+
+    const forumRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('alliance-forum-header') || e.target.parentElement.classList.contains('alliance-forum-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
+
 
     // #comment Get current member's rank and permissions
     const memberRankData = useMemo(() => {
@@ -420,8 +466,14 @@ const AllianceForum = ({ onClose, onActionClick }) => {
                     onCancel={() => setConfirmAction(null)}
                 />
             )}
-            <div className="forum-container w-full max-w-5xl h-5/6 flex flex-col" onClick={e => e.stopPropagation()}>
-                <div className="p-4 flex justify-between items-center">
+            <div 
+                ref={forumRef}
+                className="forum-container w-full max-w-5xl h-5/6 flex flex-col"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
+                <div className="p-4 flex justify-between items-center alliance-forum-header">
                     <h2 className="font-title text-3xl">Alliance Forum</h2>
                     <button onClick={onClose} className="text-3xl leading-none hover:text-red-700">&times;</button>
                 </div>

@@ -1,5 +1,5 @@
 // src/components/city/DivineTempleMenu.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import unitConfig from '../../gameData/units.json';
 import UnitQueue from './UnitQueue';
 import Modal from '../shared/Modal';
@@ -24,6 +24,51 @@ const UnitStats = ({ unit }) => (
 const DivineTempleMenu = ({ resources, availablePopulation, onTrain, onClose, cityGameState, unitQueue, onCancelTrain }) => {
     const { gameState } = useGame();
     const worshippedGod = gameState?.god;
+
+    const templeRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('divine-temple-header') || e.target.parentElement.classList.contains('divine-temple-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
 
     // Filter units to only show mythical units associated with the worshipped god
     const mythicUnits = Object.keys(unitConfig).filter(id => unitConfig[id].mythical && unitConfig[id].god === worshippedGod);
@@ -75,8 +120,14 @@ const DivineTempleMenu = ({ resources, availablePopulation, onTrain, onClose, ci
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl border-2 border-gray-600 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center mb-4">
+            <div
+                ref={templeRef}
+                className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl border-2 border-gray-600 flex flex-col max-h-[90vh] divine-temple-container"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
+                <div className="flex justify-between items-center mb-4 divine-temple-header">
                     <h3 className="font-title text-3xl text-white">Divine Temple</h3>
                     <button onClick={onClose} className="text-gray-400 text-3xl leading-none hover:text-white">&times;</button>
                 </div>

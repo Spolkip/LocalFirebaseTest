@@ -1,5 +1,5 @@
 // src/components/city/PrisonMenu.js
-import React from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import heroesConfig from '../../gameData/heroes.json';
 import Countdown from '../map/Countdown';
 import './PrisonMenu.css';
@@ -41,9 +41,61 @@ const PrisonMenu = ({ cityGameState, onClose, onReleaseHero }) => { // Added onR
     // Capacity starts at 5 and increases by 1 per level, up to 29 at max level 25.
     const capacity = prisonLevel > 0 ? prisonLevel + 4 : 0;
 
+    const prisonRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 500) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('prison-header') || e.target.parentElement.classList.contains('prison-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
+
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="prison-menu-container" onClick={e => e.stopPropagation()}>
+            <div
+                ref={prisonRef}
+                className="prison-menu-container"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
                 <div className="prison-header">
                     <h3>Prison (Level {prisonLevel})</h3>
                     <p>Capacity: {prisoners.length} / {capacity}</p>

@@ -1,5 +1,5 @@
 // src/components/city/DivinePowers.js
-import React from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import godsConfig from '../../gameData/gods.json';
 import './DivinePowers.css';
 
@@ -14,6 +14,51 @@ const DivinePowers = ({ godName, playerReligion, favor, onCastSpell, onClose, ta
 
     const godDetails = getGodDetails(godName, playerReligion);
 
+    const divinePowersRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 600) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('divine-powers-header') || e.target.parentElement.classList.contains('divine-powers-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
+
     if (!godDetails) {
         return null;
     }
@@ -23,8 +68,13 @@ const DivinePowers = ({ godName, playerReligion, favor, onCastSpell, onClose, ta
     });
 
     const content = (
-        <div className={isMenu ? "divine-powers-menu-content" : "divine-powers-modal-content"} onClick={e => e.stopPropagation()}>
-            <div className="divine-powers-header">
+        <div 
+            ref={divinePowersRef}
+            className={isMenu ? "divine-powers-menu-content" : "divine-powers-modal-content"}
+            onClick={e => e.stopPropagation()}
+            style={{ top: `${position.y}px`, left: `${position.x}px` }}
+        >
+            <div className="divine-powers-header" onMouseDown={handleMouseDown}>
                 <h2>{godDetails.name}'s Powers</h2>
                 <button onClick={onClose} className="close-button">&times;</button>
             </div>

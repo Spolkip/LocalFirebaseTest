@@ -20,9 +20,53 @@ const MessagesView = ({ onClose, initialRecipientId = null, initialRecipientUser
     const [isComposing, setIsComposing] = useState(false);
     const messagesEndRef = useRef(null);
     const messageContainerRef = useRef(null); // Ref for the message container
+    const messagesViewRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2,
+        y: (window.innerHeight - 650) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     // Autocomplete states
     const [allPlayers, setAllPlayers] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('messages-header') || e.target.parentElement.classList.contains('messages-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
     // #comment Fetch all players for autocomplete using the shared cache
     useEffect(() => {
         const fetchPlayers = async () => {
@@ -223,8 +267,15 @@ const MessagesView = ({ onClose, initialRecipientId = null, initialRecipientUser
     };
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div className="papyrus-bg papyrus-text" onClick={e => e.stopPropagation()}>
+            <div
+                ref={messagesViewRef}
+                className="papyrus-bg papyrus-text"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
                 <div className="messages-header">
+                    <h2 className="papyrus-header">Messages</h2>
                     <button onClick={onClose} className="papyrus-text text-3xl font-bold hover:text-red-700">&times;</button>
                 </div>
                 <div className="messages-body">

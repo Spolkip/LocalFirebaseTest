@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { useAuth } from '../contexts/AuthContext';
@@ -40,6 +40,13 @@ const ReportsView = ({ onClose, onActionClick }) => {
     const [selectedReport, setSelectedReport] = useState(null);
     const [activeTab, setActiveTab] = useState('Combat');
     const [message, setMessage] = useState('');
+    const reportsRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2, // Center horizontally
+        y: (window.innerHeight - 650) / 2  // Center vertically
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const tabs = {
         'Combat': ['attack', 'attack_village', 'attack_ruin', 'attack_god_town'],
         'Reinforce': ['reinforce'],
@@ -47,6 +54,44 @@ const ReportsView = ({ onClose, onActionClick }) => {
         'Scout': ['scout', 'spy_caught'],
         'Misc': ['return', 'spell_cast', 'spell_received', 'spell_fail'],
     };
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('reports-header') || e.target.parentElement.classList.contains('reports-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
+
 
     useEffect(() => {
         if (!currentUser || !worldId) return;
@@ -351,15 +396,6 @@ const ReportsView = ({ onClose, onActionClick }) => {
                                 <p className="mt-2"><strong>Losses:</strong> {renderUnitList(outcome.defenderLosses, true)}</p>
                             </div>
                         </div>
-                        {typeof outcome.attackerBattlePoints === 'number' && (
-                            <div className="w-full p-3 bg-blue-800/10 rounded mt-4 text-center">
-                                <h4 className="font-semibold text-lg text-blue-700 mb-2">Battle Points Gained</h4>
-                                <div className="flex items-center justify-center">
-                                    <img src={battlePointsImage} alt="Battle Points" className="w-6 h-6 mr-2"/>
-                                    <p>{outcome.attackerBattlePoints.toLocaleString()}</p>
-                                </div>
-                            </div>
-                        )}
                         {report.reward && (
                             <div className="w-full p-3 bg-green-800/10 rounded mt-4 text-center">
                                 <h4 className="font-semibold text-lg text-green-700 mb-2">Research Unlocked!</h4>
@@ -477,8 +513,15 @@ const ReportsView = ({ onClose, onActionClick }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div className="reports-container">
+            <div
+                ref={reportsRef}
+                className="reports-container"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
                 <div className="reports-header">
+                    <h2 className="font-title text-3xl">Reports</h2>
                     <button onClick={onClose} className="close-btn">&times;</button>
                 </div>
                 <div className="flex flex-grow overflow-hidden">

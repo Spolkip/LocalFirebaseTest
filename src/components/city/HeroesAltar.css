@@ -12,6 +12,8 @@
     height: 80vh;
     display: flex;
     flex-direction: column;
+    position: fixed;
+    z-index: 50;
 }
 
 .heroes-altar-header {
@@ -24,6 +26,7 @@
     font-family: 'IM Fell English SC', serif;
     font-size: 1.5rem;
     border-bottom: 2px solid #cd853f;
+    cursor: move;
 }
 
 .close-btn {
@@ -117,11 +120,6 @@
     background: linear-gradient(to bottom, #f0e68c, #cd853f);
 }
 
-.recruit-btn {
-    width: 100%;
-    margin-top: 1rem;
-}
-
 .recruit-btn:hover:not(:disabled), .activate-skill-btn:hover:not(:disabled) {
     transform: scale(1.05);
     background: linear-gradient(to bottom, #fff2b2, #d6914d);
@@ -138,7 +136,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    background-color: rgba(139, 69, 19, 0.05);
+    background-color: rgba(139, 69, 19, 0.1);
     border: 1px solid #d2b48c;
     padding: 0.75rem;
     border-radius: 4px;

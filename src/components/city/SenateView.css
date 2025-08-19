@@ -4,6 +4,12 @@
     background-position: center;
     background-repeat: no-repeat;
     color: #4a2c2a; /* Dark brown text for readability on parchment */
+    position: fixed;
+    z-index: 50;
+}
+
+.senate-header {
+    cursor: move;
 }
 
 /* Make inner containers semi-transparent to show the background */

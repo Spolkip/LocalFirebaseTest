@@ -1,5 +1,5 @@
 // src/components/city/HospitalMenu.js
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import unitConfig from '../../gameData/units.json';
 import UnitQueue from './UnitQueue';
 
@@ -16,6 +16,51 @@ const HospitalMenu = ({ cityGameState, onClose, onHeal, onCancelHeal, getHospita
     const hospitalLevel = cityGameState.buildings.hospital?.level || 0;
     const capacity = getHospitalCapacity(hospitalLevel);
     const totalWounded = Object.values(woundedUnits).reduce((sum, count) => sum + count, 0);
+
+    const hospitalRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('hospital-header') || e.target.parentElement.classList.contains('hospital-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
 
     const handleAmountChange = (unitId, value) => {
         const max = woundedUnits[unitId] || 0;
@@ -60,8 +105,13 @@ const HospitalMenu = ({ cityGameState, onClose, onHeal, onCancelHeal, getHospita
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl border-2 border-gray-600 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center mb-4">
+            <div
+                ref={hospitalRef}
+                className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl border-2 border-gray-600 flex flex-col max-h-[90vh] hospital-container"
+                onClick={e => e.stopPropagation()}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
+                <div className="flex justify-between items-center mb-4 hospital-header" onMouseDown={handleMouseDown}>
                     <h3 className="font-title text-3xl text-white">Hospital (Level {hospitalLevel})</h3>
                     <button onClick={onClose} className="text-gray-400 text-3xl leading-none hover:text-white">&times;</button>
                 </div>

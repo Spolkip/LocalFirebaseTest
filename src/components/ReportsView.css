@@ -11,6 +11,8 @@
     background-color: transparent;
     border: none;
     padding: 20px 35px 50px 35px; /* Added padding to fit content inside the background's border */
+    position: fixed;
+    z-index: 50;
 }
 .reports-header {
     display: flex;
@@ -21,6 +23,7 @@
     color: #f0e68c;
     border-bottom: none;
     height: 50px; /* Adjust height */
+    cursor: move;
 }
 .close-btn {
     background: none;

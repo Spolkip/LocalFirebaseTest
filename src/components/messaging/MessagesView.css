@@ -11,6 +11,8 @@
     background-color: transparent;
     border: none;
     padding: 20px 35px 50px 35px;
+    position: fixed;
+    z-index: 50;
 }
 .messages-header {
     display: flex;
@@ -18,9 +20,10 @@
     align-items: center;
     padding: 0 0 10px 0;
     background-color: transparent;
-    color: #4a2c2a;
+    color: #f0e68c;
     border-bottom: none;
     height: 50px;
+    cursor: move;
 }
 .messages-body {
     display: flex;
@@ -48,7 +51,7 @@
 .papyrus-header {
     font-family: 'IM Fell English SC', serif;
     font-size: 1.5rem;
-    color: #4a2c2a;
+    color: #f0e68c;
 }
 .papyrus-input {
     background-color: transparent;

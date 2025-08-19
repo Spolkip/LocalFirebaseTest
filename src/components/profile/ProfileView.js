@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
 import { useAlliance } from '../../contexts/AllianceContext';
@@ -33,6 +33,51 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
     const [newDescription, setNewDescription] = useState('');
     const [newImageUrl, setNewImageUrl] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+
+    const profileRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('profile-box-header') || e.target.parentElement.classList.contains('profile-box-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
 
     const isOwnProfile = !viewUserId || viewUserId === currentUser.uid;
 
@@ -164,7 +209,9 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
     // #comment Render player information
     const renderPlayerInfo = () => (
         <div className="profile-box">
-            <div className="profile-box-header">{displayProfile?.username}</div>
+            <div className="profile-box-header">
+                {displayProfile?.username}
+            </div>
             <div className="player-info-content">
                 {gameData?.alliance ? (
                     <button
@@ -238,7 +285,13 @@ const ProfileView = ({ onClose, viewUserId, onGoToCity, onInviteToAlliance, onOp
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="profile-papyrus" onClick={e => e.stopPropagation()}>
+            <div
+                ref={profileRef}
+                className="profile-papyrus"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
                 <button onClick={onClose} className="profile-close-button">&times;</button>
                 <div className="profile-grid">
                     <div className="profile-left-column">

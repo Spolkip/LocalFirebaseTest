@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { doc, getDoc, collectionGroup, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useGame } from '../../contexts/GameContext';
@@ -12,6 +12,51 @@ const AllianceProfile = ({ allianceId, onClose, onOpenProfile }) => {
     const [membersData, setMembersData] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const allianceProfileRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('profile-box-header') || e.target.parentElement.classList.contains('profile-box-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
+    
     // #comment Fetch all member data for the alliance
     const fetchAllMemberData = useCallback(async (members) => {
         if (!worldId || !worldState || !members || members.length === 0) return [];
@@ -102,7 +147,9 @@ const AllianceProfile = ({ allianceId, onClose, onOpenProfile }) => {
     // #comment Render alliance information
     const renderAllianceInfo = () => (
         <div className="profile-box">
-            <div className="profile-box-header">{allianceData.name} [{allianceData.tag}]</div>
+            <div className="profile-box-header">
+                {allianceData.name} [{allianceData.tag}]
+            </div>
             <div className="player-info-content">
                 Leader: <button onClick={() => onOpenProfile(allianceData.leader.uid)} className="text-blue-400 hover:underline font-bold">{allianceData.leader.username}</button>
             </div>
@@ -144,7 +191,13 @@ const AllianceProfile = ({ allianceId, onClose, onOpenProfile }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="profile-papyrus" onClick={e => e.stopPropagation()}>
+            <div
+                ref={allianceProfileRef}
+                className="profile-papyrus"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
                 <button onClick={onClose} className="profile-close-button">&times;</button>
                 <div className="profile-grid">
                     <div className="profile-left-column">

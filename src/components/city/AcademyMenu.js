@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import researchConfig from '../../gameData/research.json';
 import ResearchQueue from './ResearchQueue';
 import './AcademyMenu.css';
@@ -13,6 +13,51 @@ imageContext.keys().forEach((item) => {
 const AcademyMenu = ({ cityGameState, onResearch, onClose, researchQueue, onCancelResearch }) => {
     const { buildings, resources, research = {}, researchPoints = 0 } = cityGameState;
     const academyLevel = buildings.academy?.level || 0;
+
+    const academyRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 900) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('academy-header') || e.target.parentElement.classList.contains('academy-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
 
     // #comment check if player can afford research
     const canAfford = (cost) => {
@@ -63,7 +108,13 @@ const AcademyMenu = ({ cityGameState, onResearch, onClose, researchQueue, onCanc
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="academy-container" onClick={e => e.stopPropagation()}>
+            <div 
+                ref={academyRef}
+                className="academy-container"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
                 <div className="academy-header">
                     <h3>Academy (Level {academyLevel})</h3>
                     <p>Research Points: {researchPoints}</p>
@@ -71,7 +122,7 @@ const AcademyMenu = ({ cityGameState, onResearch, onClose, researchQueue, onCanc
                 </div>
                 <div className="academy-grid">
                     {Object.entries(researchConfig).map(([id, config]) => {
-                        const isResearched = research[id];
+                        const isResearched = cityGameState.research?.[id]?.completed;
                         const requirementsMet = meetsRequirements(config.requirements);
                         const affordable = canAfford(config.cost);
                         const inQueue = isResearchInQueue(id);

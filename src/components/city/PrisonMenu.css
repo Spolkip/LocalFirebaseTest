@@ -13,6 +13,8 @@
     max-height: 90vh;
     display: flex;
     flex-direction: column;
+    position: fixed;
+    z-index: 50;
 }
 
 .prison-header {
@@ -25,6 +27,7 @@
     font-family: 'IM Fell English SC', serif;
     font-size: 1.5rem;
     border-bottom: 2px solid #cd853f;
+    cursor: move;
 }
 
 .prison-content {

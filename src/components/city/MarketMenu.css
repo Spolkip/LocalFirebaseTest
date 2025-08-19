@@ -1,4 +1,4 @@
-    /* src/components/city/MarketMenu.css */
+/* src/components/city/MarketMenu.css */
 .market-container {
     background-image: linear-gradient(rgba(245, 222, 179, 0.95), rgba(245, 222, 179, 0.95)), url('https://www.transparenttextures.com/patterns/cracks.png');
     background-color: #F5DEB3; /* wheat */
@@ -13,6 +13,8 @@
     height: 80vh;
     display: flex;
     flex-direction: column;
+    position: fixed;
+    z-index: 50;
 }
 
 .market-header {
@@ -25,6 +27,7 @@
     font-family: 'IM Fell English SC', serif;
     font-size: 1.5rem;
     border-bottom: 2px solid #cd853f;
+    cursor: move;
 }
 
 .market-header .close-btn {

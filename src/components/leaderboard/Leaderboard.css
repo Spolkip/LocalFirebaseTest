@@ -11,6 +11,8 @@
     background-color: transparent;
     border: none;
     padding: 20px 35px 50px 35px; /* Added padding to fit content inside the background's border */
+    position: fixed;
+    z-index: 50;
 }
 .leaderboard-header {
     display: flex;
@@ -21,7 +23,24 @@
     color: #4a2c2a;
     border-bottom: none;
     height: 50px; /* Adjust height */
+    cursor: move;
 }
+
+.leaderboard-header h2 {
+    color: #f0e68c;
+    font-family: 'IM Fell English SC', serif;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+}
+
+.leaderboard-header .close-btn {
+    background: none;
+    border: none;
+    color: #f0e68c;
+    font-size: 2.5rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
 .leaderboard-tabs {
     display: flex;
     border-bottom: 2px solid #a17c48;

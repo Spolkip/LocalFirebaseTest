@@ -1,5 +1,5 @@
 // src/components/city/BarracksMenu.js
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import unitConfig from '../../gameData/units.json';
 import UnitQueue from './UnitQueue';
 import Modal from '../shared/Modal';
@@ -25,6 +25,52 @@ const UnitStats = ({ unit }) => (
 
 const BarracksMenu = ({ resources, availablePopulation, onTrain, onFire, onClose, cityGameState, unitQueue, onCancelTrain }) => {
     const [activeTab, setActiveTab] = useState('train');
+    
+    const barracksRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        // Only allow dragging from the header area
+        if (e.target.classList.contains('barracks-header') || e.target.parentElement.classList.contains('barracks-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
     
     const landUnits = useMemo(() => getTrainableUnits(cityGameState.playerInfo.nation), [cityGameState.playerInfo.nation]);
 
@@ -86,8 +132,13 @@ const BarracksMenu = ({ resources, availablePopulation, onTrain, onFire, onClose
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl border-2 border-gray-600 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center mb-4">
+            <div
+                ref={barracksRef}
+                className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl border-2 border-gray-600 flex flex-col max-h-[90vh] barracks-container"
+                onClick={e => e.stopPropagation()}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
+                <div className="flex justify-between items-center mb-4 barracks-header" onMouseDown={handleMouseDown}>
                     <h3 className="font-title text-3xl text-white">Barracks</h3>
                     <button onClick={onClose} className="text-gray-400 text-3xl leading-none hover:text-white">&times;</button>
                 </div>

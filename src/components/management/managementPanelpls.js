@@ -134,7 +134,7 @@ const ArrayEditor = ({ data, onChange, title, options }) => {
 };
 
 // #comment A component for editing an array of complex objects, like a god's powers or hero's skills
-const ComplexArrayEditor = ({ data, onChange, title, type }) => {
+const ComplexArrayEditor = ({ data, onChange, title, type, typeOptions }) => {
     const handleItemChange = (index, field, value) => {
         const newItems = [...data];
         newItems[index] = { ...newItems[index], [field]: value };
@@ -149,6 +149,12 @@ const ComplexArrayEditor = ({ data, onChange, title, type }) => {
         } catch (e) {
             console.error(`Invalid JSON for ${topField}:`, e);
         }
+    };
+
+    const handleEffectChange = (index, newEffect) => {
+        const newItems = [...data];
+        newItems[index] = { ...newItems[index], effect: newEffect };
+        onChange(newItems);
     };
 
     const handleAddItem = () => {
@@ -175,7 +181,13 @@ const ComplexArrayEditor = ({ data, onChange, title, type }) => {
                     {type === 'powers' && <EditableField label="Favor Cost" value={item.favorCost} onChange={(e) => handleItemChange(index, 'favorCost', parseInt(e.target.value) || 0)} type="number" />}
                     {type === 'skills' && <EditableField label="Type" value={item.type} onChange={(e) => handleItemChange(index, 'type', e.target.value)} type="select" options={['battle', 'city']} />}
                     {type === 'skills' && <EditableField label="Cost (JSON)" value={JSON.stringify(item.cost, null, 2)} onChange={(e) => handleNestedChange(index, 'cost', e.target.value)} type="textarea" />}
-                    <EditableField label="Effect (JSON)" value={JSON.stringify(item.effect, null, 2)} onChange={(e) => handleNestedChange(index, 'effect', e.target.value)} type="textarea" />
+                    
+                    {/* #comment Use ObjectEditor for effects in skills */}
+                    {type === 'skills' ? 
+                        <ObjectEditor data={item.effect} onChange={(val) => handleEffectChange(index, val)} title="Effect/Bonus" typeOptions={typeOptions} />
+                        :
+                        <EditableField label="Effect (JSON)" value={JSON.stringify(item.effect, null, 2)} onChange={(e) => handleNestedChange(index, 'effect', e.target.value)} type="textarea" />
+                    }
                 </div>
             ))}
             <button onClick={handleAddItem} className="btn-confirm w-full text-xs mt-2 py-1">Add {type === 'powers' ? 'Power' : 'Skill'}</button>
@@ -339,7 +351,7 @@ const GameDataEditor = ({ dataType }) => {
             'morale_boost', 'trade_efficiency', 'production_boost_wood', 'production_boost_stone',
             'production_boost_silver', 'donation_cooldown_reduction', 'donation_limit_increase',
             'village_demand_boost', 'cave_capacity_boost', 'warehouse_capacity_boost',
-            'favor_production_boost', 'unit_training_speed_boost'
+            'favor_production_boost', 'unit_training_speed_boost', 'city_buff', 'troop_buff'
         ],
     };
 
@@ -410,14 +422,26 @@ const GameDataEditor = ({ dataType }) => {
                     </div>
                 );
              case 'heroes':
+                const handlePassiveChange = (field, value) => {
+                    const newPassive = { ...selectedItem.passive, [field]: value };
+                    handleFieldChange('passive', newPassive);
+                };
+
                 return (
                     <div className="p-2">
                         <EditableField label="Name" value={selectedItem.name} onChange={(e) => handleFieldChange('name', e.target.value)} />
                         <EditableField label="Description" value={selectedItem.description} onChange={(e) => handleFieldChange('description', e.target.value)} type="textarea" />
                         <ObjectEditor data={selectedItem.cost} onChange={(val) => handleFieldChange('cost', val)} title="Recruit Cost" />
                         <ObjectEditor data={selectedItem.levelUpCost} onChange={(val) => handleFieldChange('levelUpCost', val)} title="Level Up Cost" />
-                        <ObjectEditor data={selectedItem.passive} onChange={(val) => handleFieldChange('passive', val)} title="Passive Skill" />
-                        <ComplexArrayEditor data={selectedItem.skills || []} onChange={(val) => handleFieldChange('skills', val)} title="Active Skills" type="skills" />
+                        
+                        <div className="p-2 border border-amber-700 rounded mt-2">
+                            <h4 className="font-bold text-center">Passive Skill</h4>
+                            <EditableField label="Passive Name" value={selectedItem.passive.name} onChange={(e) => handlePassiveChange('name', e.target.value)} />
+                            <EditableField label="Passive Description" value={selectedItem.passive.description} onChange={(e) => handlePassiveChange('description', e.target.value)} type="textarea" />
+                            <ObjectEditor data={selectedItem.passive.effect} onChange={(val) => handlePassiveChange('effect', val)} title="Effect/Bonus" typeOptions={typeOptions} />
+                        </div>
+
+                        <ComplexArrayEditor data={selectedItem.skills || []} onChange={(val) => handleFieldChange('skills', val)} title="Active Skills" type="skills" typeOptions={typeOptions}/>
                     </div>
                 );
             case 'alliance_wonders':

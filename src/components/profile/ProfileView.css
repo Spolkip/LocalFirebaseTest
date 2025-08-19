@@ -9,6 +9,8 @@
     border-image-source: linear-gradient(to right, #8B4513, #CD853F);
     box-shadow: 0 0 25px rgba(0,0,0,0.7);
     color: #4a2c2a;
+    position: fixed;
+    z-index: 50;
 }
 
 .profile-close-button {
@@ -33,16 +35,17 @@
     border: 1px solid #a17c48;
 }
 
-.profile-right-column .profile-box {
-    @apply h-full;
-}
-
 .profile-box-header {
     @apply font-title text-xl font-bold text-center p-2 -m-4 mb-4; /* Adjusted font size and padding */
     background-color: rgba(30, 58, 138, 0.8);
     color: #f0e68c;
     border-bottom: 2px solid #cd853f;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    cursor: move;
+}
+
+.profile-right-column .profile-box {
+    @apply h-full;
 }
 
 .player-info-content {

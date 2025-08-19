@@ -1,5 +1,5 @@
 // src/components/city/HeroesAltar.js
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import heroesConfig from '../../gameData/heroes.json';
 import './HeroesAltar.css';
 import { useGame } from '../../contexts/GameContext';
@@ -23,6 +23,51 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
     const { heroes = {}, activeSkills = {} } = cityGameState;
     const { activeCityId } = useGame();
 
+    const altarRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 800) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('heroes-altar-header') || e.target.parentElement.classList.contains('heroes-altar-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
+    
     // #comment Handles recruiting a hero, stopping the event from bubbling up.
     const handleRecruit = (e, heroId) => {
         e.stopPropagation();
@@ -80,7 +125,13 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="heroes-altar-container" onClick={e => e.stopPropagation()}>
+            <div
+                ref={altarRef}
+                className="heroes-altar-container"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
                 <div className="heroes-altar-header">
                     <h3>Heroes Altar</h3>
                     <button onClick={onClose} className="close-btn">&times;</button>

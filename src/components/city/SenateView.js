@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collection, onSnapshot, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import buildingConfig from '../../gameData/buildings.json';
@@ -147,7 +147,7 @@ const SpecialBuildingCard = ({ cityGameState, onOpenSpecialBuildingMenu }) => {
     const config = specialBuildingId ? specialBuildingsConfig[specialBuildingId] : buildingConfig.special_building_plot;
     return (
         <div className="bg-gray-700/80 border-2 border-gray-600 rounded-lg p-2 w-48 text-center flex flex-col items-center relative shadow-lg">
-            <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-0.5 h-6 bg-gray-500/50"></div>
+            <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-0.5 h-6 bg-gray-500/50 z-0"></div>
             <h4 className="font-bold text-yellow-400 text-base">{config.name}</h4>
             <p className="text-sm text-gray-300 font-semibold">{specialBuildingId ? 'Constructed' : 'Empty Plot'}</p>
             <img src={buildingImages[config.image]} alt={config.name} className="w-20 h-20 object-contain my-1" />
@@ -170,6 +170,51 @@ const SenateView = ({ buildings, resources, onUpgrade, onDemolish, getUpgradeCos
     const [isSavingPreset, setIsSavingPreset] = useState(false);
     const [newPresetName, setNewPresetName] = useState('');
     const [confirmAction, setConfirmAction] = useState(null);
+    const senateRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2,
+        y: (window.innerHeight - 650) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('senate-header') || e.target.parentElement.classList.contains('senate-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
+    
 
     const buildingRows = [
         ['senate'],
@@ -299,8 +344,14 @@ const SenateView = ({ buildings, resources, onUpgrade, onDemolish, getUpgradeCos
                     </div>
                 </div>
             )}
-            <div className="senate-view-container text-white p-6 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col">
-                <div className="flex justify-between items-center border-b border-gray-600 pb-3 mb-4">
+            <div
+                ref={senateRef}
+                className="senate-view-container text-white p-6 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] flex flex-col"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={handleMouseDown}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
+                <div className="flex justify-between items-center border-b border-gray-600 pb-3 mb-4 senate-header">
                     <h2 className="text-3xl font-bold font-title text-yellow-300">Senate</h2>
                     <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                 </div>

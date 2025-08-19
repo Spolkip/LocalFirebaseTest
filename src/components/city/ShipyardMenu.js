@@ -1,5 +1,5 @@
 // src/components/city/ShipyardMenu.js
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import unitConfig from '../../gameData/units.json';
 import UnitQueue from './UnitQueue';
 import Modal from '../shared/Modal';
@@ -27,6 +27,51 @@ const ShipyardMenu = ({ resources, availablePopulation, onTrain, onClose, cityGa
     const navalUnits = useMemo(() => getTrainableNavalUnits(cityGameState.playerInfo.nation), [cityGameState.playerInfo.nation]);
     const [selectedUnitId, setSelectedUnitId] = useState(navalUnits[0] || null);
     const [trainAmount, setTrainAmount] = useState('');
+
+    const shipyardRef = useRef(null);
+    const [position, setPosition] = useState({ 
+        x: (window.innerWidth - 1000) / 2,
+        y: (window.innerHeight - 700) / 2
+    });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+    const handleMouseDown = (e) => {
+        if (e.target.classList.contains('shipyard-header') || e.target.parentElement.classList.contains('shipyard-header')) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - position.x,
+                y: e.clientY - position.y,
+            });
+        }
+    };
+
+    const handleMouseMove = useCallback((e) => {
+        if (isDragging) {
+            setPosition({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y,
+            });
+        }
+    }, [isDragging, dragStart]);
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (isDragging) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        } else {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove]);
     
     useEffect(() => {
         setTrainAmount('');
@@ -60,8 +105,13 @@ const ShipyardMenu = ({ resources, availablePopulation, onTrain, onClose, cityGa
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
-            <div className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl border-2 border-gray-600 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center mb-4">
+            <div
+                ref={shipyardRef}
+                className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-4xl border-2 border-gray-600 flex flex-col max-h-[90vh] shipyard-container"
+                onClick={e => e.stopPropagation()}
+                style={{ top: `${position.y}px`, left: `${position.x}px` }}
+            >
+                <div className="flex justify-between items-center mb-4 shipyard-header" onMouseDown={handleMouseDown}>
                     <h3 className="font-title text-3xl text-white">Shipyard</h3>
                     <button onClick={onClose} className="text-gray-400 text-3xl leading-none hover:text-white">&times;</button>
                 </div>

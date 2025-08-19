@@ -7,6 +7,12 @@
     box-shadow: 0 0 20px rgba(0,0,0,0.6);
     color: #4a2c2a; /* A dark, ink-like brown */
     font-family: 'Inter', sans-serif;
+    position: fixed;
+    z-index: 50;
+}
+
+.alliance-forum-header {
+    cursor: move;
 }
 
 .forum-tabs-container {
