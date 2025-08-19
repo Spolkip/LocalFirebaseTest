@@ -3,13 +3,11 @@ import { doc, getDoc, collectionGroup, query, where, getDocs } from 'firebase/fi
 import { db } from '../../firebase/config';
 import { useGame } from '../../contexts/GameContext';
 import './AllianceProfile.css';
-import { useCityState } from '../../hooks/useCityState';
 
 const allianceProfileCache = {};
 
 const AllianceProfile = ({ allianceId, onClose, onOpenProfile }) => {
     const { worldId, worldState } = useGame();
-    const { calculateTotalPoints } = useCityState(worldId);
     const [allianceData, setAllianceData] = useState(null);
     const [membersData, setMembersData] = useState([]);
     const [loading, setLoading] = useState(true);
