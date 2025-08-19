@@ -30,6 +30,7 @@ import MovementsPanel from './map/MovementsPanel';
 import SharedReportView from './SharedReportView';
 import EventTrigger from './admin/EventTrigger';
 import GodTownModal from './map/GodTownModal';
+import ManagementPanel from './management/managementPanelpls'; // #comment Import ManagementPanel
 import { collection, onSnapshot, query, where, doc, updateDoc, runTransaction, serverTimestamp, getDocs} from 'firebase/firestore';
 import unitConfig from '../gameData/units.json';
 import logoutIcon from '../images/logout.png';
@@ -70,6 +71,7 @@ const Game = ({ onBackToWorlds }) => {
     const [godTowns, setGodTowns] = useState({});
     const prevActiveCityIdRef = useRef();
     const prevViewRef = useRef();
+    const [isManagementPanelOpen, setIsManagementPanelOpen] = useState(false); // #comment State for ManagementPanel
 
     useMovementProcessor(worldId);
     const { modalState, openModal, closeModal } = useModalState();
@@ -523,6 +525,7 @@ const Game = ({ onBackToWorlds }) => {
                 onRush={handleRushMovement}
                 isAdmin={userProfile?.is_admin}
             />}
+            {isManagementPanelOpen && <ManagementPanel onClose={() => setIsManagementPanelOpen(false)} />}
             <div className="chat-container">
                 <button onClick={() => setIsChatOpen(prev => !prev)} className="chat-toggle-button">
                     💬

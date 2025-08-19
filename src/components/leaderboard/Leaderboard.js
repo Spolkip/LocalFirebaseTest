@@ -72,6 +72,7 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
                     alliance: gameData.alliance || 'No Alliance',
                     points: gameData.totalPoints || 0,
                     battlePoints: gameData.battlePoints || 0,
+                    cities: gameData.cityCount || 0,
                 });
             }
         }
@@ -96,9 +97,12 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
                 for (const allianceDoc of alliancesSnapshot.docs) {
                     const alliance = allianceDoc.data();
                     let totalPoints = 0;
+                    let totalCities = 0;
                     alliance.members.forEach(member => {
                         if (allPlayerData.has(member.uid)) {
-                            totalPoints += allPlayerData.get(member.uid).points;
+                            const memberData = allPlayerData.get(member.uid);
+                            totalPoints += memberData.points;
+                            totalCities += memberData.cities;
                         }
                     });
                     
@@ -112,6 +116,7 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
                         name: alliance.name,
                         tag: alliance.tag,
                         points: totalPoints,
+                        cities: totalCities,
                         memberCount: alliance.members.length,
                         maxMembers: maxMembers,
                     });
@@ -153,6 +158,7 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
                     <th className="text-center">Rank</th>
                     <th className="text-left">Player</th>
                     <th className="text-left">Alliance</th>
+                    <th className="text-right">Cities</th>
                     <th className="text-right">Points</th>
                 </tr>
             </thead>
@@ -166,6 +172,7 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
                             </button>
                         </td>
                         <td className="text-left">{player.alliance}</td>
+                        <td className="text-right">{player.cities}</td>
                         <td className="text-right">{player.points.toLocaleString()}</td>
                     </tr>
                 ))}
@@ -213,6 +220,7 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
                     <th className="text-left">Alliance</th>
                     <th className="text-left">Tag</th>
                     <th className="text-center">Members</th>
+                    <th className="text-center">Total Cities</th>
                     <th className="text-right">Points</th>
                 </tr>
             </thead>
@@ -227,6 +235,7 @@ const Leaderboard = ({ onClose, onOpenProfile, onOpenAllianceProfile }) => {
                         </td>
                         <td className="text-left">{alliance.tag}</td>
                         <td className="text-center">{alliance.memberCount}/{alliance.maxMembers}</td>
+                        <td className="text-center">{alliance.cities}</td>
                         <td className="text-right">{alliance.points.toLocaleString()}</td>
                     </tr>
                 ))}

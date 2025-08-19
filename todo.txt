@@ -2,9 +2,6 @@
 - make requirements for more than one building to show on different rows
 - add the x button from left to the right
 - make all the windows floating
-- add the cities on leaderboard
-- remake messages
-- remake notifications
 - make manager for troops and research spells, puzzles and buildings with a lot of options
 
 Later:

@@ -422,6 +422,8 @@ export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInsta
                     // #comment Add notifications for completed tasks
                     completedTasks.forEach(task => {
                         let message = '';
+                        let iconType = '';
+                        let iconId = '';
                         const cityName = currentState.cityName;
                         switch (queueName) {
                             case 'buildQueue':
@@ -431,26 +433,34 @@ export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInsta
                                 } else {
                                     message = `Your ${building.name} (Level ${task.level}) is complete in ${cityName}.`;
                                 }
+                                iconType = 'building';
+                                iconId = task.buildingId;
                                 break;
                             case 'barracksQueue':
                             case 'shipyardQueue':
                             case 'divineTempleQueue':
                                 const unit = unitConfig[task.unitId];
                                 message = `Training of ${task.amount}x ${unit.name} is complete in ${cityName}.`;
+                                iconType = 'unit';
+                                iconId = task.unitId;
                                 break;
                             case 'researchQueue':
                                 const research = researchConfig[task.researchId];
                                 message = `Research for ${research.name} is complete in ${cityName}.`;
+                                iconType = 'building'; // Use academy icon for research
+                                iconId = 'academy';
                                 break;
                             case 'healQueue':
                                 const healedUnit = unitConfig[task.unitId];
                                 message = `Healing of ${task.amount}x ${healedUnit.name} is complete in ${cityName}.`;
+                                iconType = 'unit';
+                                iconId = task.unitId;
                                 break;
                             default:
                                 break;
                         }
                         if (message && addNotification) {
-                            addNotification(message);
+                            addNotification(message, iconType, iconId); // #comment Pass icon data
                         }
                     });
                 }

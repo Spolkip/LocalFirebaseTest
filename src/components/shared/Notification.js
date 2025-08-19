@@ -1,36 +1,57 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Notification.css';
-import archerIcon from '../../images/troops/archers.png';
+import buildingConfig from '../../gameData/buildings.json';
+import unitConfig from '../../gameData/units.json';
 
-const Notification = ({ message, onClose }) => {
-    const [visible, setVisible] = useState(true);
+// #comment Dynamically import all images
+const images = {};
+const imageContexts = [
+    require.context('../../images/troops', false, /\.(png|jpe?g|svg)$/),
+    require.context('../../images/buildings', false, /\.(png|jpe?g|svg)$/),
+];
+imageContexts.forEach(context => {
+    context.keys().forEach((item) => {
+        const key = item.replace('./', '');
+        images[key] = context(item);
+    });
+});
 
-    const handleClose = useCallback(() => {
-        setVisible(false);
-        // #comment Wait for the hide animation to finish before removing the component
-        setTimeout(() => {
-            onClose();
-        }, 400);
-    }, [onClose]);
+const Notification = ({ message, iconType, iconId, onClose }) => {
+    const [iconSrc, setIconSrc] = useState('');
 
     useEffect(() => {
-        // #comment Automatically close the notification after 5 seconds
+        let imagePath = '';
+        if (iconType === 'building' && buildingConfig[iconId]) {
+            imagePath = buildingConfig[iconId].image;
+        } else if (iconType === 'unit' && unitConfig[iconId]) {
+            imagePath = unitConfig[iconId].image;
+        }
+        
+        if (imagePath && images[imagePath]) {
+            setIconSrc(images[imagePath]);
+        }
+    }, [iconType, iconId]);
+
+    // #comment Automatically trigger the close function after the animation duration
+    useEffect(() => {
         const timer = setTimeout(() => {
-            handleClose();
-        }, 5000);
+            onClose();
+        }, 5000); // This duration should match the CSS animation timings
 
         return () => clearTimeout(timer);
-    }, [handleClose]);
+    }, [onClose]);
 
     return (
-        <div className={`notification-container ${visible ? 'show' : ''}`}>
-            <div className="notification-icon-container">
-                <img src={archerIcon} alt="Notification Icon" className="notification-icon" />
+        <div className="notification-wrapper">
+            <div className="notification-container">
+                <div className="notification-icon-wrapper">
+                    {iconSrc && <img src={iconSrc} alt="icon" className="notification-icon" />}
+                </div>
+                <div className="notification-content">
+                    <p className="notification-message">{message}</p>
+                </div>
+                <div className="notification-progress-bar"></div>
             </div>
-            <div className="notification-content">
-                <p>{message}</p>
-            </div>
-            <button onClick={handleClose} className="notification-close-btn">&times;</button>
         </div>
     );
 };
