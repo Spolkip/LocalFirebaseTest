@@ -5,6 +5,7 @@ import { db } from '../../firebase/config';
 import { doc, runTransaction, serverTimestamp, onSnapshot, collection } from 'firebase/firestore';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
+import { useAlliance } from '../../contexts/AllianceContext';
 import { resolveVillageRetaliation } from '../../utils/combat';
 import resourceImage from '../../images/resources/resources.png';
 import woodImage from '../../images/resources/wood.png';
@@ -21,6 +22,7 @@ const demandOptions = [
 const FarmingVillageModal = ({ village: initialVillage, onClose, worldId, marketCapacity }) => {
     const { currentUser, userProfile } = useAuth();
     const { gameState, setGameState, countCitiesOnIsland, activeCityId } = useGame();
+    const { playerAlliance } = useAlliance();
     const [village, setVillage] = useState(initialVillage);
     const [baseVillageData, setBaseVillageData] = useState(initialVillage);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -178,15 +180,21 @@ const FarmingVillageModal = ({ village: initialVillage, onClose, worldId, market
         const citiesOnIsland = countCitiesOnIsland(village.islandId);
         const bonusMultiplier = citiesOnIsland > 1 ? 1.20 : 1.0;
         
+        let demandBoost = 1.0;
+        if (playerAlliance?.research) {
+            const demandBoostLevel = playerAlliance.research.diplomatic_leverage?.level || 0;
+            demandBoost += demandBoostLevel * 0.03;
+        }
+
         return demandOptions.map(option => ({
             ...option,
             yield: {
-                wood: baseVillageData ? Math.floor((baseVillageData.demandYield?.wood || 0) * option.multiplier * village.level * bonusMultiplier) : 0,
-                stone: baseVillageData ? Math.floor((baseVillageData.demandYield?.stone || 0) * option.multiplier * village.level * bonusMultiplier) : 0,
-                silver: baseVillageData ? Math.floor((baseVillageData.demandYield?.silver || 0) * option.multiplier * village.level * bonusMultiplier) : 0,
+                wood: baseVillageData ? Math.floor((baseVillageData.demandYield?.wood || 0) * option.multiplier * village.level * bonusMultiplier * demandBoost) : 0,
+                stone: baseVillageData ? Math.floor((baseVillageData.demandYield?.stone || 0) * option.multiplier * village.level * bonusMultiplier * demandBoost) : 0,
+                silver: baseVillageData ? Math.floor((baseVillageData.demandYield?.silver || 0) * option.multiplier * village.level * bonusMultiplier * demandBoost) : 0,
             }
         }));
-    }, [village.level, village.islandId, baseVillageData, countCitiesOnIsland]);
+    }, [village.level, village.islandId, baseVillageData, countCitiesOnIsland, playerAlliance]);
 
     const handleDemand = async (option) => {
         if (isProcessing || !baseVillageData) return;

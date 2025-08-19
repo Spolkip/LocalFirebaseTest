@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { doc, runTransaction } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import unitConfig from '../../gameData/units.json';
+import { useAlliance } from '../../contexts/AllianceContext';
 
 // #comment get warehouse capacity based on its level
 const getWarehouseCapacity = (level) => {
@@ -15,6 +16,8 @@ export const useUnitActions = ({
     getFarmCapacity, calculateUsedPopulation, isInstantUnits,
     setMessage
 }) => {
+    const { playerAlliance } = useAlliance();
+
     const handleTrainTroops = async (unitId, amount) => {
         const currentState = cityGameState;
         if (!currentState || !worldId || amount <= 0) return;
@@ -114,7 +117,13 @@ export const useUnitActions = ({
             lastEndTime = lastItemEndTime.getTime();
         }
 
-        const trainingTime = isInstantUnits ? 1 : unit.cost.time * amount;
+        let trainingTimeMultiplier = 1.0;
+        if (playerAlliance?.research) {
+            const trainingBoostLevel = playerAlliance.research.training_regimens?.level || 0;
+            trainingTimeMultiplier -= trainingBoostLevel * 0.01;
+        }
+
+        const trainingTime = isInstantUnits ? 1 : (unit.cost.time * amount * trainingTimeMultiplier);
         const endTime = new Date(lastEndTime + trainingTime * 1000);
 
         const newQueueItem = {

@@ -136,18 +136,36 @@ export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInsta
             }
         }
 
+        // Apply alliance research buffs
+        if (playerAlliance?.research) {
+            const woodBoostLevel = playerAlliance.research.forestry_experts?.level || 0;
+            const stoneBoostLevel = playerAlliance.research.masonry_techniques?.level || 0;
+            const silverBoostLevel = playerAlliance.research.coinage_reform?.level || 0;
+
+            rates.wood *= (1 + woodBoostLevel * 0.02);
+            rates.stone *= (1 + stoneBoostLevel * 0.02);
+            rates.silver *= (1 + silverBoostLevel * 0.02);
+        }
+
         rates.wood = Math.floor(rates.wood * happinessBonus);
         rates.stone = Math.floor(rates.stone * happinessBonus);
         rates.silver = Math.floor(rates.silver * happinessBonus);
 
         return rates;
-    }, [calculateHappiness, cityGameState, activeCityId]);
+    }, [calculateHappiness, cityGameState, activeCityId, playerAlliance]);
 
     // #comment Adjusted warehouse capacity for better resource balance.
     const getWarehouseCapacity = useCallback((level) => {
         if (!level) return 0;
-        return Math.floor(1500 * Math.pow(1.4, level - 1));
-    }, []);
+        let capacity = Math.floor(1500 * Math.pow(1.4, level - 1));
+        
+        if (playerAlliance?.research) {
+            const warehouseBoostLevel = playerAlliance.research.advanced_storage?.level || 0;
+            capacity *= (1 + warehouseBoostLevel * 0.05);
+        }
+
+        return Math.floor(capacity);
+    }, [playerAlliance]);
 
     // #comment Adjusted farm capacity for better population balance.
     const getFarmCapacity = useCallback((level) => {
@@ -356,7 +374,13 @@ export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInsta
 
                 const templeLevel = newState.buildings.temple?.level || 0;
                 if (newState.god && templeLevel > 0) {
-                    const favorPerSecond = templeLevel / 3600;
+                    let favorPerSecond = templeLevel / 3600;
+
+                    if (playerAlliance?.research) {
+                        const favorBoostLevel = playerAlliance.research.divine_devotion?.level || 0;
+                        favorPerSecond *= (1 + favorBoostLevel * 0.02);
+                    }
+
                     const maxFavor = 100 + (templeLevel * 20);
                     newState.worship[newState.god] = Math.min(maxFavor, (prevState.worship[newState.god] || 0) + favorPerSecond * elapsedSeconds);
                 }
@@ -366,7 +390,7 @@ export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInsta
             });
         }, 1000);
         return () => clearInterval(interval);
-    }, [activeCityId, getProductionRates, getWarehouseCapacity]);
+    }, [activeCityId, getProductionRates, getWarehouseCapacity, playerAlliance]);
 
     useEffect(() => {
     const processQueue = async () => {

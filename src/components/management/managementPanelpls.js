@@ -332,7 +332,15 @@ const GameDataEditor = ({ dataType }) => {
     
     const typeOptions = {
         'Effect': ['unit_speed_land', 'build_time', 'unit_attack_ranged', 'unit_speed_naval', 'unit_defense_hoplite', 'speed_boost_all', 'transport_capacity_boost', 'scout_power_boost'],
-        'Effect/Bonus': ['attack_boost', 'defense_boost', 'speed_boost', 'max_members', 'bank_capacity', 'naval_boost', 'land_boost', 'mythic_boost', 'population_boost', 'trade_boost', 'research_boost', 'fortification_boost', 'morale_boost', 'trade_efficiency'],
+        'Effect/Bonus': [
+            'attack_boost', 'defense_boost', 'speed_boost', 'max_members', 
+            'bank_capacity', 'naval_boost', 'land_boost', 'mythic_boost', 
+            'population_boost', 'trade_boost', 'research_boost', 'fortification_boost', 
+            'morale_boost', 'trade_efficiency', 'production_boost_wood', 'production_boost_stone',
+            'production_boost_silver', 'donation_cooldown_reduction', 'donation_limit_increase',
+            'village_demand_boost', 'cave_capacity_boost', 'warehouse_capacity_boost',
+            'favor_production_boost', 'unit_training_speed_boost'
+        ],
     };
 
     const renderEditor = () => {

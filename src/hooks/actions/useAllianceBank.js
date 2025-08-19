@@ -41,8 +41,11 @@ export const useAllianceBankActions = (playerAlliance) => {
             const now = new Date();
             const today = now.toISOString().split('T')[0];
 
-            if (now.getTime() - (userActivityData.lastDonation || 0) < 5 * 60 * 1000) {
-                const waitTime = Math.ceil((5 * 60 * 1000 - (now.getTime() - userActivityData.lastDonation)) / 1000);
+            const cooldownReductionLevel = allianceData.research?.rapid_donations?.level || 0;
+            const donationCooldown = (5 * 60 * 1000) - (cooldownReductionLevel * 15 * 1000);
+
+            if (now.getTime() - (userActivityData.lastDonation || 0) < donationCooldown) {
+                const waitTime = Math.ceil((donationCooldown - (now.getTime() - userActivityData.lastDonation)) / 1000);
                 throw new Error(`You must wait ${waitTime} seconds between donations.`);
             }
 
@@ -51,9 +54,12 @@ export const useAllianceBankActions = (playerAlliance) => {
                 dailyTotal = 0;
             }
 
+            const limitIncreaseLevel = allianceData.research?.generous_contributions?.level || 0;
+            const dailyDonationLimit = 50000 + (limitIncreaseLevel * 10000);
+
             const totalDonation = Object.values(donation).reduce((a, b) => a + b, 0);
-            if (dailyTotal + totalDonation > 50000) {
-                throw new Error(`You have reached your daily donation limit of 50,000. You have ${50000 - dailyTotal} left to donate today.`);
+            if (dailyTotal + totalDonation > dailyDonationLimit) {
+                throw new Error(`You have reached your daily donation limit of ${dailyDonationLimit.toLocaleString()}. You have ${dailyDonationLimit - dailyTotal} left to donate today.`);
             }
 
             const newCityResources = { ...cityData.resources };

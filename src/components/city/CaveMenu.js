@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import Modal from '../shared/Modal'; // Assuming you have a Modal component
 import buildingConfig from '../../gameData/buildings.json';
+import { useAlliance } from '../../contexts/AllianceContext';
 
 const CaveMenu = ({ cityGameState, onClose, saveGameState, currentUser, worldId }) => {
     const [depositAmount, setDepositAmount] = useState('');
     const [withdrawAmount, setWithdrawAmount] = useState('');
     const [message, setMessage] = useState('');
+    const { playerAlliance } = useAlliance();
 
     console.log("CaveMenu rendered. cityGameState:", cityGameState); // Debugging
 
@@ -16,7 +18,16 @@ const CaveMenu = ({ cityGameState, onClose, saveGameState, currentUser, worldId 
 
     const caveLevel = cityGameState.buildings.cave?.level || 0;
     const maxCaveLevel = buildingConfig.cave.maxLevel;
-    const maxSilverStorage = caveLevel === maxCaveLevel ? Infinity : caveLevel * 1000;
+    
+    let maxSilverStorage = caveLevel === maxCaveLevel ? Infinity : caveLevel * 1000;
+    if (playerAlliance?.research) {
+        const caveBoostLevel = playerAlliance.research.subterranean_expansion?.level || 0;
+        if (maxSilverStorage !== Infinity) {
+            maxSilverStorage *= (1 + caveBoostLevel * 0.05);
+        }
+    }
+    maxSilverStorage = Math.floor(maxSilverStorage);
+
     const currentSilverInCave = cityGameState.cave?.silver || 0;
 
     const handleDeposit = async () => {
