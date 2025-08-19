@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import agentsConfig from '../../gameData/agents.json';
 import unitConfig from '../../gameData/units.json';
 import { useGame } from '../../contexts/GameContext';
@@ -19,6 +19,7 @@ const EmptyCityModal = ({ plot, onClose, onFoundCity, cityGameState, playerCity 
     const { worldState } = useGame();
     const [selectedAgent, setSelectedAgent] = useState('architect');
     const [selectedUnits, setSelectedUnits] = useState({ villager: 1 });
+
     const availableArchitects = cityGameState.agents?.architect || 0;
 
     const landUnits = useMemo(() => {
@@ -46,31 +47,30 @@ const EmptyCityModal = ({ plot, onClose, onFoundCity, cityGameState, playerCity 
     const totalSelectedUnits = Object.values(selectedUnits).reduce((sum, count) => sum + count, 0);
     const hasVillager = (selectedUnits.villager || 0) > 0;
 
-    // #comment Calculate travel and founding time
     const timeInfo = useMemo(() => {
         const slowestSpeed = Object.entries(selectedUnits)
             .filter(([, count]) => count > 0)
             .map(([unitId]) => unitConfig[unitId].speed)
             .reduce((min, speed) => Math.min(min, speed), Infinity);
-
-        const distance = calculateDistance(playerCity, plot);
+        
+        // #comment Use cityGameState for distance calculation to ensure correct coordinates.
+        const distance = calculateDistance(cityGameState, plot);
         const travelTimeSeconds = slowestSpeed === Infinity ? 0 : calculateTravelTime(distance, slowestSpeed, 'found_city', worldState, ['land']);
         
-        const baseFoundingTime = 86400; // 24 hours
-        const reductionPerVillager = 3600; // 1 hour
+        const baseFoundingTime = 86400;
+        const reductionPerVillager = 3600;
         const villagers = selectedUnits.villager || 0;
         const foundingTimeSeconds = Math.max(3600, baseFoundingTime - (villagers * reductionPerVillager));
-
         return { travelTimeSeconds, foundingTimeSeconds, totalTimeSeconds: travelTimeSeconds + foundingTimeSeconds };
-    }, [selectedUnits, playerCity, plot, worldState]);
+    }, [selectedUnits, cityGameState, plot, worldState]);
 
     const formatDuration = (seconds) => {
-        const h = Math.floor(seconds / 3600);
-        const m = Math.floor((seconds % 3600) / 60);
-        const s = Math.floor(seconds % 60);
+        const totalSeconds = Math.round(seconds);
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
         return `${h}h ${m}m ${s}s`;
     };
-
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
@@ -125,13 +125,11 @@ const EmptyCityModal = ({ plot, onClose, onFoundCity, cityGameState, playerCity 
                     </div>
                      <p className="text-xs text-gray-400 mt-1">More villagers will reduce the founding time. You must send at least one villager.</p>
                 </div>
-
                 <div className="text-center my-4 p-2 bg-gray-700 rounded">
                     <p>Travel Time: <span className="font-bold text-yellow-400">{formatDuration(timeInfo.travelTimeSeconds)}</span></p>
                     <p>Founding Time: <span className="font-bold text-yellow-400">{formatDuration(timeInfo.foundingTimeSeconds)}</span></p>
                     <p className="border-t border-gray-600 mt-1 pt-1">Total Time: <span className="font-bold text-yellow-400">{formatDuration(timeInfo.totalTimeSeconds)}</span></p>
                 </div>
-
                 <div className="flex justify-end space-x-4 mt-6">
                     <button onClick={onClose} className="btn btn-secondary">Cancel</button>
                     <button

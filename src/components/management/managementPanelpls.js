@@ -10,10 +10,8 @@ import allianceResearchData from '../../gameData/allianceResearch.json';
 import heroesData from '../../gameData/heroes.json';
 import ruinsResearchData from '../../gameData/ruinsResearch.json';
 import specialBuildingsData from '../../gameData/specialBuildings.json';
-
 import './managementPanel.css';
 
-// #comment A generic component for an editable field
 const EditableField = ({ label, value, onChange, type = 'text', options }) => (
     <div className="flex flex-col mb-2">
         <label className="text-sm font-semibold mb-1">{label}</label>
@@ -31,13 +29,10 @@ const EditableField = ({ label, value, onChange, type = 'text', options }) => (
     </div>
 );
 
-// #comment A component to edit a nested object, like 'cost' or 'rewards'
 const ObjectEditor = ({ data, onChange, title, typeOptions = {} }) => {
-    // #comment If data is null or undefined, don't render the component to prevent errors.
     if (!data) {
         return null;
     }
-
     const handleValueChange = (key, value) => {
         const newData = { ...data };
         newData[key] = isNaN(parseFloat(value)) ? value : parseFloat(value);
@@ -69,7 +64,6 @@ const ObjectEditor = ({ data, onChange, title, typeOptions = {} }) => {
                         </div>
                     );
                 }
-                // #comment If type options are provided for this key, render a dropdown
                 if (key === 'type' && typeOptions[title]) {
                     return (
                         <div key={key} className="flex items-center justify-between my-1">
@@ -96,8 +90,6 @@ const ObjectEditor = ({ data, onChange, title, typeOptions = {} }) => {
     );
 };
 
-
-// #comment A component to edit an array of strings, like 'counters'
 const ArrayEditor = ({ data, onChange, title, options }) => {
     const handleAddItem = () => {
         if (options && options.length > 0) {
@@ -133,7 +125,6 @@ const ArrayEditor = ({ data, onChange, title, options }) => {
     );
 };
 
-// #comment A component for editing an array of complex objects, like a god's powers or hero's skills
 const ComplexArrayEditor = ({ data, onChange, title, type, typeOptions }) => {
     const handleItemChange = (index, field, value) => {
         const newItems = [...data];
@@ -158,7 +149,7 @@ const ComplexArrayEditor = ({ data, onChange, title, type, typeOptions }) => {
     };
 
     const handleAddItem = () => {
-        const newItem = type === 'powers' 
+        const newItem = type === 'powers'
             ? { name: "New Power", description: "", favorCost: 0, effect: {} }
             : { name: "New Skill", type: "battle", description: "", cost: { favor: { base: 10, perLevel: 1 } }, cooldown: 3600, icon: "", effect: {} };
         onChange([...(data || []), newItem]);
@@ -181,9 +172,8 @@ const ComplexArrayEditor = ({ data, onChange, title, type, typeOptions }) => {
                     {type === 'powers' && <EditableField label="Favor Cost" value={item.favorCost} onChange={(e) => handleItemChange(index, 'favorCost', parseInt(e.target.value) || 0)} type="number" />}
                     {type === 'skills' && <EditableField label="Type" value={item.type} onChange={(e) => handleItemChange(index, 'type', e.target.value)} type="select" options={['battle', 'city']} />}
                     {type === 'skills' && <EditableField label="Cost (JSON)" value={JSON.stringify(item.cost, null, 2)} onChange={(e) => handleNestedChange(index, 'cost', e.target.value)} type="textarea" />}
-                    
-                    {/* #comment Use ObjectEditor for effects in skills */}
-                    {type === 'skills' ? 
+                    {}
+                    {type === 'skills' ?
                         <ObjectEditor data={item.effect} onChange={(val) => handleEffectChange(index, val)} title="Effect/Bonus" typeOptions={typeOptions} />
                         :
                         <EditableField label="Effect (JSON)" value={JSON.stringify(item.effect, null, 2)} onChange={(e) => handleNestedChange(index, 'effect', e.target.value)} type="textarea" />
@@ -195,10 +185,8 @@ const ComplexArrayEditor = ({ data, onChange, title, type, typeOptions }) => {
     );
 };
 
-// #comment Modal for creating a new game data item
 const NewItemModal = ({ onConfirm, onCancel, dataType }) => {
     const [newItemId, setNewItemId] = useState('');
-
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-70">
             <div className="bg-gray-800 p-6 rounded-lg text-white w-full max-w-sm">
@@ -221,6 +209,7 @@ const NewItemModal = ({ onConfirm, onCancel, dataType }) => {
 
 // #comment The main component for editing all game data
 const GameDataEditor = ({ dataType }) => {
+    const allNations = ['Athenian', 'Spartan', 'Corinthian', 'Julian', 'Cornelian', 'Fabian', 'Ptolemaic', 'Nubian', 'Bedouin'];
     const [data, setData] = useState(() => {
         // #comment Pre-process troop data to ensure heal_cost and heal_time exist for all units
         const troopsWithDefaults = { ...unitConfigData };
@@ -262,7 +251,7 @@ const GameDataEditor = ({ dataType }) => {
         console.log("Updated Game Data:", JSON.stringify(data, null, 2));
         alert("Game data saved to console! Refresh the page to see changes in other parts of the UI.");
     };
-
+    
     const handleSelect = (id) => {
         setSelectedItemId(id);
     };
@@ -274,11 +263,15 @@ const GameDataEditor = ({ dataType }) => {
             setData(newData);
         } else {
             const newActiveData = { ...activeData };
-            newActiveData[selectedItemId][field] = value;
+            if (dataType === 'troops' && field === 'nation' && value === 'None') {
+                delete newActiveData[selectedItemId][field];
+            } else {
+                newActiveData[selectedItemId][field] = value;
+            }
             setData(prev => ({ ...prev, [dataType]: newActiveData }));
         }
     };
-    
+
     const handleAddNewItem = (newItemId) => {
         if (!newItemId.trim()) {
             alert("ID cannot be empty.");
@@ -288,7 +281,6 @@ const GameDataEditor = ({ dataType }) => {
             alert("An item with this ID already exists.");
             return;
         }
-
         let newItem = {};
         switch (dataType) {
             case 'troops':
@@ -336,18 +328,17 @@ const GameDataEditor = ({ dataType }) => {
             default:
                 break;
         }
-
         setData(prev => ({ ...prev, [dataType]: { ...prev[dataType], [newItemId]: newItem } }));
         setIsAddingNew(false);
         setSelectedItemId(newItemId);
     };
-    
+
     const typeOptions = {
         'Effect': ['unit_speed_land', 'build_time', 'unit_attack_ranged', 'unit_speed_naval', 'unit_defense_hoplite', 'speed_boost_all', 'transport_capacity_boost', 'scout_power_boost'],
         'Effect/Bonus': [
-            'attack_boost', 'defense_boost', 'speed_boost', 'max_members', 
-            'bank_capacity', 'naval_boost', 'land_boost', 'mythic_boost', 
-            'population_boost', 'trade_boost', 'research_boost', 'fortification_boost', 
+            'attack_boost', 'defense_boost', 'speed_boost', 'max_members',
+            'bank_capacity', 'naval_boost', 'land_boost', 'mythic_boost',
+            'population_boost', 'trade_boost', 'research_boost', 'fortification_boost',
             'morale_boost', 'trade_efficiency', 'production_boost_wood', 'production_boost_stone',
             'production_boost_silver', 'donation_cooldown_reduction', 'donation_limit_increase',
             'village_demand_boost', 'cave_capacity_boost', 'warehouse_capacity_boost',
@@ -357,12 +348,16 @@ const GameDataEditor = ({ dataType }) => {
 
     const renderEditor = () => {
         if (!selectedItem) return <div className="text-center p-8">Select an item to edit.</div>;
-
         switch (dataType) {
             case 'troops':
                 return (
                     <div className="p-2">
+                        <div className="flex flex-col mb-2">
+                            <label className="text-sm font-semibold mb-1">ID</label>
+                            <input value={selectedItemId} readOnly className="p-1 rounded bg-amber-100/50 border border-amber-700" />
+                        </div>
                         <EditableField label="Name" value={selectedItem.name} onChange={(e) => handleFieldChange('name', e.target.value)} />
+                        <EditableField label="Nation" value={selectedItem.nation || 'None'} onChange={(e) => handleFieldChange('nation', e.target.value)} type="select" options={['None', ...allNations]} />
                         <EditableField label="Description" value={selectedItem.description} onChange={(e) => handleFieldChange('description', e.target.value)} type="textarea" />
                         <EditableField label="Type" value={selectedItem.type} onChange={(e) => handleFieldChange('type', e.target.value)} type="select" options={['land', 'naval']} />
                         <EditableField label="Flying" value={selectedItem.flying} onChange={(e) => handleFieldChange('flying', e.target.checked)} type="checkbox" />
@@ -426,21 +421,18 @@ const GameDataEditor = ({ dataType }) => {
                     const newPassive = { ...selectedItem.passive, [field]: value };
                     handleFieldChange('passive', newPassive);
                 };
-
                 return (
                     <div className="p-2">
                         <EditableField label="Name" value={selectedItem.name} onChange={(e) => handleFieldChange('name', e.target.value)} />
                         <EditableField label="Description" value={selectedItem.description} onChange={(e) => handleFieldChange('description', e.target.value)} type="textarea" />
                         <ObjectEditor data={selectedItem.cost} onChange={(val) => handleFieldChange('cost', val)} title="Recruit Cost" />
                         <ObjectEditor data={selectedItem.levelUpCost} onChange={(val) => handleFieldChange('levelUpCost', val)} title="Level Up Cost" />
-                        
                         <div className="p-2 border border-amber-700 rounded mt-2">
                             <h4 className="font-bold text-center">Passive Skill</h4>
                             <EditableField label="Passive Name" value={selectedItem.passive.name} onChange={(e) => handlePassiveChange('name', e.target.value)} />
                             <EditableField label="Passive Description" value={selectedItem.passive.description} onChange={(e) => handlePassiveChange('description', e.target.value)} type="textarea" />
                             <ObjectEditor data={selectedItem.passive.effect} onChange={(val) => handlePassiveChange('effect', val)} title="Effect/Bonus" typeOptions={typeOptions} />
                         </div>
-
                         <ComplexArrayEditor data={selectedItem.skills || []} onChange={(val) => handleFieldChange('skills', val)} title="Active Skills" type="skills" typeOptions={typeOptions}/>
                     </div>
                 );
@@ -460,7 +452,7 @@ const GameDataEditor = ({ dataType }) => {
                 return <p>Editor not implemented for this type.</p>;
         }
     };
-    
+
     const renderList = () => {
         if (dataType === 'gods') {
             if (!selectedGodReligion) {
@@ -482,7 +474,6 @@ const GameDataEditor = ({ dataType }) => {
                 </>
             );
         }
-
         return (
             <>
                 <button onClick={() => setIsAddingNew(true)} className="p-2 font-bold text-green-600 hover:bg-green-200/50 w-full text-left">New...</button>
@@ -513,7 +504,6 @@ const GameDataEditor = ({ dataType }) => {
 
 const ManagementPanel = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState('troops');
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
             <div className="management-panel-container" onClick={e => e.stopPropagation()}>

@@ -37,6 +37,7 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
 
     const handleSendMovement = useCallback(async (movementDetails) => {
         const { mode, targetCity, units, resources, attackFormation, hero } = movementDetails;
+
         if (!playerCity) {
             setMessage("Cannot send movement: Your city data could not be found.");
             return;
@@ -45,7 +46,6 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
             setMessage("You can only attack villages from a city on the same island.");
             return;
         }
-
         const isCrossIsland = targetCity.isRuinTarget || targetCity.isGodTownTarget ? true : playerCity.islandId !== targetCity.islandId;
         let hasLandUnits = false, hasNavalUnits = false, hasFlyingUnits = false, totalTransportCapacity = 0, totalLandUnitsToSend = 0;
 
@@ -65,7 +65,7 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
 
         if (isCrossIsland && hasLandUnits && !hasNavalUnits && !hasFlyingUnits) { setMessage("Ground troops cannot travel across the sea without transport ships."); return; }
         if (isCrossIsland && hasLandUnits && totalTransportCapacity < totalLandUnitsToSend && !hasFlyingUnits) { setMessage(`Not enough transport ship capacity. Need ${totalLandUnitsToSend - totalTransportCapacity} more capacity.`); return; }
-
+        
         const unitTypes = [];
         if (hasLandUnits) unitTypes.push('land');
         if (hasNavalUnits) unitTypes.push('naval');
@@ -73,6 +73,7 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
 
         const batch = writeBatch(db);
         const newMovementRef = doc(collection(db, 'worlds', worldId, 'movements'));
+
         const finalTargetOwnerId = targetCity.ownerId || currentUser.uid;
         const isOwnCityTarget = finalTargetOwnerId === currentUser.uid;
         let targetCityDocId = null;
@@ -97,10 +98,10 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
                 }
             }
         }
-
+        
         const distance = calculateDistance(playerCity, targetCity);
         const unitsBeingSent = Object.entries(units || {}).filter(([, count]) => count > 0);
-
+        
         if (unitsBeingSent.length === 0 && !['trade', 'scout'].includes(mode) && !hero) {
             setMessage("No units or hero selected for movement.");
             return;
@@ -108,12 +109,14 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
 
         const slowestSpeed = unitsBeingSent.length > 0
             ? Math.min(...unitsBeingSent.map(([unitId]) => unitConfig[unitId].speed))
-            : 10;
+            : 10; 
+        
         const travelSeconds = calculateTravelTime(distance, slowestSpeed, mode, worldState, unitTypes);
         const arrivalTime = new Date(Date.now() + travelSeconds * 1000);
         const cancellableUntil = new Date(Date.now() + 30 * 1000);
 
         let movementData;
+
         if (mode === 'attack' && targetCity.isGodTownTarget) {
             movementData = {
                 type: 'attack_god_town',
@@ -137,7 +140,7 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
                 isCrossIsland: true,
             };
         } else if (mode === 'attack' && targetCity.isVillageTarget) {
-            movementData = {
+             movementData = {
                 type: 'attack_village',
                 originCityId: playerCity.id,
                 originCoords: { x: playerCity.x, y: playerCity.y },
@@ -181,8 +184,9 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
                 isRuinTarget: true,
                 isCrossIsland: true,
             };
-        } else {
-            movementData = {
+        }
+        else {
+             movementData = {
                 type: mode,
                 originCityId: playerCity.id,
                 originCoords: { x: playerCity.x, y: playerCity.y },
@@ -228,7 +232,7 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
                 updatedResources[resource] -= resources[resource];
             }
         }
-
+        
         const updatedHeroes = gameState.heroes ? { ...gameState.heroes } : {};
         if (hero && updatedHeroes[hero]) {
             updatedHeroes[hero].cityId = playerCity.id;
@@ -274,9 +278,11 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
                 if (new Date() > cancellableUntil) {
                     throw new Error("The grace period to cancel this movement has passed.");
                 }
+                
                 const now = Date.now();
                 const departureTimeData = movementData.departureTime;
                 const departureTime = departureTimeData?.toDate ? departureTimeData.toDate().getTime() : new Date(departureTimeData).getTime();
+
                 const elapsedTime = now - departureTime;
                 const returnArrivalTime = new Date(now + elapsedTime);
 
@@ -284,7 +290,7 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
                     status: 'returning',
                     arrivalTime: returnArrivalTime,
                     departureTime: serverTimestamp(),
-                    cancellableUntil: new Date(0)
+                    cancellableUntil: new Date(0) 
                 });
             });
             setMessage("Movement is now returning.");
@@ -310,7 +316,6 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
             if (!slotSnap.exists() || slotSnap.data().ownerId !== null) {
                 throw new Error("Slot is already taken.");
             }
-
             const batch = writeBatch(db);
             const dummyCityName = `${dummyUsername}'s Outpost`;
             batch.update(citySlotRef, {
@@ -318,13 +323,11 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
                 ownerUsername: dummyUsername,
                 cityName: dummyCityName,
             });
-
             const initialBuildings = {};
             Object.keys(buildingConfig).forEach(key => {
                 initialBuildings[key] = { level: 0 };
             });
             initialBuildings.senate = { level: 1 };
-
             const newCityData = {
                 id: newCityDocRef.id,
                 slotId: citySlotId,
@@ -336,7 +339,6 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
                 lastUpdated: Date.now(),
             };
             batch.set(newCityDocRef, newCityData);
-
             await batch.commit();
             setMessage(`Dummy city "${dummyCityName}" created successfully!`);
             invalidateChunkCache(slotData.x, slotData.y);
@@ -345,8 +347,7 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
             setMessage(`Failed to create dummy city: ${error.message}`);
         }
     }, [userProfile, worldId, invalidateChunkCache, setMessage]);
-
-    // #comment Create a 'found_city' movement instead of instantly founding a city
+    
     const handleFoundCity = useCallback(async (plot, agentId, units) => {
         if (!playerCity || !gameState) {
             setMessage("Cannot found city: Your city data could not be found.");
@@ -354,11 +355,22 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
         }
         const newMovementRef = doc(collection(db, 'worlds', worldId, 'movements'));
         const batch = writeBatch(db);
+    
+        // #comment Calculate travel time for the journey to the plot, then founding time separately.
+        const slowestSpeed = Object.entries(units)
+            .filter(([, count]) => count > 0)
+            .map(([unitId]) => unitConfig[unitId].speed)
+            .reduce((min, speed) => Math.min(min, speed), Infinity);
+        
+        const distance = calculateDistance(playerCity, plot);
+        const travelSeconds = slowestSpeed === Infinity ? 0 : calculateTravelTime(distance, slowestSpeed, 'found_city', worldState, ['land']);
+        const arrivalTime = new Date(Date.now() + travelSeconds * 1000);
+
         const baseFoundingTime = 86400;
         const reductionPerVillager = 3600;
         const villagers = units.villager || 0;
         const foundingTimeSeconds = Math.max(3600, baseFoundingTime - (villagers * reductionPerVillager));
-        const arrivalTime = new Date(Date.now() + foundingTimeSeconds * 1000);
+    
         const existingCityNames = Object.values(playerCities).map(c => c.cityName);
         const baseName = `${userProfile.username}'s Colony`;
         let finalCityName = baseName;
@@ -387,7 +399,8 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
             arrivalTime: arrivalTime,
             status: 'moving',
             involvedParties: [currentUser.uid],
-            newCityName: finalCityName
+            newCityName: finalCityName,
+            foundingTimeSeconds: foundingTimeSeconds
         };
         batch.set(newMovementRef, movementData);
         const gameDocRef = doc(db, `users/${currentUser.uid}/games`, worldId, 'cities', playerCity.id);
@@ -414,7 +427,7 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
             console.error("Error sending founding party:", error);
             setMessage(`Failed to send founding party: ${error.message}`);
         }
-    }, [currentUser, userProfile, worldId, gameState, playerCity, setGameState, setMessage, playerCities]);
+    }, [currentUser, userProfile, worldId, gameState, playerCity, setGameState, setMessage, playerCities, worldState]);
 
     const handleWithdrawTroops = useCallback(async (reinforcedCity, withdrawalData) => {
         if (!reinforcedCity || !reinforcedCity.ownerId) {
@@ -423,23 +436,28 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
         }
         const reinforcedCityOwnerId = reinforcedCity.ownerId;
         const reinforcedCitySlotId = reinforcedCity.slotId || reinforcedCity.id;
+
         const batch = writeBatch(db);
+
         for (const originCityId in withdrawalData) {
             const unitsToWithdraw = withdrawalData[originCityId];
             if (Object.values(unitsToWithdraw).every(amount => amount === 0)) {
                 continue;
             }
+
             const newMovementRef = doc(collection(db, 'worlds', worldId, 'movements'));
             const originCity = playerCities[originCityId];
             if (!originCity) {
                 console.error(`Could not find origin city with ID ${originCityId} for withdrawal.`);
                 continue;
             }
+
             const distance = calculateDistance(reinforcedCity, originCity);
             const speeds = Object.keys(unitsToWithdraw).map(unitId => unitConfig[unitId].speed);
             const slowestSpeed = Math.min(...speeds);
             const travelSeconds = calculateTravelTime(distance, slowestSpeed);
             const arrivalTime = new Date(Date.now() + travelSeconds * 1000);
+
             const movementData = {
                 type: 'return',
                 status: 'returning',
@@ -456,11 +474,13 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
             };
             batch.set(newMovementRef, movementData);
         }
+
         try {
-            await runTransaction(db, async (transaction) => {
+             await runTransaction(db, async (transaction) => {
                 const citiesRef = collection(db, `users/${reinforcedCityOwnerId}/games`, worldId, 'cities');
                 const q = query(citiesRef, where('slotId', '==', reinforcedCitySlotId), limit(1));
                 const cityQuerySnap = await getDocs(q);
+
                 if (cityQuerySnap.empty) {
                     console.warn(`Could not find city doc for slotId ${reinforcedCitySlotId} to update reinforcements.`);
                     return;
@@ -468,12 +488,15 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
                 const reinforcedCityDocId = cityQuerySnap.docs[0].id;
                 const reinforcedCityRef = doc(db, `users/${reinforcedCityOwnerId}/games`, worldId, 'cities', reinforcedCityDocId);
                 const citySlotRef = doc(db, 'worlds', worldId, 'citySlots', reinforcedCitySlotId);
+
                 const reinforcedCitySnap = await transaction.get(reinforcedCityRef);
                 if (!reinforcedCitySnap.exists()) {
                     throw new Error("Reinforced city data not found.");
                 }
+
                 const currentReinforcements = reinforcedCitySnap.data().reinforcements || {};
                 const newReinforcements = JSON.parse(JSON.stringify(currentReinforcements));
+
                 for (const originCityId in withdrawalData) {
                     const unitsToWithdraw = withdrawalData[originCityId];
                     for (const unitId in unitsToWithdraw) {
