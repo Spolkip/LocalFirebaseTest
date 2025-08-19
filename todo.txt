@@ -7,3 +7,4 @@ Later:
 
 
 Bugs:
+- share report dont work

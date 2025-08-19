@@ -35,8 +35,10 @@ const MapModals = ({
 }) => {
     const { currentUser } = useAuth();
     const { selectedCity } = modalState;
+
     const renderCityInteraction = () => {
         if (!selectedCity) return null;
+
         if (selectedCity.isRuinTarget || selectedCity.isVillageTarget) {
             return (
                 <OtherCityModal
@@ -53,9 +55,11 @@ const MapModals = ({
                 />
             );
         }
+
         const isOwn = selectedCity.ownerId === currentUser.uid;
         const isActive = gameState?.id === selectedCity.id;
         const hasReinforcements = selectedCity.reinforcements && Object.keys(selectedCity.reinforcements).length > 0;
+
         let allActions = [];
         if (isOwn) {
             if (isActive) {
@@ -82,12 +86,15 @@ const MapModals = ({
                 { label: 'Reinforce', icon: '🛡️', handler: () => handleActionClick('reinforce', selectedCity) },
                 { label: 'Scout', icon: '👁️', handler: () => handleActionClick('scout', selectedCity) },
                 { label: 'Trade', icon: '⚖️', handler: () => handleActionClick('trade', selectedCity) },
-                { label: 'Cast Spell', icon: '✨', handler: () => onCastSpell(null, selectedCity) },
+                // #comment Corrected this handler to use handleActionClick
+                { label: 'Cast Spell', icon: '✨', handler: () => handleActionClick('castSpell', selectedCity) },
                 { label: 'Profile', icon: '👤', handler: () => handleActionClick('profile', selectedCity) },
             ];
         }
+
         const centerAction = allActions.find(a => a.label === 'Select City');
         const radialActions = allActions.filter(a => a.label !== 'Select City');
+
         return (
             <RadialMenu
                 actions={radialActions}
@@ -97,6 +104,7 @@ const MapModals = ({
             />
         );
     };
+
     return (
         <>
             {renderCityInteraction()}
@@ -152,4 +160,5 @@ const MapModals = ({
         </>
     );
 };
+
 export default MapModals;

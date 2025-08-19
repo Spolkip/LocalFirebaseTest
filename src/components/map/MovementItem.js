@@ -21,6 +21,7 @@ const MovementItem = ({ movement, citySlots, onCancel, onRush, isAdmin }) => {
     // #comment Determine the correct target ID from the movement object, with fallbacks
     const targetId = movement.targetCityId || movement.targetSlotId || movement.targetVillageId || movement.targetRuinId || movement.targetTownId;
     const targetLocation = citySlots[targetId];
+
     const movementTypes = {
         attack: { icon: '⚔️' },
         attack_village: { icon: '⚔️' },
@@ -52,9 +53,11 @@ const MovementItem = ({ movement, citySlots, onCancel, onRush, isAdmin }) => {
     const destinationName = targetLocation?.cityName || targetLocation?.name || movement.targetCityName || movement.targetVillageName || movement.targetRuinName || movement.targetTownName || movement.targetPlotName || 'Unknown';
     const originName = originCity?.cityName || movement.originCityName || 'Unknown';
     const actionText = movement.type.replace(/_/g, ' ');
+
     const titleText = movement.status === 'returning'
         ? `Returning from ${destinationName}`
         : `${actionText} from ${originName} to ${destinationName}`;
+
     const cancellableDate = movement.cancellableUntil?.toDate();
     const arrivalDate = movement.arrivalTime?.toDate();
 

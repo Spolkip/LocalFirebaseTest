@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { db } from '../firebase/config';
-import { collection, query, where, getDocs, writeBatch, doc, getDoc, serverTimestamp, runTransaction, arrayUnion, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, writeBatch, doc, getDoc, serverTimestamp, runTransaction, arrayUnion, deleteDoc, updateDoc } from 'firebase/firestore';
 import { resolveCombat, resolveScouting, getVillageTroops } from '../utils/combat';
 import { useCityState } from './useCityState';
 import unitConfig from '../gameData/units.json';
@@ -18,119 +18,127 @@ export const useMovementProcessor = (worldId) => {
     const processMovement = useCallback(async (movementDoc) => {
         console.log(`Processing movement ID: ${movementDoc.id}`);
         const movement = { id: movementDoc.id, ...movementDoc.data() };
-        
         const originCityRef = doc(db, `users/${movement.originOwnerId}/games`, worldId, 'cities', movement.originCityId);
+
         let targetCityRef;
         if (movement.targetOwnerId && movement.targetCityId) {
             targetCityRef = doc(db, `users/${movement.targetOwnerId}/games`, worldId, 'cities', movement.targetCityId);
         }
 
-        // #comment Handle city founding with a transaction to prevent race conditions
-        if (movement.type === 'found_city' && movement.status === 'moving') {
+        // #comment Handle city founding movements
+        if (movement.type === 'found_city') {
             const targetSlotRef = doc(db, 'worlds', worldId, 'citySlots', movement.targetSlotId);
-            const newCityDocRef = doc(collection(db, `users/${movement.originOwnerId}/games`, worldId, 'cities'));
 
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const [targetSlotSnap, originCitySnap] = await Promise.all([
-                        transaction.get(targetSlotRef),
-                        transaction.get(originCityRef)
-                    ]);
+            if (movement.status === 'moving') {
+                // Troops have arrived, now start the founding timer.
+                const newArrivalTime = new Date(Date.now() + movement.foundingTimeSeconds * 1000);
+                await updateDoc(movementDoc.ref, {
+                    status: 'founding',
+                    arrivalTime: newArrivalTime,
+                });
+                return; // Stop processing, wait for founding to finish
+            }
 
-                    if (!originCitySnap.exists()) {
-                        transaction.delete(movementDoc.ref);
-                        return;
-                    }
-
-                    if (!targetSlotSnap.exists() || targetSlotSnap.data().ownerId !== null) {
-                        const travelDuration = movement.arrivalTime.toMillis() - movement.departureTime.toMillis();
-                        const returnArrivalTime = new Date(movement.arrivalTime.toDate().getTime() + travelDuration);
-                        transaction.update(movementDoc.ref, {
-                            status: 'returning',
-                            units: movement.units,
-                            agent: movement.agent,
-                            arrivalTime: returnArrivalTime,
-                            involvedParties: [movement.originOwnerId]
+            if (movement.status === 'founding') {
+                const newCityDocRef = doc(collection(db, `users/${movement.originOwnerId}/games`, worldId, 'cities'));
+                try {
+                    await runTransaction(db, async (transaction) => {
+                        const [targetSlotSnap, originCitySnap] = await Promise.all([
+                            transaction.get(targetSlotRef),
+                            transaction.get(originCityRef)
+                        ]);
+                        if (!originCitySnap.exists()) {
+                            transaction.delete(movementDoc.ref);
+                            return;
+                        }
+                        if (!targetSlotSnap.exists() || targetSlotSnap.data().ownerId !== null) {
+                            const travelDuration = movement.arrivalTime.toMillis() - movement.departureTime.toMillis();
+                            const returnArrivalTime = new Date(movement.arrivalTime.toDate().getTime() + travelDuration);
+                            transaction.update(movementDoc.ref, {
+                                status: 'returning',
+                                units: movement.units,
+                                agent: movement.agent,
+                                arrivalTime: returnArrivalTime,
+                                involvedParties: [movement.originOwnerId]
+                            });
+                            const failureReport = {
+                                type: 'found_city_failed',
+                                title: `Founding attempt failed`,
+                                timestamp: serverTimestamp(),
+                                outcome: { message: `The plot at (${movement.targetCoords.x}, ${movement.targetCoords.y}) was claimed by another player before your party arrived.` },
+                                read: false,
+                            };
+                            transaction.set(doc(collection(db, `users/${movement.originOwnerId}/worlds/${worldId}/reports`)), failureReport);
+                            return;
+                        }
+                        const originCityData = originCitySnap.data();
+                        const newCityName = movement.newCityName;
+                        transaction.update(targetSlotRef, {
+                            ownerId: movement.originOwnerId,
+                            ownerUsername: movement.originOwnerUsername,
+                            cityName: newCityName,
+                            alliance: originCityData.alliance || null,
+                            allianceName: originCityData.allianceName || null,
                         });
-
-                        const failureReport = {
-                            type: 'found_city_failed',
-                            title: `Founding attempt failed`,
+                        const initialBuildings = {};
+                        Object.keys(buildingConfig).forEach(id => {
+                            initialBuildings[id] = { level: 0 };
+                        });
+                        ['senate', 'farm', 'warehouse', 'timber_camp', 'quarry', 'silver_mine', 'cave'].forEach(id => {
+                            initialBuildings[id].level = 1;
+                        });
+                        const newCityData = {
+                            id: newCityDocRef.id,
+                            slotId: movement.targetSlotId,
+                            x: movement.targetCoords.x,
+                            y: movement.targetCoords.y,
+                            islandId: targetSlotSnap.data().islandId,
+                            cityName: newCityName,
+                            playerInfo: originCityData.playerInfo,
+                            resources: { wood: 1000, stone: 1000, silver: 500 },
+                            buildings: initialBuildings,
+                            units: movement.units, wounded: {}, research: {}, worship: {},
+                            cave: { silver: 0 }, buildQueue: [], barracksQueue: [],
+                            shipyardQueue: [], divineTempleQueue: [], healQueue: [],
+                            lastUpdated: serverTimestamp(),
+                        };
+                        transaction.set(newCityDocRef, newCityData);
+                        const successReport = {
+                            type: 'found_city_success',
+                            title: `New city founded!`,
                             timestamp: serverTimestamp(),
-                            outcome: { message: `The plot at (${movement.targetCoords.x}, ${movement.targetCoords.y}) was claimed by another player before your party arrived.` },
+                            outcome: { message: `You have successfully founded the city of ${newCityName} at (${movement.targetCoords.x}, ${movement.targetCoords.y}). Your troops have garrisoned the new city.` },
                             read: false,
                         };
-                        transaction.set(doc(collection(db, `users/${movement.originOwnerId}/worlds/${worldId}/reports`)), failureReport);
-                        return;
-                    }
-
-                    const originCityData = originCitySnap.data();
-                    const newCityName = `${movement.originOwnerUsername}'s New City`;
-
-                    transaction.update(targetSlotRef, {
-                        ownerId: movement.originOwnerId,
-                        ownerUsername: movement.originOwnerUsername,
-                        cityName: newCityName,
-                        alliance: originCityData.alliance || null,
-                        allianceName: originCityData.allianceName || null,
+                        transaction.set(doc(collection(db, `users/${movement.originOwnerId}/worlds/${worldId}/reports`)), successReport);
+                        transaction.delete(movementDoc.ref);
                     });
-
-                    const initialBuildings = {};
-                    Object.keys(buildingConfig).forEach(id => {
-                        initialBuildings[id] = { level: 0 };
-                    });
-                    ['senate', 'farm', 'warehouse', 'timber_camp', 'quarry', 'silver_mine', 'cave'].forEach(id => {
-                        initialBuildings[id].level = 1;
-                    });
-
-                    const newCityData = {
-                        id: newCityDocRef.id,
-                        slotId: movement.targetSlotId,
-                        x: movement.targetCoords.x,
-                        y: movement.targetCoords.y,
-                        islandId: targetSlotSnap.data().islandId,
-                        cityName: newCityName,
-                        playerInfo: originCityData.playerInfo,
-                        resources: { wood: 1000, stone: 1000, silver: 500 },
-                        buildings: initialBuildings,
-                        units: {}, wounded: {}, research: {}, worship: {},
-                        cave: { silver: 0 }, buildQueue: [], barracksQueue: [],
-                        shipyardQueue: [], divineTempleQueue: [], healQueue: [],
-                        lastUpdated: serverTimestamp(),
-                    };
-                    transaction.set(newCityDocRef, newCityData);
-
-                    const successReport = {
-                        type: 'found_city_success',
-                        title: `New city founded!`,
-                        timestamp: serverTimestamp(),
-                        outcome: { message: `You have successfully founded the city of ${newCityName} at (${movement.targetCoords.x}, ${movement.targetCoords.y}).` },
-                        read: false,
-                    };
-                    transaction.set(doc(collection(db, `users/${movement.originOwnerId}/worlds/${worldId}/reports`)), successReport);
-                    transaction.delete(movementDoc.ref);
-                });
-            } catch (error) {
-                console.error("Error in found_city transaction:", error);
-                await deleteDoc(movementDoc.ref);
+                } catch (error) {
+                    console.error("Error in found_city transaction:", error);
+                    await deleteDoc(movementDoc.ref);
+                }
+                return;
             }
-            return; 
         }
+
 
         const batch = writeBatch(db);
         const [originCitySnap, targetCitySnap] = await Promise.all([
             getDoc(originCityRef),
             targetCityRef ? getDoc(targetCityRef) : Promise.resolve(null)
         ]);
-        
+
         const originGameRef = doc(db, `users/${movement.originOwnerId}/games`, worldId);
         const targetGameRef = movement.targetOwnerId ? doc(db, `users/${movement.targetOwnerId}/games`, worldId) : null;
+
         const [originGameSnap, targetGameSnap] = await Promise.all([
             getDoc(originGameRef),
             targetGameRef ? getDoc(targetGameRef) : Promise.resolve(null)
         ]);
+
         const originGameData = originGameSnap.exists() ? originGameSnap.data() : {};
         const targetGameData = targetGameSnap?.exists() ? targetGameSnap.data() : {};
+
         const originAlliancePromise = originGameData.alliance ? getDoc(doc(db, 'worlds', worldId, 'alliances', originGameData.alliance)) : Promise.resolve(null);
         const targetAlliancePromise = targetGameData.alliance ? getDoc(doc(db, 'worlds', worldId, 'alliances', targetGameData.alliance)) : Promise.resolve(null);
         const [originAllianceSnap, targetAllianceSnap] = await Promise.all([originAlliancePromise, targetAlliancePromise]);
@@ -143,6 +151,7 @@ export const useMovementProcessor = (worldId) => {
             await batch.commit();
             return;
         }
+
         const originCityState = originCitySnap.data();
 
         if (movement.status === 'returning') {
@@ -152,6 +161,13 @@ export const useMovementProcessor = (worldId) => {
             for (const unitId in movement.units) {
                 newUnits[unitId] = (newUnits[unitId] || 0) + movement.units[unitId];
             }
+            // #comment Return agent if it exists in the movement
+            if (movement.agent) {
+                const newAgents = { ...(newCityState.agents || {}) };
+                newAgents[movement.agent] = (newAgents[movement.agent] || 0) + 1;
+                batch.update(originCityRef, { agents: newAgents });
+            }
+
             if (movement.hero) {
                 const newHeroes = { ...(newCityState.heroes || {}) };
                 if (newHeroes[movement.hero]) {
@@ -159,8 +175,10 @@ export const useMovementProcessor = (worldId) => {
                 }
                 batch.update(originCityRef, { heroes: newHeroes });
             }
+
             const capacity = getWarehouseCapacity(newCityState.buildings.warehouse?.level);
             const newResources = { ...newCityState.resources };
+
             if (movement.resources) {
                 for (const resourceId in movement.resources) {
                     newResources[resourceId] = (newResources[resourceId] || 0) + movement.resources[resourceId];
@@ -169,9 +187,11 @@ export const useMovementProcessor = (worldId) => {
             newResources.wood = Math.min(capacity, newResources.wood || 0);
             newResources.stone = Math.min(capacity, newResources.stone || 0);
             newResources.silver = Math.min(capacity, newResources.silver || 0);
+
             const newWounded = { ...newCityState.wounded };
             let totalWoundedInHospital = Object.values(newWounded).reduce((sum, count) => sum + count, 0);
             const hospitalCapacity = getHospitalCapacity(newCityState.buildings.hospital?.level || 0);
+
             if (movement.wounded) {
                 for (const unitId in movement.wounded) {
                     const woundedCount = movement.wounded[unitId];
@@ -183,6 +203,7 @@ export const useMovementProcessor = (worldId) => {
                     }
                 }
             }
+
              const returnReport = {
                 type: 'return',
                 title: `Troops returned to ${originCityState.cityName}`,
@@ -193,6 +214,7 @@ export const useMovementProcessor = (worldId) => {
                 wounded: movement.wounded || {},
                 read: false,
             };
+
             batch.set(doc(collection(db, `users/${movement.originOwnerId}/worlds/${worldId}/reports`)), returnReport);
             batch.update(originCityRef, { units: newUnits, resources: newResources, wounded: newWounded });
             batch.delete(movementDoc.ref);

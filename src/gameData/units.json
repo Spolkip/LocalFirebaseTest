@@ -103,15 +103,15 @@
     "image": "athenian_trireme.png"
   },
   "swordsman_spartan": {
-    "name": "Spartan Helot Archer",
+    "name": "Royal Spartan Guard",
     "description": "A disciplined and heavily armored warrior from Sparta, excelling in defense.",
     "cost": { "wood": 60, "stone": 40, "silver": 25, "population": 1, "time": 35 },
     "heal_cost": { "wood": 18, "stone": 12, "silver": 7 }, "heal_time": 12,
     "attack": 8, "defense": 20, "speed": 4, "type": "land", "nation": "Spartan",
-    "image": "spartan_hoplite.png"
+    "image": "spartan_swordsman.png"
   },
   "archer_spartan": {
-    "name": "Spartan Hoplite",
+    "name": "Spartan Helot Archer",
     "description": "A lightly armored but disciplined archer serving the Spartan army.",
     "cost": { "wood": 35, "stone": 45, "silver": 30, "population": 1, "time": 50 },
     "heal_cost": { "wood": 10, "stone": 13, "silver": 9 }, "heal_time": 17,
@@ -119,12 +119,12 @@
     "image": "spartan_archer.png"
   },
   "hoplite_spartan": {
-    "name": "Royal Spartan Guard",
+    "name": "Spartan Hoplite",
     "description": "The elite of the Spartan phalanx, nearly unbreakable in defense.",
     "cost": { "wood": 80, "stone": 70, "silver": 50, "population": 2, "time": 70 },
     "heal_cost": { "wood": 24, "stone": 21, "silver": 15 }, "heal_time": 23,
     "attack": 16, "defense": 30, "speed": 3, "type": "land", "nation": "Spartan",
-    "image": "spartan_hoplite_elite.png"
+    "image": "spartan_hoplite.png"
   },
   "cavalry_spartan": {
     "name": "Spartan Rider",
