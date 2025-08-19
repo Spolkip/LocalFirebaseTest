@@ -234,6 +234,7 @@ const MapView = ({
         setMessage,
         conqueredVillages,
         conqueredRuins,
+        cityGameState: gameState,
     });
 
     const { availablePopulation, happiness, marketCapacity } = useMemo(() => {

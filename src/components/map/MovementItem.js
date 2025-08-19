@@ -1,10 +1,8 @@
-// src/components/map/MovementItem.js
 import React, { useState, useEffect } from 'react';
 import Countdown from './Countdown';
 import unitConfig from '../../gameData/units.json';
 import heroesConfig from '../../gameData/heroes.json';
 
-// Dynamically import all unit and hero images
 const images = {};
 const unitImageContext = require.context('../../images/troops', false, /\.(png|jpe?g|svg)$/);
 unitImageContext.keys().forEach((item) => {
@@ -17,16 +15,12 @@ heroImageContext.keys().forEach((item) => {
     images[key] = heroImageContext(item);
 });
 
-
 const MovementItem = ({ movement, citySlots, onCancel, onRush, isAdmin }) => {
     const [isCancellable, setIsCancellable] = useState(false);
-
     const originCity = citySlots[movement.originCityId];
-    
     // #comment Determine the correct target ID from the movement object, with fallbacks
     const targetId = movement.targetCityId || movement.targetSlotId || movement.targetVillageId || movement.targetRuinId || movement.targetTownId;
     const targetLocation = citySlots[targetId];
-
     const movementTypes = {
         attack: { icon: '⚔️' },
         attack_village: { icon: '⚔️' },
@@ -36,6 +30,7 @@ const MovementItem = ({ movement, citySlots, onCancel, onRush, isAdmin }) => {
         scout: { icon: '👁️' },
         trade: { icon: '💰' },
         return: { icon: '↩️' },
+        found_city: { icon: '🏛️' },
         default: { icon: '➡️' }
     };
     const config = movementTypes[movement.type] || movementTypes.default;
@@ -49,20 +44,17 @@ const MovementItem = ({ movement, citySlots, onCancel, onRush, isAdmin }) => {
                 setIsCancellable(false);
             }
         };
-
         checkCancellable();
         const interval = setInterval(checkCancellable, 1000);
         return () => clearInterval(interval);
     }, [movement.cancellableUntil]);
-    
-    const destinationName = targetLocation?.cityName || targetLocation?.name || movement.targetCityName || movement.targetVillageName || movement.targetRuinName || movement.targetTownName || 'Unknown';
+
+    const destinationName = targetLocation?.cityName || targetLocation?.name || movement.targetCityName || movement.targetVillageName || movement.targetRuinName || movement.targetTownName || movement.targetPlotName || 'Unknown';
     const originName = originCity?.cityName || movement.originCityName || 'Unknown';
-    
     const actionText = movement.type.replace(/_/g, ' ');
-    const titleText = movement.status === 'returning' 
+    const titleText = movement.status === 'returning'
         ? `Returning from ${destinationName}`
         : `${actionText} from ${originName} to ${destinationName}`;
-
     const cancellableDate = movement.cancellableUntil?.toDate();
     const arrivalDate = movement.arrivalTime?.toDate();
 

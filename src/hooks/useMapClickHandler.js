@@ -1,5 +1,6 @@
 import { calculateDistance } from '../utils/travel';
 import { getVillageTroops } from '../utils/combat';
+import { useGame } from '../contexts/GameContext';
 
 export const useMapClickHandler = ({
     playerCity,
@@ -11,8 +12,9 @@ export const useMapClickHandler = ({
     setMessage,
     conqueredVillages,
     conqueredRuins,
-    cityGameState,
 }) => {
+    const { gameState: cityGameState } = useGame();
+
     const onCitySlotClick = (e, slotData) => {
         if (!playerCity) {
             setMessage("Your city data is still loading. Please wait a moment.");
@@ -35,7 +37,6 @@ export const useMapClickHandler = ({
             const modalData = { ...cityData, position };
             openModal('city', modalData);
         } else {
-            // #comment check if there is an active city before attempting to found a new one
             if (!cityGameState) {
                 setMessage("You must have an active city to found a new one. Please select one from the top bar.");
                 return;

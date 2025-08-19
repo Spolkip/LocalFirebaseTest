@@ -343,6 +343,7 @@ export const useMapActions = (openModal, closeModal, showCity, invalidateChunkCa
             originCityName: playerCity.cityName,
             targetSlotId: plot.id,
             targetCoords: { x: plot.x, y: plot.y },
+            targetPlotName: 'Empty Plot',
             units: units,
             agent: agentId,
             departureTime: serverTimestamp(),
