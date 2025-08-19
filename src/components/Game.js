@@ -457,6 +457,7 @@ const Game = ({ onBackToWorlds }) => {
                     openCityModal={openCityModal}
                     closeCityModal={closeCityModal}
                     setCityModalState={setCityModalState}
+                    onOpenManagementPanel={() => setIsManagementPanelOpen(true)}
                 />
             )}
             {view === 'map' && (
@@ -489,6 +490,7 @@ const Game = ({ onBackToWorlds }) => {
                     battlePoints={playerGameData?.battlePoints || 0}
                     initialMapAction={initialMapAction}
                     setInitialMapAction={setInitialMapAction}
+                    onOpenManagementPanel={() => setIsManagementPanelOpen(true)}
                 />
             )}
             {/* Global Modals */}

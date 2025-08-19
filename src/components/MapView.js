@@ -76,7 +76,8 @@ const MapView = ({
     onSwitchCity,
     battlePoints,
     initialMapAction,
-    setInitialMapAction
+    setInitialMapAction,
+    onOpenManagementPanel,
 }) => {
     const { currentUser, userProfile } = useAuth();
     const { worldState, gameState, setGameState, worldId, playerCity, playerCities, conqueredVillages, conqueredRuins, gameSettings, activeCityId, playerCityPoints } = useGame();
@@ -650,6 +651,7 @@ const MapView = ({
                         onToggleDummyCityPlacement={handleToggleDummyCityPlacement}
                         isAllianceMember={!!playerAlliance}
                         handleOpenEvents={handleOpenEvents}
+                        onOpenManagementPanel={onOpenManagementPanel}
                     />
                     <SideInfoPanel gameState={gameState} className="absolute top-1/2 right-4 transform -translate-y-1/2 z-20 flex flex-col gap-4" onOpenPowers={() => openModal('divinePowers')} />
 

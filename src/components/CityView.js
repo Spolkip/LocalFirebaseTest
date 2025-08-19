@@ -37,6 +37,7 @@ const CityView = ({
     openCityModal,
     closeCityModal,
     setCityModalState,
+    onOpenManagementPanel,
 }) => {
     const { currentUser, userProfile } = useAuth();
     const { gameSettings, worldState } = useGame();
@@ -110,6 +111,7 @@ const CityView = ({
                 isAllianceMember={!!playerAlliance}
                 handleOpenEvents={handleOpenEvents}
                 onOpenHeroesAltar={() => openCityModal('isHeroesAltarOpen')}
+                onOpenManagementPanel={onOpenManagementPanel}
             />
 
             <div className="h-full w-full flex flex-col">

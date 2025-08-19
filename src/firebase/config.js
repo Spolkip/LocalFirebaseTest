@@ -20,7 +20,6 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const functions = getFunctions(app);
 export const appId = "default-grepolis-clone";
-
 // #comment Reverted to checking hostname to reliably detect the local environment.
 // This ensures the app connects to emulators when you run `npm start`.
 if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
