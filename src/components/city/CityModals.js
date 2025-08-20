@@ -60,6 +60,7 @@ const CityModals = ({
   onReleaseHero,
   onRecruitAgent,
   onAssignAgent,
+  movements,
 }) => {
   const {
     selectedBuildingId,
@@ -230,6 +231,7 @@ const CityModals = ({
             onUnassignHero={onUnassignHero}
             onRecruitAgent={onRecruitAgent}
             onAssignAgent={onAssignAgent}
+            movements={movements}
         />
       )}
       {isPrisonMenuOpen && (

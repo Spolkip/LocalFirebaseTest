@@ -110,25 +110,43 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
 
     const onAssignHero = async (heroId) => {
         const cityDocRef = doc(db, `users/${currentUser.uid}/games`, worldId, 'cities', activeCityId);
-
+        const newMovementRef = doc(collection(db, 'worlds', worldId, 'movements'));
+    
         try {
             await runTransaction(db, async (transaction) => {
                 const cityDoc = await transaction.get(cityDocRef);
                 if (!cityDoc.exists()) throw new Error("City data not found.");
-
+    
                 const cityData = cityDoc.data();
                 const heroes = cityData.heroes || {};
-
+    
                 for (const hId in heroes) {
                     if (heroes[hId].cityId === activeCityId) {
                         throw new Error("Another hero is already stationed in this city.");
                     }
                 }
-                
-                const newHeroes = { ...heroes, [heroId]: { ...heroes[heroId], cityId: activeCityId } };
-                transaction.update(cityDocRef, { heroes: newHeroes });
+    
+                const distance = calculateDistance({ x: 0, y: 0 }, { x: cityData.x, y: cityData.y });
+                const travelSeconds = calculateTravelTime(distance, 10);
+                const arrivalTime = new Date(Date.now() + travelSeconds * 1000);
+    
+                const movementData = {
+                    type: 'assign_hero',
+                    status: 'moving',
+                    hero: heroId,
+                    originCityId: null,
+                    originCoords: { x: -1, y: -1 },
+                    targetCityId: activeCityId,
+                    targetCoords: { x: cityData.x, y: cityData.y },
+                    targetOwnerId: currentUser.uid,
+                    departureTime: serverTimestamp(),
+                    arrivalTime: arrivalTime,
+                    involvedParties: [currentUser.uid]
+                };
+    
+                transaction.set(newMovementRef, movementData);
             });
-            setMessage(`${heroesConfig[heroId].name} is now stationed in this city.`);
+            setMessage(`${heroesConfig[heroId].name} is on their way to this city.`);
         } catch (error) {
             setMessage(`Failed to assign hero: ${error.message}`);
         }

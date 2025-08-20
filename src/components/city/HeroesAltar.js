@@ -3,6 +3,7 @@ import heroesConfig from '../../gameData/heroes.json';
 import agentsConfig from '../../gameData/agents.json';
 import './HeroesAltar.css';
 import { useGame } from '../../contexts/GameContext';
+import Countdown from '../map/Countdown';
 
 const heroImages = {};
 const heroImageContext = require.context('../../images/heroes', false, /\.(png|jpe?g|svg)$/);
@@ -25,7 +26,7 @@ skillImageContext.keys().forEach((item) => {
     skillImages[key] = skillImageContext(item);
 });
 
-const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, onAssignHero, onUnassignHero, onLevelUpHero, onAddHeroXp, onRecruitAgent, onAssignAgent }) => {
+const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, onAssignHero, onUnassignHero, onLevelUpHero, onAddHeroXp, onRecruitAgent, onAssignAgent, movements }) => {
     const [activeTab, setActiveTab] = useState('heroes');
     const [selectedHeroId, setSelectedHeroId] = useState(Object.keys(heroesConfig)[0]);
     const [selectedAgentId, setSelectedAgentId] = useState(Object.keys(agentsConfig)[0]);
@@ -104,6 +105,7 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
     const selectedHero = heroesConfig[selectedHeroId];
     const heroData = heroes[selectedHeroId] || { level: 1, xp: 0 };
     const isHeroInThisCity = heroData?.cityId === activeCityId;
+    const heroMovement = movements.find(m => m.type === 'assign_hero' && m.hero === selectedHeroId && m.targetCityId === activeCityId);
 
     const selectedAgent = agentsConfig[selectedAgentId];
     const agentData = agents[selectedAgentId] || 0;
@@ -188,7 +190,7 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
                                     Recruit ({selectedHero.cost.silver} Silver, {selectedHero.cost.favor} Favor)
                                 </button>
                             )}
-                            {heroes[selectedHeroId] && !isHeroInThisCity && (
+                            {heroes[selectedHeroId] && !isHeroInThisCity && !heroMovement && (
                                 <button className="recruit-btn" onClick={(e) => handleAssign(e, selectedHeroId)}>
                                     Assign to this City
                                 </button>
@@ -197,6 +199,12 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
                                 <button className="recruit-btn" onClick={(e) => handleUnassign(e, selectedHeroId)}>
                                     Unassign from City
                                 </button>
+                            )}
+                            {heroMovement && (
+                                <div className="text-center mt-2">
+                                    <p>Arriving in:</p>
+                                    <Countdown arrivalTime={heroMovement.arrivalTime} />
+                                </div>
                             )}
                         </div>
                     </div>

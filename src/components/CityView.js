@@ -133,6 +133,7 @@ const CityView = ({
                     onOpenPowers={() => openCityModal('isDivinePowersOpen')}
                     gameSettings={gameSettings}
                     onOpenSpecialBuildingMenu={() => openCityModal('isSpecialBuildingMenuOpen')}
+                    movements={movements}
                 />
             </div>
             <CityModals
@@ -180,6 +181,7 @@ const CityView = ({
                 onReleaseHero={onReleaseHero}
                 onRecruitAgent={onRecruitAgent}
                 onAssignAgent={onAssignAgent}
+                movements={movements}
             />
             {cityModalState.isDivinePowersOpen && (
                 <DivinePowers

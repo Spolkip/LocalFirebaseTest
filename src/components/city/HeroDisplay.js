@@ -17,11 +17,14 @@ agentImageContext.keys().forEach((item) => {
     agentImages[key] = agentImageContext(item);
 });
 
-const HeroDisplay = ({ heroes, agents }) => {
-    const recruitedHeroes = Object.keys(heroes || {}).filter(heroId => heroes[heroId].active);
+const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
+    const recruitedHeroes = Object.keys(heroes || {}).filter(heroId => heroes[heroId].active && heroes[heroId].cityId === activeCityId);
     const recruitedAgents = Object.keys(agents || {}).filter(agentId => agents[agentId] > 0);
+    const travelingHeroes = movements
+        .filter(m => m.type === 'assign_hero' && m.targetCityId === activeCityId)
+        .map(m => m.hero);
 
-    if (recruitedHeroes.length === 0 && recruitedAgents.length === 0) {
+    if (recruitedHeroes.length === 0 && recruitedAgents.length === 0 && travelingHeroes.length === 0) {
         return null;
     }
 
@@ -44,6 +47,15 @@ const HeroDisplay = ({ heroes, agents }) => {
                         <div key={agentId} className="hero-item" title={`${agent.name} (x${agentCount})`}>
                             <img src={agentImages[agent.image]} alt={agent.name} />
                             <span className="troop-count">{agentCount}</span>
+                        </div>
+                    );
+                })}
+                {travelingHeroes.map(heroId => {
+                    const hero = heroesConfig[heroId];
+                    return (
+                        <div key={`traveling-${heroId}`} className="hero-item" title={`${hero.name} (Traveling)`}>
+                            <img src={heroImages[hero.image]} alt={hero.name} style={{ opacity: 0.5 }} />
+                            <span className="absolute inset-0 flex items-center justify-center text-white font-bold">✈️</span>
                         </div>
                     );
                 })}

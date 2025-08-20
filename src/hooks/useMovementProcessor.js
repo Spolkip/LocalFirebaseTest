@@ -85,7 +85,7 @@ export const useMovementProcessor = (worldId) => {
                             initialBuildings[id] = { level: 0 };
                         });
                         ['senate', 'farm', 'warehouse', 'timber_camp', 'quarry', 'silver_mine', 'cave'].forEach(id => {
-                            initialBuildings[id].level = 1;
+                            initialBuildings[id] = { level: 1 };
                         });
                         const newCityData = {
                             id: newCityDocRef.id,
@@ -119,6 +119,26 @@ export const useMovementProcessor = (worldId) => {
                 }
                 return;
             }
+        }
+        if (movement.type === 'assign_hero') {
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const cityDoc = await transaction.get(targetCityRef);
+                    if (!cityDoc.exists()) throw new Error("Target city not found.");
+    
+                    const cityData = cityDoc.data();
+                    const heroes = cityData.heroes || {};
+                    const newHeroes = { ...heroes, [movement.hero]: { ...heroes[movement.hero], cityId: movement.targetCityId } };
+    
+                    transaction.update(targetCityRef, { heroes: newHeroes });
+                    transaction.delete(movementDoc.ref);
+                });
+            } catch (error) {
+                console.error("Error processing hero assignment:", error);
+                // If it fails, you might want to create a return movement or just delete it
+                await deleteDoc(movementDoc.ref);
+            }
+            return;
         }
 
 
