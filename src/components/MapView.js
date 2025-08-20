@@ -581,7 +581,7 @@ const MapView = ({
                         handleOpenEvents={handleOpenEvents}
                         onOpenManagementPanel={onOpenManagementPanel}
                     />
-                    <SideInfoPanel gameState={gameState} className="absolute top-1/2 right-4 transform -translate-y-1/2 z-20 flex flex-col gap-4" onOpenPowers={() => openModal('divinePowers')} />
+                    <SideInfoPanel gameState={gameState} className="absolute top-1/2 right-4 transform -translate-y-1/2 z-20 flex flex-col gap-4" onOpenPowers={() => openModal('divinePowers')} movements={movements} />
                     <MapOverlay
                         mouseCoords={mouseCoords}
                         pan={pan}

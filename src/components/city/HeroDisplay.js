@@ -20,7 +20,9 @@ agentImageContext.keys().forEach((item) => {
 const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
     const recruitedHeroes = Object.keys(heroes || {}).filter(heroId => heroes[heroId].active && heroes[heroId].cityId === activeCityId);
     const recruitedAgents = Object.keys(agents || {}).filter(agentId => agents[agentId] > 0);
-    const travelingHeroes = movements
+    
+    // #comment Added a safeguard to ensure movements is an array before filtering.
+    const travelingHeroes = (movements || [])
         .filter(m => m.type === 'assign_hero' && m.targetCityId === activeCityId)
         .map(m => m.hero);
 
