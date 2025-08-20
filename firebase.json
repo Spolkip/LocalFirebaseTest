@@ -25,13 +25,13 @@
     "auth": {
       "port": 9099,
       "host": "0.0.0.0",
-      "import": ".firebase/emulators-data",
+      "import": "./firebase-data",
       "exportOnShutdown": true
     },
     "firestore": {
       "port": 8090,
       "rules": "firestore.rules",
-      "import": ".firebase/emulators-data",
+      "import": "./firebase-data",
       "exportOnShutdown": true,
       "host": "0.0.0.0"
     }

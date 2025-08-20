@@ -19,7 +19,7 @@ contexts.forEach(context => {
 });
 
 const CITYSCAPE_WIDTH = 2000;
-const CITYSCAPE_HEIGHT = 1200;
+const CITYSCAPE_HEIGHT = 1700;
 
 const CityViewContent = ({ cityGameState, handlePlotClick, onOpenPowers, gameSettings, onOpenSpecialBuildingMenu }) => {
     // Panning Logic (moved from CityView.js)

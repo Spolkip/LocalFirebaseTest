@@ -1,34 +1,29 @@
-// src/components/city/Cityscape.js
 import React from 'react';
 import BuildingSpot from './BuildingSpot';
 import SpecialBuildingPlot from './specialBuildingPlotpls';
 import buildingLayout from '../../gameData/BuildingLayout.json';
-import buildingConfig from '../../gameData/buildings.json'; // Import building config
+import buildingConfig from '../../gameData/buildings.json';
 import specialBuildingsConfig from '../../gameData/specialBuildings.json';
-import cityBackground from '../../images/city_layout.png'; // Import the new background
-
+import cityBackground from '../../images/city_layout.png';
 const Cityscape = ({ buildings, onBuildingClick, buildingImages, cityGameState, onOpenSpecialBuildingMenu }) => {
   return (
     <div
       style={{
-        width: '2000px', // Large canvas for the city
-        height: '1200px',
+        width: '2000px',
+        height: '1700px',
         position: 'relative',
-        backgroundImage: `url(${cityBackground})`, // Use the imported image
+        backgroundImage: `url(${cityBackground})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
     >
-      {/* The previous green overlay has been removed */}
-      
+      {}
       {buildingLayout.map((building) => {
         if (building.id === 'special_building_plot') {
-            if (!cityGameState) return null; 
-            
+            if (!cityGameState) return null;
             const specialBuildingId = cityGameState.specialBuilding;
             const config = specialBuildingId ? specialBuildingsConfig[specialBuildingId] : buildingConfig.special_building_plot;
             const image = config?.image ? buildingImages[config.image] : null;
-
             return (
                 <SpecialBuildingPlot
                     key={building.id}
@@ -42,20 +37,18 @@ const Cityscape = ({ buildings, onBuildingClick, buildingImages, cityGameState, 
         }
         const buildingData = buildings[building.id];
         const level = buildingData?.level || 0;
-        const config = buildingConfig[building.id]; // Get config for the building
-        
+        const config = buildingConfig[building.id];
         return (
           <BuildingSpot
             key={building.id}
             building={building}
             level={level}
             onClick={() => onBuildingClick(building.id)}
-            image={config?.image ? buildingImages[config.image] : null} // Pass image URL
+            image={config?.image ? buildingImages[config.image] : null}
           />
         );
       })}
     </div>
   );
 };
-
 export default Cityscape;
