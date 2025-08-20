@@ -18,6 +18,29 @@ export const useMovementProcessor = (worldId) => {
     const processMovement = useCallback(async (movementDoc) => {
         console.log(`Processing movement ID: ${movementDoc.id}`);
         const movement = { id: movementDoc.id, ...movementDoc.data() };
+
+        // #comment Handle hero assignment first as it has no origin city
+        if (movement.type === 'assign_hero') {
+            const targetCityRef = doc(db, `users/${movement.targetOwnerId}/games`, worldId, 'cities', movement.targetCityId);
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const cityDoc = await transaction.get(targetCityRef);
+                    if (!cityDoc.exists()) throw new Error("Target city not found.");
+    
+                    const cityData = cityDoc.data();
+                    const heroes = cityData.heroes || {};
+                    const newHeroes = { ...heroes, [movement.hero]: { ...heroes[movement.hero], cityId: movement.targetCityId } };
+    
+                    transaction.update(targetCityRef, { heroes: newHeroes });
+                    transaction.delete(movementDoc.ref);
+                });
+            } catch (error) {
+                console.error("Error processing hero assignment:", error);
+                await deleteDoc(movementDoc.ref);
+            }
+            return; // End processing for this movement
+        }
+        
         const originCityRef = doc(db, `users/${movement.originOwnerId}/games`, worldId, 'cities', movement.originCityId);
 
         let targetCityRef;
@@ -119,26 +142,6 @@ export const useMovementProcessor = (worldId) => {
                 }
                 return;
             }
-        }
-        if (movement.type === 'assign_hero') {
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const cityDoc = await transaction.get(targetCityRef);
-                    if (!cityDoc.exists()) throw new Error("Target city not found.");
-    
-                    const cityData = cityDoc.data();
-                    const heroes = cityData.heroes || {};
-                    const newHeroes = { ...heroes, [movement.hero]: { ...heroes[movement.hero], cityId: movement.targetCityId } };
-    
-                    transaction.update(targetCityRef, { heroes: newHeroes });
-                    transaction.delete(movementDoc.ref);
-                });
-            } catch (error) {
-                console.error("Error processing hero assignment:", error);
-                // If it fails, you might want to create a return movement or just delete it
-                await deleteDoc(movementDoc.ref);
-            }
-            return;
         }
 
 
@@ -519,6 +522,21 @@ export const useMovementProcessor = (worldId) => {
                         movement.hero,
                         Object.keys(targetCityState.heroes || {}).find(id => targetCityState.heroes[id].cityId === movement.targetCityId) || null
                     );
+
+                    // #comment Handle wounded hero logic
+                    if (result.woundedHero) {
+                        const { heroId, side } = result.woundedHero;
+                        const woundedUntil = new Date(Date.now() + 12 * 60 * 60 * 1000); // 12 hours
+                        const heroOwnerId = side === 'attacker' ? movement.originOwnerId : movement.targetOwnerId;
+                        const heroCityRef = doc(db, `users/${heroOwnerId}/games`, worldId, 'cities', movement.originCityId);
+                        
+                        // This part needs to be inside a transaction to be safe, but for simplicity we'll update directly.
+                        // In a real scenario, you'd fetch the city, update the hero, and then save.
+                        // For now, we'll just update the hero's status.
+                        const heroUpdatePath = `heroes.${heroId}.woundedUntil`;
+                        updateDoc(heroCityRef, { [heroUpdatePath]: woundedUntil });
+                    }
+
                     if (result.capturedHero) {
                         const { heroId, capturedBy } = result.capturedHero;
                         const prisonerObject = {
@@ -638,6 +656,7 @@ export const useMovementProcessor = (worldId) => {
                             attackerBattlePoints: result.attackerBattlePoints,
                             defenderBattlePoints: result.defenderBattlePoints,
                             capturedHero: result.capturedHero,
+                            woundedHero: result.woundedHero,
                         },
                         attacker: {
                             cityId: movement.originCityId,

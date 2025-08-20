@@ -189,6 +189,7 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
     let plunder = { wood: 0, stone: 0, silver: 0 };
     let wounded = {};
     let capturedHero = null;
+    let woundedHero = null;
     
     const safeDefendingResources = defendingResources || {};
 
@@ -253,6 +254,13 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
         capturedHero = { heroId: attackingHero, capturedBy: 'defender' };
     }
 
+    // #comment Add a 25% chance for a hero to get wounded if they lose the battle.
+    if (attackerWon && defendingHero && Math.random() < 0.25) {
+        woundedHero = { heroId: defendingHero, side: 'defender' };
+    } else if (!attackerWon && attackingHero && Math.random() < 0.25) {
+        woundedHero = { heroId: attackingHero, side: 'attacker' };
+    }
+
 
     // Calculate wounded troops from attacker losses
     for (const unitId in totalAttackerLosses) {
@@ -285,6 +293,7 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
         attackerBattlePoints,
         defenderBattlePoints,
         capturedHero,
+        woundedHero,
     };
 }
 export function resolveVillageRetaliation(playerUnits) {
