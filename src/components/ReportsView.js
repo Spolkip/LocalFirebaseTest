@@ -1,3 +1,4 @@
+// src/components/ReportsView.js
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -361,6 +362,12 @@ const ReportsView = ({ onClose, onActionClick }) => {
                             <div className="w-full p-3 bg-red-800/10 rounded mt-4 text-center">
                                 <h4 className="font-semibold text-lg text-red-700 mb-2">Hero Captured!</h4>
                                 <p>{heroesConfig[outcome.capturedHero.heroId]?.name} was captured by the {outcome.capturedHero.capturedBy}.</p>
+                            </div>
+                        )}
+                        {outcome.woundedHero && (
+                            <div className="w-full p-3 bg-orange-800/10 rounded mt-4 text-center">
+                                <h4 className="font-semibold text-lg text-orange-700 mb-2">Hero Wounded!</h4>
+                                <p>{heroesConfig[outcome.woundedHero.heroId]?.name} was wounded in battle.</p>
                             </div>
                         )}
 

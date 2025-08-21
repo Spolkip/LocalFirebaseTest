@@ -2,7 +2,7 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
 import { db } from '../../firebase/config';
-import { doc, runTransaction, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, runTransaction, collection, serverTimestamp, getDoc } from 'firebase/firestore';
 import heroesConfig from '../../gameData/heroes.json';
 import { calculateDistance, calculateTravelTime } from '../../utils/travel';
 
@@ -169,21 +169,33 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
         }
     };
 
-    // --- START: NEW FUNCTION ---
     const onReleaseHero = async (prisonerToRelease) => {
         if (!prisonerToRelease || !prisonerToRelease.captureId) {
             setMessage("Invalid prisoner data.");
             return;
         }
 
+        if (!prisonerToRelease.originCityId) {
+            setMessage("Cannot release hero: Critical location data is missing from this older capture record.");
+            console.error("Missing originCityId on prisoner object:", prisonerToRelease);
+            return;
+        }
+
         const capturingCityRef = doc(db, `users/${currentUser.uid}/games`, worldId, 'cities', activeCityId);
+        const heroOwnerCityRef = doc(db, `users/${prisonerToRelease.ownerId}/games`, worldId, 'cities', prisonerToRelease.originCityId);
         
         try {
             await runTransaction(db, async (transaction) => {
-                const capturingCityDoc = await transaction.get(capturingCityRef);
-                if (!capturingCityDoc.exists()) throw new Error("Your city data could not be found.");
+                const [capturingCityDoc, heroOwnerCityDoc] = await Promise.all([
+                    transaction.get(capturingCityRef),
+                    transaction.get(heroOwnerCityRef)
+                ]);
 
+                if (!capturingCityDoc.exists()) throw new Error("Your city data could not be found.");
+                
                 const capturingCityData = capturingCityDoc.data();
+                const heroOwnerCityData = heroOwnerCityDoc.exists() ? heroOwnerCityDoc.data() : { x: 0, y: 0 }; // Fallback if city was destroyed
+
                 const currentPrisoners = capturingCityData.prisoners || [];
                 const newPrisoners = currentPrisoners.filter(p => p.captureId !== prisonerToRelease.captureId);
 
@@ -195,9 +207,8 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
 
                 // Create a return movement for the hero
                 const newMovementRef = doc(collection(db, 'worlds', worldId, 'movements'));
-                const heroOwnerCity = Object.values(playerCities).find(city => city.id === prisonerToRelease.originCityId) || { x: 0, y: 0 }; // Fallback coords
-
-                const distance = calculateDistance(capturingCityData, heroOwnerCity);
+                
+                const distance = calculateDistance(capturingCityData, heroOwnerCityData);
                 const travelSeconds = calculateTravelTime(distance, 10); // Use a base speed for heroes
                 const arrivalTime = new Date(Date.now() + travelSeconds * 1000);
 
@@ -210,7 +221,7 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
                     originOwnerId: currentUser.uid,
                     originCityName: capturingCityData.cityName,
                     targetCityId: prisonerToRelease.originCityId,
-                    targetCoords: { x: heroOwnerCity.x, y: heroOwnerCity.y },
+                    targetCoords: { x: heroOwnerCityData.x, y: heroOwnerCityData.y },
                     targetOwnerId: prisonerToRelease.ownerId,
                     departureTime: serverTimestamp(),
                     arrivalTime: arrivalTime,
