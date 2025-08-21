@@ -308,6 +308,7 @@ export const useMovementProcessor = (worldId) => {
                         arrivalTime: returnArrivalTime,
                         involvedParties: [movement.originOwnerId]
                     });
+                    await batch.commit();
                     break;
                 }
                 case 'attack_village': {
@@ -397,6 +398,7 @@ export const useMovementProcessor = (worldId) => {
                         console.log('No survivors. Deleting movement.');
                         batch.delete(movementDoc.ref);
                     }
+                    await batch.commit();
                     break;
                 }
                 case 'attack_ruin': {
@@ -502,6 +504,7 @@ export const useMovementProcessor = (worldId) => {
                     } else {
                         batch.delete(movementDoc.ref);
                     }
+                    await batch.commit();
                     break;
                 }
                 case 'attack': {
@@ -705,6 +708,7 @@ export const useMovementProcessor = (worldId) => {
                     } else {
                         batch.delete(movementDoc.ref);
                     }
+                    await batch.commit();
                     break;
                 }
                 case 'scout': {
@@ -769,6 +773,7 @@ export const useMovementProcessor = (worldId) => {
                         batch.set(doc(collection(db, `users/${movement.targetOwnerId}/worlds/${worldId}/reports`)), spyCaughtReport);
                     }
                     batch.delete(movementDoc.ref);
+                    await batch.commit();
                     break;
                 }
                 case 'reinforce': {
@@ -894,16 +899,16 @@ export const useMovementProcessor = (worldId) => {
                     };
                     batch.set(doc(collection(db, `users/${movement.targetOwnerId}/worlds/${worldId}/reports`)), arrivalReport);
                     batch.delete(movementDoc.ref);
+                    await batch.commit();
                     break;
                 }
                 default:
                     console.log(`Unknown movement type: ${movement.type}. Deleting movement ${movement.id}`);
                     batch.delete(movementDoc.ref);
+                    await batch.commit();
                     break;
             }
         }
-        await batch.commit();
-        console.log(`Batch commit successful for movement ${movement.id}`);
     }, [worldId, getHospitalCapacity]);
 
     useEffect(() => {
