@@ -1,6 +1,6 @@
 // src/hooks/processors/useAttackProcessor.js
 import { db } from '../../firebase/config';
-import { doc, getDoc, collection, writeBatch, serverTimestamp, runTransaction, arrayUnion, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, writeBatch, serverTimestamp, runTransaction, arrayUnion} from 'firebase/firestore';
 import { resolveCombat, getVillageTroops } from '../../utils/combat';
 import unitConfig from '../../gameData/units.json';
 import { v4 as uuidv4 } from 'uuid';
