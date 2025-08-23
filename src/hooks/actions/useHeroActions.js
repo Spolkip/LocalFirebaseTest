@@ -8,7 +8,7 @@ import { calculateDistance, calculateTravelTime } from '../../utils/travel';
 
 export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
     const { currentUser } = useAuth();
-    const { worldId, activeCityId, playerCities } = useGame();
+    const { worldId, activeCityId} = useGame();
 
     const onRecruitHero = async (heroId) => {
         const hero = heroesConfig[heroId];

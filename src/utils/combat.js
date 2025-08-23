@@ -29,6 +29,8 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
             attackerWon: true,
             attackerLosses: {},
             defenderLosses: {},
+            attackerLossRatio: 0,
+            defenderLossRatio: 0,
         };
     }
     
@@ -38,6 +40,8 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
             attackerWon: false,
             attackerLosses: {},
             defenderLosses: {},
+            attackerLossRatio: 1,
+            defenderLossRatio: 0,
         };
     }
 
@@ -151,6 +155,8 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
         attackerWon: finalAttackerPower >= finalDefenderPower,
         attackerLosses: finalAttackerLosses,
         defenderLosses: finalDefenderLosses,
+        attackerLossRatio: attackerLossRatio,
+        defenderLossRatio: defenderLossRatio,
     };
 };
 export function getVillageTroops(villageData) {
@@ -190,6 +196,7 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
     let wounded = {};
     let capturedHero = null;
     let woundedHero = null;
+    let landBattle;
     
     const safeDefendingResources = defendingResources || {};
 
@@ -204,7 +211,7 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
                 survivingAttackers[unitId] = Math.max(0, (survivingAttackers[unitId] || 0) - totalAttackerLosses[unitId]);
             }
 
-            const landBattle = resolveBattle(survivingAttackers, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
+            landBattle = resolveBattle(survivingAttackers, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
             for (const unitId in landBattle.attackerLosses) {
                 totalAttackerLosses[unitId] = (totalAttackerLosses[unitId] || 0) + landBattle.attackerLosses[unitId];
             }
@@ -228,7 +235,7 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
             }
         }
     } else {
-        const landBattle = resolveBattle(attackingUnits, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
+        landBattle = resolveBattle(attackingUnits, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
         totalAttackerLosses = landBattle.attackerLosses;
         totalDefenderLosses = landBattle.defenderLosses;
         attackerWon = landBattle.attackerWon;
@@ -254,11 +261,27 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
         capturedHero = { heroId: attackingHero, capturedBy: 'defender' };
     }
 
-    // #comment Add a 25% chance for a hero to get wounded if they lose the battle.
-    if (attackerWon && defendingHero && Math.random() < 0.25) {
-        woundedHero = { heroId: defendingHero, side: 'defender' };
-    } else if (!attackerWon && attackingHero && Math.random() < 0.25) {
-        woundedHero = { heroId: attackingHero, side: 'attacker' };
+    // #comment New Wounded Hero Logic
+    if (landBattle) {
+        if (attackerWon) {
+            // Attacker won, but check if it was a close call.
+            if (attackingHero && landBattle.attackerLossRatio > 0.7 && Math.random() < 0.5) { // 50% chance if winner's losses > 70%
+                woundedHero = { heroId: attackingHero, side: 'attacker' };
+            }
+            // Defender lost, standard chance of being wounded.
+            if (defendingHero && Math.random() < 0.25) {
+                woundedHero = { heroId: defendingHero, side: 'defender' };
+            }
+        } else { // Defender won
+            // Attacker lost, standard chance of being wounded.
+            if (attackingHero && Math.random() < 0.25) {
+                woundedHero = { heroId: attackingHero, side: 'attacker' };
+            }
+            // Defender won, but check if it was a close call.
+            if (defendingHero && landBattle.defenderLossRatio > 0.7 && Math.random() < 0.5) { // 50% chance if winner's losses > 70%
+                woundedHero = { heroId: defendingHero, side: 'defender' };
+            }
+        }
     }
 
 

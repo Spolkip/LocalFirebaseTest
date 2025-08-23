@@ -2,7 +2,6 @@ import React from 'react';
 import heroesConfig from '../../gameData/heroes.json';
 import agentsConfig from '../../gameData/agents.json';
 import './HeroDisplay.css';
-import barCells from '../../images/bar_cells.png';
 
 const heroImages = {};
 const heroImageContext = require.context('../../images/heroes', false, /\.(png|jpe?g|svg)$/);
