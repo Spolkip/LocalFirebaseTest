@@ -1,4 +1,3 @@
-// src/components/city/HeroesAltar.js
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import heroesConfig from '../../gameData/heroes.json';
 import agentsConfig from '../../gameData/agents.json';
@@ -111,7 +110,7 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
     const selectedAgent = agentsConfig[selectedAgentId];
     const agentData = agents[selectedAgentId] || 0;
     
-    const isWounded = heroData.woundedUntil && new Date(heroData.woundedUntil.toDate ? heroData.woundedUntil.toDate() : heroData.woundedUntil) > new Date();
+    const isWounded = heroData.woundedUntil && new Date(heroData.woundedUntil.toDate()) > new Date();
 
 
     const getEffectValue = (effect, level) => {

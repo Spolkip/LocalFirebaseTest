@@ -12,7 +12,7 @@ import heroesConfig from '../gameData/heroes.json';
  * @param {string|null} attackerSupport - The unit ID chosen as support by the attacker.
  * @param {string|null} defenderPhalanx - The unit ID chosen as phalanx by the defender.
  * @param {string|null} defenderSupport - The unit ID chosen as support by the defender.
- * @returns {object} Battle results including attackerWon, attackerLosses, defenderLosses, and initial powers.
+ * @returns {object} Battle results including attackerWon, attackerLosses, defenderLosses.
  */
 const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero) => {
     // Check if either side has units of the required type
@@ -29,8 +29,6 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
             attackerWon: true,
             attackerLosses: {},
             defenderLosses: {},
-            initialAttackerPower: 1, // Set to 1 to avoid division by zero issues
-            initialDefenderPower: 0,
         };
     }
     
@@ -40,8 +38,6 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
             attackerWon: false,
             attackerLosses: {},
             defenderLosses: {},
-            initialAttackerPower: 0,
-            initialDefenderPower: 1, // Set to 1 to avoid division by zero issues
         };
     }
 
@@ -155,8 +151,6 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
         attackerWon: finalAttackerPower >= finalDefenderPower,
         attackerLosses: finalAttackerLosses,
         defenderLosses: finalDefenderLosses,
-        initialAttackerPower: attackerPower,
-        initialDefenderPower: defenderPower,
     };
 };
 export function getVillageTroops(villageData) {
@@ -196,12 +190,11 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
     let wounded = {};
     let capturedHero = null;
     let woundedHero = null;
-    let landBattleResult = null;
     
     const safeDefendingResources = defendingResources || {};
 
     if (isNavalAttack) {
-        const navalBattle = resolveBattle(attackingUnits, defendingUnits, 'naval', null, null, null, null);
+        const navalBattle = resolveBattle(attackingUnits, defendingUnits, 'naval', null, null, null, null); // No phalanx/support for naval
         totalAttackerLosses = { ...navalBattle.attackerLosses };
         totalDefenderLosses = { ...navalBattle.defenderLosses };
 
@@ -211,17 +204,17 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
                 survivingAttackers[unitId] = Math.max(0, (survivingAttackers[unitId] || 0) - totalAttackerLosses[unitId]);
             }
 
-            landBattleResult = resolveBattle(survivingAttackers, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
-            for (const unitId in landBattleResult.attackerLosses) {
-                totalAttackerLosses[unitId] = (totalAttackerLosses[unitId] || 0) + landBattleResult.attackerLosses[unitId];
+            const landBattle = resolveBattle(survivingAttackers, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
+            for (const unitId in landBattle.attackerLosses) {
+                totalAttackerLosses[unitId] = (totalAttackerLosses[unitId] || 0) + landBattle.attackerLosses[unitId];
             }
-            for (const unitId in landBattleResult.defenderLosses) {
-                totalDefenderLosses[unitId] = (totalDefenderLosses[unitId] || 0) + landBattleResult.defenderLosses[unitId];
+            for (const unitId in landBattle.defenderLosses) {
+                totalDefenderLosses[unitId] = (totalDefenderLosses[unitId] || 0) + landBattle.defenderLosses[unitId];
             }
             
-            attackerWon = landBattleResult.attackerWon;
+            attackerWon = landBattle.attackerWon;
 
-            if (landBattleResult.attackerWon) {
+            if (landBattle.attackerWon) {
                 plunder.wood = Math.floor((safeDefendingResources.wood || 0) * 0.25);
                 plunder.stone = Math.floor((safeDefendingResources.stone || 0) * 0.25);
                 plunder.silver = Math.floor((safeDefendingResources.silver || 0) * 0.25);
@@ -235,11 +228,11 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
             }
         }
     } else {
-        landBattleResult = resolveBattle(attackingUnits, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
-        totalAttackerLosses = landBattleResult.attackerLosses;
-        totalDefenderLosses = landBattleResult.defenderLosses;
-        attackerWon = landBattleResult.attackerWon;
-        if (landBattleResult.attackerWon) {
+        const landBattle = resolveBattle(attackingUnits, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
+        totalAttackerLosses = landBattle.attackerLosses;
+        totalDefenderLosses = landBattle.defenderLosses;
+        attackerWon = landBattle.attackerWon;
+        if (landBattle.attackerWon) {
             plunder.wood = Math.floor((safeDefendingResources.wood || 0) * 0.25);
             plunder.stone = Math.floor((safeDefendingResources.stone || 0) * 0.25);
             plunder.silver = Math.floor((safeDefendingResources.silver || 0) * 0.25);
@@ -261,20 +254,11 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
         capturedHero = { heroId: attackingHero, capturedBy: 'defender' };
     }
 
-    // #comment A hero has a chance to get wounded if they lose the battle. The closer the fight, the higher the chance.
-    if (landBattleResult) {
-        const attackerPower = landBattleResult.initialAttackerPower || 0;
-        const defenderPower = landBattleResult.initialDefenderPower || 0;
-        if (attackerPower > 0 && defenderPower > 0) {
-            const powerRatio = Math.min(attackerPower, defenderPower) / Math.max(attackerPower, defenderPower);
-            // Chance ranges from 15% (total blowout) to 75% (very close fight).
-            const woundChance = 0.15 + (powerRatio * 0.60);
-            if (!attackerWon && attackingHero && Math.random() < woundChance) {
-                woundedHero = { heroId: attackingHero, side: 'attacker' };
-            } else if (attackerWon && defendingHero && Math.random() < woundChance) {
-                woundedHero = { heroId: defendingHero, side: 'defender' };
-            }
-        }
+    // #comment Add a 25% chance for a hero to get wounded if they lose the battle.
+    if (attackerWon && defendingHero && Math.random() < 0.25) {
+        woundedHero = { heroId: defendingHero, side: 'defender' };
+    } else if (!attackerWon && attackingHero && Math.random() < 0.25) {
+        woundedHero = { heroId: attackingHero, side: 'attacker' };
     }
 
 
