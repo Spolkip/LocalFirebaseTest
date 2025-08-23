@@ -18,3 +18,11 @@
 .hero-item img {
     @apply w-full h-full object-cover;
 }
+
+.captured-bars-overlay {
+    @apply absolute inset-0 w-full h-full pointer-events-none;
+    background-image: url('../../images/bar_cells.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}

@@ -2,6 +2,7 @@ import React from 'react';
 import heroesConfig from '../../gameData/heroes.json';
 import agentsConfig from '../../gameData/agents.json';
 import './HeroDisplay.css';
+import barCells from '../../images/bar_cells.png';
 
 const heroImages = {};
 const heroImageContext = require.context('../../images/heroes', false, /\.(png|jpe?g|svg)$/);
@@ -18,10 +19,12 @@ agentImageContext.keys().forEach((item) => {
 });
 
 const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
-    const recruitedHeroes = Object.keys(heroes || {}).filter(heroId => heroes[heroId].active && heroes[heroId].cityId === activeCityId);
+    const recruitedHeroes = Object.keys(heroes || {}).filter(heroId => {
+        const hero = heroes[heroId];
+        return hero.active && (hero.cityId === activeCityId || hero.capturedIn);
+    });
     const recruitedAgents = Object.keys(agents || {}).filter(agentId => agents[agentId] > 0);
     
-    // #comment Added a safeguard to ensure movements is an array before filtering.
     const travelingHeroes = (movements || [])
         .filter(m => m.type === 'assign_hero' && m.targetCityId === activeCityId)
         .map(m => m.hero);
@@ -36,9 +39,13 @@ const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
             <div className="heroes-grid">
                 {recruitedHeroes.map(heroId => {
                     const hero = heroesConfig[heroId];
+                    const isCaptured = !!heroes[heroId]?.capturedIn;
                     return (
-                        <div key={heroId} className="hero-item" title={hero.name}>
-                            <img src={heroImages[hero.image]} alt={hero.name} />
+                        <div key={heroId} className="hero-item relative" title={`${hero.name}${isCaptured ? ' (Captured)' : ''}`}>
+                            <img src={heroImages[hero.image]} alt={hero.name} className={isCaptured ? 'opacity-50' : ''} />
+                            {isCaptured && (
+                                <div className="captured-bars-overlay"></div>
+                            )}
                         </div>
                     );
                 })}

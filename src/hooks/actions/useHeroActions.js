@@ -169,38 +169,56 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
         }
     };
 
-    // --- START: NEW FUNCTION ---
     const onReleaseHero = async (prisonerToRelease) => {
         if (!prisonerToRelease || !prisonerToRelease.captureId) {
             setMessage("Invalid prisoner data.");
             return;
         }
-
+    
         const capturingCityRef = doc(db, `users/${currentUser.uid}/games`, worldId, 'cities', activeCityId);
-        
+        const heroOwnerCityRef = doc(db, `users/${prisonerToRelease.ownerId}/games`, worldId, 'cities', prisonerToRelease.originCityId);
+    
         try {
             await runTransaction(db, async (transaction) => {
-                const capturingCityDoc = await transaction.get(capturingCityRef);
+                const [capturingCityDoc, heroOwnerCityDoc] = await Promise.all([
+                    transaction.get(capturingCityRef),
+                    transaction.get(heroOwnerCityRef)
+                ]);
+    
                 if (!capturingCityDoc.exists()) throw new Error("Your city data could not be found.");
-
+    
                 const capturingCityData = capturingCityDoc.data();
                 const currentPrisoners = capturingCityData.prisoners || [];
                 const newPrisoners = currentPrisoners.filter(p => p.captureId !== prisonerToRelease.captureId);
-
+    
                 if (newPrisoners.length === currentPrisoners.length) {
                     throw new Error("Could not find the specified prisoner to release.");
                 }
-
+    
                 transaction.update(capturingCityRef, { prisoners: newPrisoners });
-
+    
+                // #comment Remove the capturedIn flag from the hero's data
+                if (heroOwnerCityDoc.exists()) {
+                    const heroOwnerCityData = heroOwnerCityDoc.data();
+                    const heroes = heroOwnerCityData.heroes || {};
+                    if (heroes[prisonerToRelease.heroId]) {
+                        const newHeroes = { ...heroes };
+                        delete newHeroes[prisonerToRelease.heroId].capturedIn;
+                        transaction.update(heroOwnerCityRef, { heroes: newHeroes });
+                    }
+                }
+    
                 // Create a return movement for the hero
                 const newMovementRef = doc(collection(db, 'worlds', worldId, 'movements'));
-                const heroOwnerCity = Object.values(playerCities).find(city => city.id === prisonerToRelease.originCityId) || { x: 0, y: 0 }; // Fallback coords
-
-                const distance = calculateDistance(capturingCityData, heroOwnerCity);
+                const heroOwnerCityCoords = prisonerToRelease.originCityCoords;
+                if (!heroOwnerCityCoords) {
+                    throw new Error("Released hero's home city coordinates not found.");
+                }
+    
+                const distance = calculateDistance(capturingCityData, heroOwnerCityCoords);
                 const travelSeconds = calculateTravelTime(distance, 10); // Use a base speed for heroes
                 const arrivalTime = new Date(Date.now() + travelSeconds * 1000);
-
+    
                 const movementData = {
                     type: 'return',
                     status: 'returning',
@@ -210,7 +228,7 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
                     originOwnerId: currentUser.uid,
                     originCityName: capturingCityData.cityName,
                     targetCityId: prisonerToRelease.originCityId,
-                    targetCoords: { x: heroOwnerCity.x, y: heroOwnerCity.y },
+                    targetCoords: { x: heroOwnerCityCoords.x, y: heroOwnerCityCoords.y },
                     targetOwnerId: prisonerToRelease.ownerId,
                     departureTime: serverTimestamp(),
                     arrivalTime: arrivalTime,
@@ -224,5 +242,6 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
             console.error(error);
         }
     };
+
     return { onRecruitHero, onActivateSkill, onAssignHero, onUnassignHero, onReleaseHero };
 };

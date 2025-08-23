@@ -195,6 +195,7 @@ export const useMovementProcessor = (worldId) => {
                 const newHeroes = { ...(newCityState.heroes || {}) };
                 if (newHeroes[movement.hero]) {
                     newHeroes[movement.hero].cityId = null;
+                    delete newHeroes[movement.hero].capturedIn; // #comment Ensure captured status is cleared on return
                 }
                 batch.update(originCityRef, { heroes: newHeroes });
             }
@@ -231,7 +232,7 @@ export const useMovementProcessor = (worldId) => {
                 type: 'return',
                 title: `Troops returned to ${originCityState.cityName}`,
                 timestamp: serverTimestamp(),
-                units: movement.units,
+                units: movement.units || {},
                 hero: movement.hero || null,
                 resources: movement.resources || {},
                 wounded: movement.wounded || {},
@@ -545,34 +546,48 @@ export const useMovementProcessor = (worldId) => {
                         const prisonerObject = {
                             captureId: uuidv4(),
                             heroId,
-                            capturedAt: serverTimestamp()
                         };
                         let wasImprisoned = false;
                         if (capturedBy === 'attacker') {
                             prisonerObject.ownerId = movement.targetOwnerId;
                             prisonerObject.ownerUsername = movement.ownerUsername;
+                            prisonerObject.originCityId = movement.targetCityId;
                             prisonerObject.originCityName = movement.targetCityName;
+                            prisonerObject.originCityCoords = { x: targetCityState.x, y: targetCityState.y };
                             const prisonLevel = originCityState.buildings.prison?.level || 0;
                             const capacity = prisonLevel > 0 ? prisonLevel + 4 : 0;
                             const currentPrisoners = originCityState.prisoners?.length || 0;
                             if (prisonLevel > 0 && currentPrisoners < capacity) {
-                                batch.update(originCityRef, { prisoners: arrayUnion(prisonerObject) });
+                                const newPrisonerObject = { ...prisonerObject, capturedAt: new Date() };
+                                batch.update(originCityRef, { prisoners: arrayUnion(newPrisonerObject) });
                                 wasImprisoned = true;
                             }
-                        } else {
+                        } else { // captured by defender
                             prisonerObject.ownerId = movement.originOwnerId;
                             prisonerObject.ownerUsername = movement.originOwnerUsername;
+                            prisonerObject.originCityId = movement.originCityId;
                             prisonerObject.originCityName = movement.originCityName;
+                            prisonerObject.originCityCoords = { x: originCityState.x, y: originCityState.y };
                             const prisonLevel = targetCityState.buildings.prison?.level || 0;
                             const capacity = prisonLevel > 0 ? prisonLevel + 4 : 0;
                             const currentPrisoners = targetCityState.prisoners?.length || 0;
                             if (prisonLevel > 0 && currentPrisoners < capacity) {
-                                batch.update(targetCityRef, { prisoners: arrayUnion(prisonerObject) });
+                                const newPrisonerObject = { ...prisonerObject, capturedAt: new Date() };
+                                batch.update(targetCityRef, { prisoners: arrayUnion(newPrisonerObject) });
                                 wasImprisoned = true;
                             }
                         }
                         if (!wasImprisoned) {
                             result.capturedHero = null;
+                        } else {
+                            // #comment Update the hero's status in their owner's city document to show they are captured.
+                            const heroOwnerId = capturedBy === 'attacker' ? movement.targetOwnerId : movement.originOwnerId;
+                            const heroOriginCityId = capturedBy === 'attacker' ? movement.targetCityId : movement.originCityId;
+                            const heroOwnerCityRef = doc(db, `users/${heroOwnerId}/games`, worldId, 'cities', heroOriginCityId);
+                    
+                            const heroUpdatePath = `heroes.${heroId}.capturedIn`;
+                            const capturingCityId = capturedBy === 'attacker' ? movement.originCityId : movement.targetCityId;
+                            batch.update(heroOwnerCityRef, { [heroUpdatePath]: capturingCityId });
                         }
                     }
                     await runTransaction(db, async (transaction) => {

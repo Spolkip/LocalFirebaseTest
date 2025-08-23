@@ -285,7 +285,11 @@ const MovementModal = ({ mode, targetCity, playerCity, playerUnits: initialPlaye
             currentCount: currentUnits[unitId] || 0
         }));
 
-        const availableHeroes = Object.keys(currentHeroes).filter(heroId => currentHeroes[heroId].active && (currentHeroes[heroId].cityId === gameState.id || !currentHeroes[heroId].cityId));
+        const availableHeroes = Object.keys(currentHeroes).filter(heroId => 
+            currentHeroes[heroId].active && 
+            !currentHeroes[heroId].capturedIn && // #comment Filter out captured heroes
+            (currentHeroes[heroId].cityId === gameState.id || !currentHeroes[heroId].cityId)
+        );
 
         const selectedLandUnitsForFormation = Object.keys(selectedUnits).filter(unitId => 
             selectedUnits[unitId] > 0 && unitConfig[unitId]?.type === 'land'
