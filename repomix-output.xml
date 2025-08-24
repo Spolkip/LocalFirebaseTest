@@ -7215,6 +7215,14 @@ export default DivineTempleMenu;
 .hero-item img {
     @apply w-full h-full object-cover;
 }
+
+.captured-bars-overlay {
+    @apply absolute inset-0 w-full h-full pointer-events-none;
+    background-image: url('../../images/bar_cells.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
 </file>
 
 <file path="src/components/city/HeroDisplay.js">
@@ -7238,10 +7246,12 @@ agentImageContext.keys().forEach((item) => {
 });
 
 const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
-    const recruitedHeroes = Object.keys(heroes || {}).filter(heroId => heroes[heroId].active && heroes[heroId].cityId === activeCityId);
+    const recruitedHeroes = Object.keys(heroes || {}).filter(heroId => {
+        const hero = heroes[heroId];
+        return hero.active && (hero.cityId === activeCityId || hero.capturedIn);
+    });
     const recruitedAgents = Object.keys(agents || {}).filter(agentId => agents[agentId] > 0);
     
-    // #comment Added a safeguard to ensure movements is an array before filtering.
     const travelingHeroes = (movements || [])
         .filter(m => m.type === 'assign_hero' && m.targetCityId === activeCityId)
         .map(m => m.hero);
@@ -7256,9 +7266,13 @@ const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
             <div className="heroes-grid">
                 {recruitedHeroes.map(heroId => {
                     const hero = heroesConfig[heroId];
+                    const isCaptured = !!heroes[heroId]?.capturedIn;
                     return (
-                        <div key={heroId} className="hero-item" title={hero.name}>
-                            <img src={heroImages[hero.image]} alt={hero.name} />
+                        <div key={heroId} className="hero-item relative" title={`${hero.name}${isCaptured ? ' (Captured)' : ''}`}>
+                            <img src={heroImages[hero.image]} alt={hero.name} className={isCaptured ? 'opacity-50' : ''} />
+                            {isCaptured && (
+                                <div className="captured-bars-overlay"></div>
+                            )}
                         </div>
                     );
                 })}
@@ -7585,7 +7599,9 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
     const selectedAgent = agentsConfig[selectedAgentId];
     const agentData = agents[selectedAgentId] || 0;
     
-    const isWounded = heroData.woundedUntil && new Date(heroData.woundedUntil.toDate()) > new Date();
+    const woundedUntilDate = heroData.woundedUntil?.toDate ? heroData.woundedUntil.toDate() : (heroData.woundedUntil ? new Date(heroData.woundedUntil) : null);
+    const isWounded = woundedUntilDate && woundedUntilDate > new Date();
+    const isHeroCaptured = !!heroData?.capturedIn;
 
 
     const getEffectValue = (effect, level) => {
@@ -7668,7 +7684,7 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
                                     Recruit ({selectedHero.cost.silver} Silver, {selectedHero.cost.favor} Favor)
                                 </button>
                             )}
-                            {heroes[selectedHeroId] && !isHeroInThisCity && !heroMovement && !isWounded && (
+                            {heroes[selectedHeroId] && !isHeroInThisCity && !heroMovement && !isWounded && !isHeroCaptured && (
                                 <button className="recruit-btn" onClick={(e) => handleAssign(e, selectedHeroId)}>
                                     Assign to this City
                                 </button>
@@ -7690,6 +7706,11 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
                                     <Countdown arrivalTime={heroData.woundedUntil} />
                                 </div>
                             )}
+                            {isHeroCaptured && (
+                                <div className="text-center mt-2 text-red-600 font-bold">
+                                    <p>Captured!</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="skills-list">
@@ -7709,9 +7730,9 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
                                         <button
                                             className="activate-skill-btn"
                                             onClick={(e) => handleSkillActivation(e, selectedHeroId, skill)}
-                                            disabled={isOnCooldown || isWounded}
+                                            disabled={isOnCooldown || isWounded || isHeroCaptured}
                                         >
-                                            {isWounded ? 'Wounded' : (isOnCooldown ? `Cooldown: ${timeLeft}s` : `Activate (${currentSkillCost} Favor)`)}
+                                            {isWounded ? 'Wounded' : isHeroCaptured ? 'Captured' : (isOnCooldown ? `Cooldown: ${timeLeft}s` : `Activate (${currentSkillCost} Favor)`)}
                                         </button>
                                     )}
                                 </div>
@@ -15620,7 +15641,11 @@ const MovementModal = ({ mode, targetCity, playerCity, playerUnits: initialPlaye
             currentCount: currentUnits[unitId] || 0
         }));
 
-        const availableHeroes = Object.keys(currentHeroes).filter(heroId => currentHeroes[heroId].active && (currentHeroes[heroId].cityId === gameState.id || !currentHeroes[heroId].cityId));
+        const availableHeroes = Object.keys(currentHeroes).filter(heroId => 
+            currentHeroes[heroId].active && 
+            !currentHeroes[heroId].capturedIn && // #comment Filter out captured heroes
+            (currentHeroes[heroId].cityId === gameState.id || !currentHeroes[heroId].cityId)
+        );
 
         const selectedLandUnitsForFormation = Object.keys(selectedUnits).filter(unitId => 
             selectedUnits[unitId] > 0 && unitConfig[unitId]?.type === 'land'
@@ -26491,7 +26516,7 @@ import { calculateDistance, calculateTravelTime } from '../../utils/travel';
 
 export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
     const { currentUser } = useAuth();
-    const { worldId, activeCityId, playerCities } = useGame();
+    const { worldId, activeCityId} = useGame();
 
     const onRecruitHero = async (heroId) => {
         const hero = heroesConfig[heroId];
@@ -26652,38 +26677,56 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
         }
     };
 
-    // --- START: NEW FUNCTION ---
     const onReleaseHero = async (prisonerToRelease) => {
         if (!prisonerToRelease || !prisonerToRelease.captureId) {
             setMessage("Invalid prisoner data.");
             return;
         }
-
+    
         const capturingCityRef = doc(db, `users/${currentUser.uid}/games`, worldId, 'cities', activeCityId);
-        
+        const heroOwnerCityRef = doc(db, `users/${prisonerToRelease.ownerId}/games`, worldId, 'cities', prisonerToRelease.originCityId);
+    
         try {
             await runTransaction(db, async (transaction) => {
-                const capturingCityDoc = await transaction.get(capturingCityRef);
+                const [capturingCityDoc, heroOwnerCityDoc] = await Promise.all([
+                    transaction.get(capturingCityRef),
+                    transaction.get(heroOwnerCityRef)
+                ]);
+    
                 if (!capturingCityDoc.exists()) throw new Error("Your city data could not be found.");
-
+    
                 const capturingCityData = capturingCityDoc.data();
                 const currentPrisoners = capturingCityData.prisoners || [];
                 const newPrisoners = currentPrisoners.filter(p => p.captureId !== prisonerToRelease.captureId);
-
+    
                 if (newPrisoners.length === currentPrisoners.length) {
                     throw new Error("Could not find the specified prisoner to release.");
                 }
-
+    
                 transaction.update(capturingCityRef, { prisoners: newPrisoners });
-
+    
+                // #comment Remove the capturedIn flag from the hero's data
+                if (heroOwnerCityDoc.exists()) {
+                    const heroOwnerCityData = heroOwnerCityDoc.data();
+                    const heroes = heroOwnerCityData.heroes || {};
+                    if (heroes[prisonerToRelease.heroId]) {
+                        const newHeroes = { ...heroes };
+                        delete newHeroes[prisonerToRelease.heroId].capturedIn;
+                        transaction.update(heroOwnerCityRef, { heroes: newHeroes });
+                    }
+                }
+    
                 // Create a return movement for the hero
                 const newMovementRef = doc(collection(db, 'worlds', worldId, 'movements'));
-                const heroOwnerCity = Object.values(playerCities).find(city => city.id === prisonerToRelease.originCityId) || { x: 0, y: 0 }; // Fallback coords
-
-                const distance = calculateDistance(capturingCityData, heroOwnerCity);
+                const heroOwnerCityCoords = prisonerToRelease.originCityCoords;
+                if (!heroOwnerCityCoords) {
+                    throw new Error("Released hero's home city coordinates not found.");
+                }
+    
+                const distance = calculateDistance(capturingCityData, heroOwnerCityCoords);
                 const travelSeconds = calculateTravelTime(distance, 10); // Use a base speed for heroes
                 const arrivalTime = new Date(Date.now() + travelSeconds * 1000);
-
+    
                 const movementData = {
                     type: 'return',
                     status: 'returning',
@@ -26693,7 +26736,7 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
                     originOwnerId: currentUser.uid,
                     originCityName: capturingCityData.cityName,
                     targetCityId: prisonerToRelease.originCityId,
-                    targetCoords: { x: heroOwnerCity.x, y: heroOwnerCity.y },
+                    targetCoords: { x: heroOwnerCityCoords.x, y: heroOwnerCityCoords.y },
                     targetOwnerId: prisonerToRelease.ownerId,
                     departureTime: serverTimestamp(),
                     arrivalTime: arrivalTime,
@@ -26707,6 +26750,7 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
             console.error(error);
         }
     };
+
     return { onRecruitHero, onActivateSkill, onAssignHero, onUnassignHero, onReleaseHero };
 };
 </file>
@@ -29501,6 +29545,7 @@ export const useMovementProcessor = (worldId) => {
                 const newHeroes = { ...(newCityState.heroes || {}) };
                 if (newHeroes[movement.hero]) {
                     newHeroes[movement.hero].cityId = null;
+                    delete newHeroes[movement.hero].capturedIn; // #comment Ensure captured status is cleared on return
                 }
                 batch.update(originCityRef, { heroes: newHeroes });
             }
@@ -29537,7 +29582,7 @@ export const useMovementProcessor = (worldId) => {
                 type: 'return',
                 title: `Troops returned to ${originCityState.cityName}`,
                 timestamp: serverTimestamp(),
-                units: movement.units,
+                units: movement.units || {},
                 hero: movement.hero || null,
                 resources: movement.resources || {},
                 wounded: movement.wounded || {},
@@ -29851,34 +29896,48 @@ export const useMovementProcessor = (worldId) => {
                         const prisonerObject = {
                             captureId: uuidv4(),
                             heroId,
-                            capturedAt: serverTimestamp()
                         };
                         let wasImprisoned = false;
                         if (capturedBy === 'attacker') {
                             prisonerObject.ownerId = movement.targetOwnerId;
                             prisonerObject.ownerUsername = movement.ownerUsername;
+                            prisonerObject.originCityId = movement.targetCityId;
                             prisonerObject.originCityName = movement.targetCityName;
+                            prisonerObject.originCityCoords = { x: targetCityState.x, y: targetCityState.y };
                             const prisonLevel = originCityState.buildings.prison?.level || 0;
                             const capacity = prisonLevel > 0 ? prisonLevel + 4 : 0;
                             const currentPrisoners = originCityState.prisoners?.length || 0;
                             if (prisonLevel > 0 && currentPrisoners < capacity) {
-                                batch.update(originCityRef, { prisoners: arrayUnion(prisonerObject) });
+                                const newPrisonerObject = { ...prisonerObject, capturedAt: new Date() };
+                                batch.update(originCityRef, { prisoners: arrayUnion(newPrisonerObject) });
                                 wasImprisoned = true;
                             }
-                        } else {
+                        } else { // captured by defender
                             prisonerObject.ownerId = movement.originOwnerId;
                             prisonerObject.ownerUsername = movement.originOwnerUsername;
+                            prisonerObject.originCityId = movement.originCityId;
                             prisonerObject.originCityName = movement.originCityName;
+                            prisonerObject.originCityCoords = { x: originCityState.x, y: originCityState.y };
                             const prisonLevel = targetCityState.buildings.prison?.level || 0;
                             const capacity = prisonLevel > 0 ? prisonLevel + 4 : 0;
                             const currentPrisoners = targetCityState.prisoners?.length || 0;
                             if (prisonLevel > 0 && currentPrisoners < capacity) {
-                                batch.update(targetCityRef, { prisoners: arrayUnion(prisonerObject) });
+                                const newPrisonerObject = { ...prisonerObject, capturedAt: new Date() };
+                                batch.update(targetCityRef, { prisoners: arrayUnion(newPrisonerObject) });
                                 wasImprisoned = true;
                             }
                         }
                         if (!wasImprisoned) {
                             result.capturedHero = null;
+                        } else {
+                            // #comment Update the hero's status in their owner's city document to show they are captured.
+                            const heroOwnerId = capturedBy === 'attacker' ? movement.targetOwnerId : movement.originOwnerId;
+                            const heroOriginCityId = capturedBy === 'attacker' ? movement.targetCityId : movement.originCityId;
+                            const heroOwnerCityRef = doc(db, `users/${heroOwnerId}/games`, worldId, 'cities', heroOriginCityId);
+                    
+                            const heroUpdatePath = `heroes.${heroId}.capturedIn`;
+                            const capturingCityId = capturedBy === 'attacker' ? movement.originCityId : movement.targetCityId;
+                            batch.update(heroOwnerCityRef, { [heroUpdatePath]: capturingCityId });
                         }
                     }
                     await runTransaction(db, async (transaction) => {
@@ -31457,6 +31516,8 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
             attackerWon: true,
             attackerLosses: {},
             defenderLosses: {},
+            attackerLossRatio: 0,
+            defenderLossRatio: 0,
         };
     }
     
@@ -31466,6 +31527,8 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
             attackerWon: false,
             attackerLosses: {},
             defenderLosses: {},
+            attackerLossRatio: 1,
+            defenderLossRatio: 0,
         };
     }
 
@@ -31579,6 +31642,8 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
         attackerWon: finalAttackerPower >= finalDefenderPower,
         attackerLosses: finalAttackerLosses,
         defenderLosses: finalDefenderLosses,
+        attackerLossRatio: attackerLossRatio,
+        defenderLossRatio: defenderLossRatio,
     };
 };
 export function getVillageTroops(villageData) {
@@ -31618,6 +31683,7 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
     let wounded = {};
     let capturedHero = null;
     let woundedHero = null;
+    let landBattle;
     
     const safeDefendingResources = defendingResources || {};
 
@@ -31632,7 +31698,7 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
                 survivingAttackers[unitId] = Math.max(0, (survivingAttackers[unitId] || 0) - totalAttackerLosses[unitId]);
             }
 
-            const landBattle = resolveBattle(survivingAttackers, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
+            landBattle = resolveBattle(survivingAttackers, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
             for (const unitId in landBattle.attackerLosses) {
                 totalAttackerLosses[unitId] = (totalAttackerLosses[unitId] || 0) + landBattle.attackerLosses[unitId];
             }
@@ -31656,7 +31722,7 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
             }
         }
     } else {
-        const landBattle = resolveBattle(attackingUnits, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
+        landBattle = resolveBattle(attackingUnits, defendingUnits, 'land', attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero);
         totalAttackerLosses = landBattle.attackerLosses;
         totalDefenderLosses = landBattle.defenderLosses;
         attackerWon = landBattle.attackerWon;
@@ -31682,11 +31748,27 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
         capturedHero = { heroId: attackingHero, capturedBy: 'defender' };
     }
 
-    // #comment Add a 25% chance for a hero to get wounded if they lose the battle.
-    if (attackerWon && defendingHero && Math.random() < 0.25) {
-        woundedHero = { heroId: defendingHero, side: 'defender' };
-    } else if (!attackerWon && attackingHero && Math.random() < 0.25) {
-        woundedHero = { heroId: attackingHero, side: 'attacker' };
+    // #comment New Wounded Hero Logic
+    if (landBattle) {
+        if (attackerWon) {
+            // Attacker won, but check if it was a close call.
+            if (attackingHero && landBattle.attackerLossRatio > 0.7 && Math.random() < 0.5) { // 50% chance if winner's losses > 70%
+                woundedHero = { heroId: attackingHero, side: 'attacker' };
+            }
+            // Defender lost, standard chance of being wounded.
+            if (defendingHero && Math.random() < 0.25) {
+                woundedHero = { heroId: defendingHero, side: 'defender' };
+            }
+        } else { // Defender won
+            // Attacker lost, standard chance of being wounded.
+            if (attackingHero && Math.random() < 0.25) {
+                woundedHero = { heroId: attackingHero, side: 'attacker' };
+            }
+            // Defender won, but check if it was a close call.
+            if (defendingHero && landBattle.defenderLossRatio > 0.7 && Math.random() < 0.5) { // 50% chance if winner's losses > 70%
+                woundedHero = { heroId: defendingHero, side: 'defender' };
+            }
+        }
     }
 
 
