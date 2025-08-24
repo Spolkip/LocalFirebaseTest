@@ -221,7 +221,7 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
     
                 const movementData = {
                     type: 'return',
-                    status: 'returning',
+                    status: 'moving',
                     hero: prisonerToRelease.heroId,
                     originCityId: activeCityId,
                     originCoords: { x: capturingCityData.x, y: capturingCityData.y },

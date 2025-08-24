@@ -7246,17 +7246,15 @@ agentImageContext.keys().forEach((item) => {
 });
 
 const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
-    const recruitedHeroes = Object.keys(heroes || {}).filter(heroId => {
+    // #comment Show all active heroes that are assigned to a city, captured, or currently in a movement.
+    const heroesToShow = Object.keys(heroes || {}).filter(heroId => {
         const hero = heroes[heroId];
-        return hero.active && (hero.cityId === activeCityId || hero.capturedIn);
+        const isTraveling = (movements || []).some(m => m.hero === heroId);
+        return hero.active && (hero.cityId || hero.capturedIn || isTraveling);
     });
     const recruitedAgents = Object.keys(agents || {}).filter(agentId => agents[agentId] > 0);
-    
-    const travelingHeroes = (movements || [])
-        .filter(m => m.type === 'assign_hero' && m.targetCityId === activeCityId)
-        .map(m => m.hero);
 
-    if (recruitedHeroes.length === 0 && recruitedAgents.length === 0 && travelingHeroes.length === 0) {
+    if (heroesToShow.length === 0 && recruitedAgents.length === 0) {
         return null;
     }
 
@@ -7264,15 +7262,42 @@ const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
         <div className="hero-display-container">
             <h3 className="hero-display-header">Heroes & Agents</h3>
             <div className="heroes-grid">
-                {recruitedHeroes.map(heroId => {
+                {heroesToShow.map(heroId => {
                     const hero = heroesConfig[heroId];
-                    const isCaptured = !!heroes[heroId]?.capturedIn;
+                    const heroData = heroes[heroId];
+                    const isCaptured = !!heroData?.capturedIn;
+                    const heroMovement = (movements || []).find(m => m.hero === heroId);
+                    const isAway = heroData?.cityId && heroData.cityId !== activeCityId && !isCaptured && !heroMovement;
+
+                    const woundedUntilDate = heroData.woundedUntil?.toDate ? heroData.woundedUntil.toDate() : (heroData.woundedUntil ? new Date(heroData.woundedUntil) : null);
+                    const isWounded = woundedUntilDate && woundedUntilDate > new Date();
+
+                    let statusTitle = hero.name;
+                    let overlay = null;
+                    let customClass = '';
+                    let backgroundClass = '';
+
+                    if (isCaptured) {
+                        statusTitle = `${hero.name} (Captured)`;
+                        overlay = <div className="captured-bars-overlay"></div>;
+                        customClass = 'opacity-50';
+                    } else if (isWounded) {
+                        statusTitle = `${hero.name} (Wounded)`;
+                        backgroundClass = 'bg-red-500/50';
+                        customClass = 'opacity-60';
+                    } else if (heroMovement) {
+                        statusTitle = `${hero.name} (Traveling)`;
+                        overlay = <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-2xl">✈️</span>;
+                        customClass = 'opacity-50';
+                    } else if (isAway) {
+                        statusTitle = `${hero.name} (Away)`;
+                        customClass = 'opacity-50 grayscale';
+                    }
+
                     return (
-                        <div key={heroId} className="hero-item relative" title={`${hero.name}${isCaptured ? ' (Captured)' : ''}`}>
-                            <img src={heroImages[hero.image]} alt={hero.name} className={isCaptured ? 'opacity-50' : ''} />
-                            {isCaptured && (
-                                <div className="captured-bars-overlay"></div>
-                            )}
+                        <div key={heroId} className={`hero-item relative ${backgroundClass}`} title={statusTitle}>
+                            <img src={heroImages[hero.image]} alt={hero.name} className={customClass} />
+                            {overlay}
                         </div>
                     );
                 })}
@@ -7283,15 +7308,6 @@ const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
                         <div key={agentId} className="hero-item" title={`${agent.name} (x${agentCount})`}>
                             <img src={agentImages[agent.image]} alt={agent.name} />
                             <span className="troop-count">{agentCount}</span>
-                        </div>
-                    );
-                })}
-                {travelingHeroes.map(heroId => {
-                    const hero = heroesConfig[heroId];
-                    return (
-                        <div key={`traveling-${heroId}`} className="hero-item" title={`${hero.name} (Traveling)`}>
-                            <img src={heroImages[hero.image]} alt={hero.name} style={{ opacity: 0.5 }} />
-                            <span className="absolute inset-0 flex items-center justify-center text-white font-bold">✈️</span>
                         </div>
                     );
                 })}
@@ -7730,9 +7746,9 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
                                         <button
                                             className="activate-skill-btn"
                                             onClick={(e) => handleSkillActivation(e, selectedHeroId, skill)}
-                                            disabled={isOnCooldown || isWounded || isHeroCaptured}
+                                            disabled={isOnCooldown || isHeroCaptured}
                                         >
-                                            {isWounded ? 'Wounded' : isHeroCaptured ? 'Captured' : (isOnCooldown ? `Cooldown: ${timeLeft}s` : `Activate (${currentSkillCost} Favor)`)}
+                                            {isHeroCaptured ? 'Captured' : (isOnCooldown ? `Cooldown: ${timeLeft}s` : `Activate (${currentSkillCost} Favor)`)}
                                         </button>
                                     )}
                                 </div>
@@ -26510,7 +26526,7 @@ export const useDivineActions = ({
 import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
 import { db } from '../../firebase/config';
-import { doc, runTransaction, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, runTransaction, collection, serverTimestamp, getDocs } from 'firebase/firestore';
 import heroesConfig from '../../gameData/heroes.json';
 import { calculateDistance, calculateTravelTime } from '../../utils/travel';
 
@@ -26684,14 +26700,14 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
         }
     
         const capturingCityRef = doc(db, `users/${currentUser.uid}/games`, worldId, 'cities', activeCityId);
-        const heroOwnerCityRef = doc(db, `users/${prisonerToRelease.ownerId}/games`, worldId, 'cities', prisonerToRelease.originCityId);
-    
+        
         try {
+            // #comment Fetch all cities of the hero's owner BEFORE the transaction
+            const heroOwnerCitiesRef = collection(db, `users/${prisonerToRelease.ownerId}/games`, worldId, 'cities');
+            const heroOwnerCitiesSnap = await getDocs(heroOwnerCitiesRef);
+
             await runTransaction(db, async (transaction) => {
-                const [capturingCityDoc, heroOwnerCityDoc] = await Promise.all([
-                    transaction.get(capturingCityRef),
-                    transaction.get(heroOwnerCityRef)
-                ]);
+                const capturingCityDoc = await transaction.get(capturingCityRef);
     
                 if (!capturingCityDoc.exists()) throw new Error("Your city data could not be found.");
     
@@ -26705,16 +26721,16 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
     
                 transaction.update(capturingCityRef, { prisoners: newPrisoners });
     
-                // #comment Remove the capturedIn flag from the hero's data
-                if (heroOwnerCityDoc.exists()) {
-                    const heroOwnerCityData = heroOwnerCityDoc.data();
-                    const heroes = heroOwnerCityData.heroes || {};
+                // #comment Update all of the owner's city docs to remove the capturedIn flag
+                heroOwnerCitiesSnap.forEach(cityDoc => {
+                    const cityData = cityDoc.data();
+                    const heroes = cityData.heroes || {};
                     if (heroes[prisonerToRelease.heroId]) {
                         const newHeroes = { ...heroes };
                         delete newHeroes[prisonerToRelease.heroId].capturedIn;
-                        transaction.update(heroOwnerCityRef, { heroes: newHeroes });
+                        transaction.update(cityDoc.ref, { heroes: newHeroes });
                     }
-                }
+                });
     
                 // Create a return movement for the hero
                 const newMovementRef = doc(collection(db, 'worlds', worldId, 'movements'));
@@ -29541,13 +29557,26 @@ export const useMovementProcessor = (worldId) => {
                 batch.update(originCityRef, { agents: newAgents });
             }
 
+            // #comment When a hero returns, update their status across ALL of the owner's cities.
             if (movement.hero) {
-                const newHeroes = { ...(newCityState.heroes || {}) };
-                if (newHeroes[movement.hero]) {
-                    newHeroes[movement.hero].cityId = null;
-                    delete newHeroes[movement.hero].capturedIn; // #comment Ensure captured status is cleared on return
-                }
-                batch.update(originCityRef, { heroes: newHeroes });
+                const heroOwnerCitiesRef = collection(db, `users/${movement.originOwnerId}/games`, worldId, 'cities');
+                const heroOwnerCitiesSnap = await getDocs(heroOwnerCitiesRef);
+
+                heroOwnerCitiesSnap.forEach(cityDoc => {
+                    const cityData = cityDoc.data();
+                    const heroes = cityData.heroes || {};
+                    if (heroes[movement.hero]) {
+                        const newHeroes = { ...heroes };
+                        const heroState = newHeroes[movement.hero];
+                        
+                        // #comment Update hero state: assign to city, clear negative statuses.
+                        heroState.cityId = movement.originCityId;
+                        delete heroState.capturedIn;
+                        delete heroState.woundedUntil;
+
+                        batch.update(cityDoc.ref, { heroes: newHeroes });
+                    }
+                });
             }
 
             const capacity = getWarehouseCapacity(newCityState.buildings.warehouse?.level);
@@ -29877,18 +29906,41 @@ export const useMovementProcessor = (worldId) => {
                         Object.keys(targetCityState.heroes || {}).find(id => targetCityState.heroes[id].cityId === movement.targetCityId) || null
                     );
 
-                    // #comment Handle wounded hero logic
+                    // #comment This transaction only handles battle points to avoid contention with other updates.
+                    await runTransaction(db, async (transaction) => {
+                        const attackerGameRef = doc(db, `users/${movement.originOwnerId}/games`, worldId);
+                        const defenderGameRef = doc(db, `users/${movement.targetOwnerId}/games`, worldId);
+                        const attackerGameDoc = await transaction.get(attackerGameRef);
+                        const defenderGameDoc = await transaction.get(defenderGameRef);
+                        if (attackerGameDoc.exists() && result.attackerBattlePoints > 0) {
+                            const currentPoints = attackerGameDoc.data().battlePoints || 0;
+                            transaction.update(attackerGameRef, { battlePoints: currentPoints + result.attackerBattlePoints });
+                        }
+                        if (defenderGameDoc.exists() && result.defenderBattlePoints > 0) {
+                            const currentPoints = defenderGameDoc.data().battlePoints || 0;
+                            transaction.update(defenderGameRef, { battlePoints: currentPoints + result.defenderBattlePoints });
+                        }
+                    });
+
+                    // #comment Helper to update a hero's state across all their owner's cities.
+                    const updateGlobalHeroState = async (heroId, ownerId, updates) => {
+                        const ownerCitiesRef = collection(db, `users/${ownerId}/games`, worldId, 'cities');
+                        const ownerCitiesSnap = await getDocs(ownerCitiesRef);
+                        ownerCitiesSnap.forEach(cityDoc => {
+                            const cityRef = cityDoc.ref;
+                            const heroUpdateData = {};
+                            for (const key in updates) {
+                                heroUpdateData[`heroes.${heroId}.${key}`] = updates[key];
+                            }
+                            batch.update(cityRef, heroUpdateData);
+                        });
+                    };
+
                     if (result.woundedHero) {
                         const { heroId, side } = result.woundedHero;
-                        const woundedUntil = new Date(Date.now() + 12 * 60 * 60 * 1000); // 12 hours
+                        const woundedUntil = new Date(Date.now() + 12 * 60 * 60 * 1000);
                         const heroOwnerId = side === 'attacker' ? movement.originOwnerId : movement.targetOwnerId;
-                        const heroCityRef = doc(db, `users/${heroOwnerId}/games`, worldId, 'cities', movement.originCityId);
-                        
-                        // This part needs to be inside a transaction to be safe, but for simplicity we'll update directly.
-                        // In a real scenario, you'd fetch the city, update the hero, and then save.
-                        // For now, we'll just update the hero's status.
-                        const heroUpdatePath = `heroes.${heroId}.woundedUntil`;
-                        updateDoc(heroCityRef, { [heroUpdatePath]: woundedUntil });
+                        await updateGlobalHeroState(heroId, heroOwnerId, { woundedUntil: woundedUntil, cityId: null });
                     }
 
                     if (result.capturedHero) {
@@ -29930,30 +29982,12 @@ export const useMovementProcessor = (worldId) => {
                         if (!wasImprisoned) {
                             result.capturedHero = null;
                         } else {
-                            // #comment Update the hero's status in their owner's city document to show they are captured.
                             const heroOwnerId = capturedBy === 'attacker' ? movement.targetOwnerId : movement.originOwnerId;
-                            const heroOriginCityId = capturedBy === 'attacker' ? movement.targetCityId : movement.originCityId;
-                            const heroOwnerCityRef = doc(db, `users/${heroOwnerId}/games`, worldId, 'cities', heroOriginCityId);
-                    
-                            const heroUpdatePath = `heroes.${heroId}.capturedIn`;
                             const capturingCityId = capturedBy === 'attacker' ? movement.originCityId : movement.targetCityId;
-                            batch.update(heroOwnerCityRef, { [heroUpdatePath]: capturingCityId });
+                            await updateGlobalHeroState(heroId, heroOwnerId, { capturedIn: capturingCityId, cityId: null });
                         }
                     }
-                    await runTransaction(db, async (transaction) => {
-                        const attackerGameRef = doc(db, `users/${movement.originOwnerId}/games`, worldId);
-                        const defenderGameRef = doc(db, `users/${movement.targetOwnerId}/games`, worldId);
-                        const attackerGameDoc = await transaction.get(attackerGameRef);
-                        const defenderGameDoc = await transaction.get(defenderGameRef);
-                        if (attackerGameDoc.exists() && result.attackerBattlePoints > 0) {
-                            const currentPoints = attackerGameDoc.data().battlePoints || 0;
-                            transaction.update(attackerGameRef, { battlePoints: currentPoints + result.attackerBattlePoints });
-                        }
-                        if (defenderGameDoc.exists() && result.defenderBattlePoints > 0) {
-                            const currentPoints = defenderGameDoc.data().battlePoints || 0;
-                            transaction.update(defenderGameRef, { battlePoints: currentPoints + result.defenderBattlePoints });
-                        }
-                    });
+                    
                     const newDefenderUnits = { ...targetCityState.units };
                     for (const unitId in result.defenderLosses) {
                         newDefenderUnits[unitId] = Math.max(0, (newDefenderUnits[unitId] || 0) - result.defenderLosses[unitId]);

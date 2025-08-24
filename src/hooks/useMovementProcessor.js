@@ -1,3 +1,4 @@
+// src/hooks/useMovementProcessor.js
 import { useEffect, useCallback } from 'react';
 import { db } from '../firebase/config';
 import { collection, query, where, getDocs, writeBatch, doc, getDoc, serverTimestamp, runTransaction, arrayUnion, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -932,6 +933,26 @@ export const useMovementProcessor = (worldId) => {
                     };
                     batch.set(doc(collection(db, `users/${movement.targetOwnerId}/worlds/${worldId}/reports`)), arrivalReport);
                     batch.delete(movementDoc.ref);
+                    await batch.commit();
+                    break;
+                }
+                case 'return': {
+                    if (!targetCityState) {
+                        console.log(`Target game state not found for movement ${movement.id}. Deleting.`);
+                        batch.delete(movementDoc.ref);
+                        break;
+                    }
+
+                    // This logic is for when a RELEASED HERO arrives at their home city.
+                    const newCityState = { ...targetCityState };
+                    const newHeroes = { ...(newCityState.heroes || {}) };
+                    if (movement.hero && newHeroes[movement.hero]) {
+                        delete newHeroes[movement.hero].capturedIn; 
+                        newHeroes[movement.hero].cityId = movement.targetCityId;
+                    }
+
+                    batch.update(targetCityRef, { heroes: newHeroes });
+                    batch.delete(movementDoc.ref); // Delete the movement after processing.
                     await batch.commit();
                     break;
                 }
