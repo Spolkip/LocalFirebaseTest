@@ -191,14 +191,26 @@ export const useMovementProcessor = (worldId) => {
                 batch.update(originCityRef, { agents: newAgents });
             }
 
+            // #comment When a hero returns, update their status across ALL of the owner's cities.
             if (movement.hero) {
-                const newHeroes = { ...(newCityState.heroes || {}) };
-                if (newHeroes[movement.hero]) {
-                    // #comment Assign the hero to the city they returned to.
-                    newHeroes[movement.hero].cityId = movement.originCityId;
-                    delete newHeroes[movement.hero].capturedIn; // #comment Ensure captured status is cleared on return
-                }
-                batch.update(originCityRef, { heroes: newHeroes });
+                const heroOwnerCitiesRef = collection(db, `users/${movement.originOwnerId}/games`, worldId, 'cities');
+                const heroOwnerCitiesSnap = await getDocs(heroOwnerCitiesRef);
+
+                heroOwnerCitiesSnap.forEach(cityDoc => {
+                    const cityData = cityDoc.data();
+                    const heroes = cityData.heroes || {};
+                    if (heroes[movement.hero]) {
+                        const newHeroes = { ...heroes };
+                        const heroState = newHeroes[movement.hero];
+                        
+                        // #comment Update hero state: assign to city, clear negative statuses.
+                        heroState.cityId = movement.originCityId;
+                        delete heroState.capturedIn;
+                        delete heroState.woundedUntil;
+
+                        batch.update(cityDoc.ref, { heroes: newHeroes });
+                    }
+                });
             }
 
             const capacity = getWarehouseCapacity(newCityState.buildings.warehouse?.level);
@@ -528,6 +540,7 @@ export const useMovementProcessor = (worldId) => {
                         Object.keys(targetCityState.heroes || {}).find(id => targetCityState.heroes[id].cityId === movement.targetCityId) || null
                     );
 
+                    // #comment This transaction only handles battle points to avoid contention with other updates.
                     await runTransaction(db, async (transaction) => {
                         const attackerGameRef = doc(db, `users/${movement.originOwnerId}/games`, worldId);
                         const defenderGameRef = doc(db, `users/${movement.targetOwnerId}/games`, worldId);
@@ -541,22 +554,28 @@ export const useMovementProcessor = (worldId) => {
                             const currentPoints = defenderGameDoc.data().battlePoints || 0;
                             transaction.update(defenderGameRef, { battlePoints: currentPoints + result.defenderBattlePoints });
                         }
-                        // #comment Handle wounded hero logic within the transaction
-                        if (result.woundedHero) {
-                            const { heroId, side } = result.woundedHero;
-                            const woundedUntil = new Date(Date.now() + 12 * 60 * 60 * 1000); // 12 hours
-                            const heroOwnerId = side === 'attacker' ? movement.originOwnerId : movement.targetOwnerId;
-                            const heroCityId = side === 'attacker' ? movement.originCityId : movement.targetCityId;
-                            const heroCityRef = doc(db, `users/${heroOwnerId}/games`, worldId, 'cities', heroCityId);
-                            
-                            const heroUpdatePath = `heroes.${heroId}.woundedUntil`;
-                            // This needs to be a Firestore update within the transaction.
-                            // However, we can't easily fetch and update a potentially different user's city doc here.
-                            // For now, we'll perform a separate update outside the transaction, which is not ideal but works.
-                            // A better solution would involve a Cloud Function or more complex transaction logic.
-                            updateDoc(heroCityRef, { [heroUpdatePath]: woundedUntil });
-                        }
                     });
+
+                    // #comment Helper to update a hero's state across all their owner's cities.
+                    const updateGlobalHeroState = async (heroId, ownerId, updates) => {
+                        const ownerCitiesRef = collection(db, `users/${ownerId}/games`, worldId, 'cities');
+                        const ownerCitiesSnap = await getDocs(ownerCitiesRef);
+                        ownerCitiesSnap.forEach(cityDoc => {
+                            const cityRef = cityDoc.ref;
+                            const heroUpdateData = {};
+                            for (const key in updates) {
+                                heroUpdateData[`heroes.${heroId}.${key}`] = updates[key];
+                            }
+                            batch.update(cityRef, heroUpdateData);
+                        });
+                    };
+
+                    if (result.woundedHero) {
+                        const { heroId, side } = result.woundedHero;
+                        const woundedUntil = new Date(Date.now() + 12 * 60 * 60 * 1000);
+                        const heroOwnerId = side === 'attacker' ? movement.originOwnerId : movement.targetOwnerId;
+                        await updateGlobalHeroState(heroId, heroOwnerId, { woundedUntil: woundedUntil, cityId: null });
+                    }
 
                     if (result.capturedHero) {
                         const { heroId, capturedBy } = result.capturedHero;
@@ -597,14 +616,9 @@ export const useMovementProcessor = (worldId) => {
                         if (!wasImprisoned) {
                             result.capturedHero = null;
                         } else {
-                            // #comment Update the hero's status in their owner's city document to show they are captured.
                             const heroOwnerId = capturedBy === 'attacker' ? movement.targetOwnerId : movement.originOwnerId;
-                            const heroOriginCityId = capturedBy === 'attacker' ? movement.targetCityId : movement.originCityId;
-                            const heroOwnerCityRef = doc(db, `users/${heroOwnerId}/games`, worldId, 'cities', heroOriginCityId);
-                    
-                            const heroUpdatePath = `heroes.${heroId}.capturedIn`;
                             const capturingCityId = capturedBy === 'attacker' ? movement.originCityId : movement.targetCityId;
-                            batch.update(heroOwnerCityRef, { [heroUpdatePath]: capturingCityId });
+                            await updateGlobalHeroState(heroId, heroOwnerId, { capturedIn: capturingCityId, cityId: null });
                         }
                     }
                     

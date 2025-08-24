@@ -2,7 +2,7 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
 import { db } from '../../firebase/config';
-import { doc, runTransaction, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, runTransaction, collection, serverTimestamp, getDocs } from 'firebase/firestore';
 import heroesConfig from '../../gameData/heroes.json';
 import { calculateDistance, calculateTravelTime } from '../../utils/travel';
 
@@ -176,14 +176,14 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
         }
     
         const capturingCityRef = doc(db, `users/${currentUser.uid}/games`, worldId, 'cities', activeCityId);
-        const heroOwnerCityRef = doc(db, `users/${prisonerToRelease.ownerId}/games`, worldId, 'cities', prisonerToRelease.originCityId);
-    
+        
         try {
+            // #comment Fetch all cities of the hero's owner BEFORE the transaction
+            const heroOwnerCitiesRef = collection(db, `users/${prisonerToRelease.ownerId}/games`, worldId, 'cities');
+            const heroOwnerCitiesSnap = await getDocs(heroOwnerCitiesRef);
+
             await runTransaction(db, async (transaction) => {
-                const [capturingCityDoc, heroOwnerCityDoc] = await Promise.all([
-                    transaction.get(capturingCityRef),
-                    transaction.get(heroOwnerCityRef)
-                ]);
+                const capturingCityDoc = await transaction.get(capturingCityRef);
     
                 if (!capturingCityDoc.exists()) throw new Error("Your city data could not be found.");
     
@@ -197,16 +197,16 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
     
                 transaction.update(capturingCityRef, { prisoners: newPrisoners });
     
-                // #comment Remove the capturedIn flag from the hero's data
-                if (heroOwnerCityDoc.exists()) {
-                    const heroOwnerCityData = heroOwnerCityDoc.data();
-                    const heroes = heroOwnerCityData.heroes || {};
+                // #comment Update all of the owner's city docs to remove the capturedIn flag
+                heroOwnerCitiesSnap.forEach(cityDoc => {
+                    const cityData = cityDoc.data();
+                    const heroes = cityData.heroes || {};
                     if (heroes[prisonerToRelease.heroId]) {
                         const newHeroes = { ...heroes };
                         delete newHeroes[prisonerToRelease.heroId].capturedIn;
-                        transaction.update(heroOwnerCityRef, { heroes: newHeroes });
+                        transaction.update(cityDoc.ref, { heroes: newHeroes });
                     }
-                }
+                });
     
                 // Create a return movement for the hero
                 const newMovementRef = doc(collection(db, 'worlds', worldId, 'movements'));
