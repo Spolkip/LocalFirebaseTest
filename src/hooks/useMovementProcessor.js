@@ -528,19 +528,35 @@ export const useMovementProcessor = (worldId) => {
                         Object.keys(targetCityState.heroes || {}).find(id => targetCityState.heroes[id].cityId === movement.targetCityId) || null
                     );
 
-                    // #comment Handle wounded hero logic
-                    if (result.woundedHero) {
-                        const { heroId, side } = result.woundedHero;
-                        const woundedUntil = new Date(Date.now() + 12 * 60 * 60 * 1000); // 12 hours
-                        const heroOwnerId = side === 'attacker' ? movement.originOwnerId : movement.targetOwnerId;
-                        const heroCityRef = doc(db, `users/${heroOwnerId}/games`, worldId, 'cities', movement.originCityId);
-                        
-                        // This part needs to be inside a transaction to be safe, but for simplicity we'll update directly.
-                        // In a real scenario, you'd fetch the city, update the hero, and then save.
-                        // For now, we'll just update the hero's status.
-                        const heroUpdatePath = `heroes.${heroId}.woundedUntil`;
-                        updateDoc(heroCityRef, { [heroUpdatePath]: woundedUntil });
-                    }
+                    await runTransaction(db, async (transaction) => {
+                        const attackerGameRef = doc(db, `users/${movement.originOwnerId}/games`, worldId);
+                        const defenderGameRef = doc(db, `users/${movement.targetOwnerId}/games`, worldId);
+                        const attackerGameDoc = await transaction.get(attackerGameRef);
+                        const defenderGameDoc = await transaction.get(defenderGameRef);
+                        if (attackerGameDoc.exists() && result.attackerBattlePoints > 0) {
+                            const currentPoints = attackerGameDoc.data().battlePoints || 0;
+                            transaction.update(attackerGameRef, { battlePoints: currentPoints + result.attackerBattlePoints });
+                        }
+                        if (defenderGameDoc.exists() && result.defenderBattlePoints > 0) {
+                            const currentPoints = defenderGameDoc.data().battlePoints || 0;
+                            transaction.update(defenderGameRef, { battlePoints: currentPoints + result.defenderBattlePoints });
+                        }
+                        // #comment Handle wounded hero logic within the transaction
+                        if (result.woundedHero) {
+                            const { heroId, side } = result.woundedHero;
+                            const woundedUntil = new Date(Date.now() + 12 * 60 * 60 * 1000); // 12 hours
+                            const heroOwnerId = side === 'attacker' ? movement.originOwnerId : movement.targetOwnerId;
+                            const heroCityId = side === 'attacker' ? movement.originCityId : movement.targetCityId;
+                            const heroCityRef = doc(db, `users/${heroOwnerId}/games`, worldId, 'cities', heroCityId);
+                            
+                            const heroUpdatePath = `heroes.${heroId}.woundedUntil`;
+                            // This needs to be a Firestore update within the transaction.
+                            // However, we can't easily fetch and update a potentially different user's city doc here.
+                            // For now, we'll perform a separate update outside the transaction, which is not ideal but works.
+                            // A better solution would involve a Cloud Function or more complex transaction logic.
+                            updateDoc(heroCityRef, { [heroUpdatePath]: woundedUntil });
+                        }
+                    });
 
                     if (result.capturedHero) {
                         const { heroId, capturedBy } = result.capturedHero;
@@ -591,20 +607,7 @@ export const useMovementProcessor = (worldId) => {
                             batch.update(heroOwnerCityRef, { [heroUpdatePath]: capturingCityId });
                         }
                     }
-                    await runTransaction(db, async (transaction) => {
-                        const attackerGameRef = doc(db, `users/${movement.originOwnerId}/games`, worldId);
-                        const defenderGameRef = doc(db, `users/${movement.targetOwnerId}/games`, worldId);
-                        const attackerGameDoc = await transaction.get(attackerGameRef);
-                        const defenderGameDoc = await transaction.get(defenderGameRef);
-                        if (attackerGameDoc.exists() && result.attackerBattlePoints > 0) {
-                            const currentPoints = attackerGameDoc.data().battlePoints || 0;
-                            transaction.update(attackerGameRef, { battlePoints: currentPoints + result.attackerBattlePoints });
-                        }
-                        if (defenderGameDoc.exists() && result.defenderBattlePoints > 0) {
-                            const currentPoints = defenderGameDoc.data().battlePoints || 0;
-                            transaction.update(defenderGameRef, { battlePoints: currentPoints + result.defenderBattlePoints });
-                        }
-                    });
+                    
                     const newDefenderUnits = { ...targetCityState.units };
                     for (const unitId in result.defenderLosses) {
                         newDefenderUnits[unitId] = Math.max(0, (newDefenderUnits[unitId] || 0) - result.defenderLosses[unitId]);

@@ -39,28 +39,35 @@ const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
                     const heroData = heroes[heroId];
                     const isCaptured = !!heroData?.capturedIn;
                     const heroMovement = (movements || []).find(m => m.hero === heroId);
-                    // #comment A hero is away if assigned to a different city, not captured, and not currently traveling.
                     const isAway = heroData?.cityId && heroData.cityId !== activeCityId && !isCaptured && !heroMovement;
+
+                    const woundedUntilDate = heroData.woundedUntil?.toDate ? heroData.woundedUntil.toDate() : (heroData.woundedUntil ? new Date(heroData.woundedUntil) : null);
+                    const isWounded = woundedUntilDate && woundedUntilDate > new Date();
 
                     let statusTitle = hero.name;
                     let overlay = null;
                     let customClass = '';
+                    let backgroundClass = '';
 
                     if (isCaptured) {
                         statusTitle = `${hero.name} (Captured)`;
                         overlay = <div className="captured-bars-overlay"></div>;
                         customClass = 'opacity-50';
+                    } else if (isWounded) {
+                        statusTitle = `${hero.name} (Wounded)`;
+                        backgroundClass = 'bg-red-500/50';
+                        customClass = 'opacity-60';
                     } else if (heroMovement) {
                         statusTitle = `${hero.name} (Traveling)`;
                         overlay = <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-2xl">✈️</span>;
                         customClass = 'opacity-50';
                     } else if (isAway) {
                         statusTitle = `${hero.name} (Away)`;
-                        customClass = 'opacity-50 grayscale'; // #comment Visual indicator for away status
+                        customClass = 'opacity-50 grayscale';
                     }
 
                     return (
-                        <div key={heroId} className="hero-item relative" title={statusTitle}>
+                        <div key={heroId} className={`hero-item relative ${backgroundClass}`} title={statusTitle}>
                             <img src={heroImages[hero.image]} alt={hero.name} className={customClass} />
                             {overlay}
                         </div>

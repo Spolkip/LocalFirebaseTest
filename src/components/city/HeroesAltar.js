@@ -241,9 +241,9 @@ const HeroesAltar = ({ cityGameState, onRecruitHero, onActivateSkill, onClose, o
                                         <button
                                             className="activate-skill-btn"
                                             onClick={(e) => handleSkillActivation(e, selectedHeroId, skill)}
-                                            disabled={isOnCooldown || isWounded || isHeroCaptured}
+                                            disabled={isOnCooldown || isHeroCaptured}
                                         >
-                                            {isWounded ? 'Wounded' : isHeroCaptured ? 'Captured' : (isOnCooldown ? `Cooldown: ${timeLeft}s` : `Activate (${currentSkillCost} Favor)`)}
+                                            {isHeroCaptured ? 'Captured' : (isOnCooldown ? `Cooldown: ${timeLeft}s` : `Activate (${currentSkillCost} Favor)`)}
                                         </button>
                                     )}
                                 </div>
