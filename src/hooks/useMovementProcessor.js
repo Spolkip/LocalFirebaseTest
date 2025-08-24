@@ -194,7 +194,8 @@ export const useMovementProcessor = (worldId) => {
             if (movement.hero) {
                 const newHeroes = { ...(newCityState.heroes || {}) };
                 if (newHeroes[movement.hero]) {
-                    newHeroes[movement.hero].cityId = null;
+                    // #comment Assign the hero to the city they returned to.
+                    newHeroes[movement.hero].cityId = movement.originCityId;
                     delete newHeroes[movement.hero].capturedIn; // #comment Ensure captured status is cleared on return
                 }
                 batch.update(originCityRef, { heroes: newHeroes });
