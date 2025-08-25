@@ -2,7 +2,7 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
 import { db } from '../../firebase/config';
-import { doc, runTransaction, collection, serverTimestamp, getDocs } from 'firebase/firestore';
+import { doc, runTransaction, collection, serverTimestamp, getDocs, deleteField } from 'firebase/firestore';
 import heroesConfig from '../../gameData/heroes.json';
 import { calculateDistance, calculateTravelTime } from '../../utils/travel';
 
@@ -27,9 +27,14 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
 
                 const newResources = { ...cityData.resources, silver: cityData.resources.silver - hero.cost.silver };
                 const newWorship = { ...cityData.worship, [cityData.god]: cityData.worship[cityData.god] - hero.cost.favor };
-                const newHeroes = { ...cityData.heroes, [heroId]: { active: true, cityId: null, level: 1, xp: 0 } };
+                
+                const updates = {
+                    resources: newResources,
+                    worship: newWorship,
+                    [`heroes.${heroId}`]: { active: true, cityId: null, level: 1, xp: 0 }
+                };
 
-                transaction.update(cityDocRef, { resources: newResources, worship: newWorship, heroes: newHeroes });
+                transaction.update(cityDocRef, updates);
             });
             setMessage(`${hero.name} has been recruited!`);
         } catch (error) {
@@ -158,10 +163,7 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
             await runTransaction(db, async (transaction) => {
                 const cityDoc = await transaction.get(cityDocRef);
                 if (!cityDoc.exists()) throw new Error("City data not found.");
-                const cityData = cityDoc.data();
-                const heroes = cityData.heroes || {};
-                const newHeroes = { ...heroes, [heroId]: { ...heroes[heroId], cityId: null } };
-                transaction.update(cityDocRef, { heroes: newHeroes });
+                transaction.update(cityDocRef, { [`heroes.${heroId}.cityId`]: null });
             });
             setMessage(`${heroesConfig[heroId].name} is no longer stationed in this city.`);
         } catch (error) {
@@ -197,14 +199,13 @@ export const useHeroActions = (cityGameState, saveGameState, setMessage) => {
     
                 transaction.update(capturingCityRef, { prisoners: newPrisoners });
     
-                // #comment Update all of the owner's city docs to remove the capturedIn flag
+                // #comment Atomically remove the 'capturedIn' field without overwriting other hero data.
                 heroOwnerCitiesSnap.forEach(cityDoc => {
-                    const cityData = cityDoc.data();
-                    const heroes = cityData.heroes || {};
-                    if (heroes[prisonerToRelease.heroId]) {
-                        const newHeroes = { ...heroes };
-                        delete newHeroes[prisonerToRelease.heroId].capturedIn;
-                        transaction.update(cityDoc.ref, { heroes: newHeroes });
+                    // We only need to update if the hero object exists in this city's data.
+                    if (cityDoc.data().heroes?.[prisonerToRelease.heroId]) {
+                        transaction.update(cityDoc.ref, {
+                            [`heroes.${prisonerToRelease.heroId}.capturedIn`]: deleteField()
+                        });
                     }
                 });
     

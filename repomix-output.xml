@@ -5241,23 +5241,24 @@ const AdminCheatMenu = ({ onCheat, onClose, InstantBuildActive}) => {
     const [unresearchId, setUnresearchId] = useState(''); // New state for unresearch
     const [favorAmount, setFavorAmount] = useState(0); // #comment Re-added favor cheat state
     const [farmLevels, SetFarmLevel] = useState(0);
+    const [healHero, setHealHero] = useState(false); // New state for healing hero
     
     
 
     const handleCheat = () => {
-        onCheat(amounts, troop, farmLevels, warehouseLevels, isInstantBuild, unresearchId, isInstantResearch, isInstantUnits, favorAmount, false); // #comment Pass false for foundSecondCity
+        onCheat(amounts, troop, farmLevels, warehouseLevels, isInstantBuild, unresearchId, isInstantResearch, isInstantUnits, favorAmount, false, false, healHero); // Pass healHero
         onClose();
     };
 
     // #comment Handler for the new "Found Second City" button
     const handleFoundCity = () => {
-        onCheat({}, {}, 0, false, '', false, false, 0, true); // #comment Pass true only for foundSecondCity
+        onCheat({}, {}, 0, false, '', false, false, 0, true, false, false); 
         onClose();
     };
 
     // #comment Handler for the "Force Refresh Data" button
     const handleForceRefresh = () => {
-        onCheat({}, {}, 0, false, '', false, false, 0, false, true); // Pass true for forceRefresh
+        onCheat({}, {}, 0, false, '', false, false, 0, false, true, false); // Pass true for forceRefresh
         onClose();
     };
 
@@ -5373,6 +5374,17 @@ const AdminCheatMenu = ({ onCheat, onClose, InstantBuildActive}) => {
                             type="checkbox"
                             checked={isInstantUnits}
                             onChange={(e) => setIsInstantUnits(e.target.checked)}
+                            className="w-6 h-6 rounded"
+                        />
+                    </div>
+                    {/* New Checkbox for Healing Hero */}
+                    <div className="flex justify-between items-center pt-4 border-t border-gray-600">
+                        <label htmlFor="healHero" className="text-white capitalize">Instantly Heal Hero</label>
+                        <input
+                            id="healHero"
+                            type="checkbox"
+                            checked={healHero}
+                            onChange={(e) => setHealHero(e.target.checked)}
                             className="w-6 h-6 rounded"
                         />
                     </div>
@@ -7230,6 +7242,7 @@ import React from 'react';
 import heroesConfig from '../../gameData/heroes.json';
 import agentsConfig from '../../gameData/agents.json';
 import './HeroDisplay.css';
+import Countdown from '../map/Countdown'; // #comment Import Countdown component
 
 const heroImages = {};
 const heroImageContext = require.context('../../images/heroes', false, /\.(png|jpe?g|svg)$/);
@@ -7285,6 +7298,13 @@ const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
                         statusTitle = `${hero.name} (Wounded)`;
                         backgroundClass = 'bg-red-500/50';
                         customClass = 'opacity-60';
+                        // #comment Add a wounded overlay with a countdown timer
+                        overlay = (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white text-xs font-bold">
+                                <span>Wounded</span>
+                                <Countdown arrivalTime={heroData.woundedUntil} />
+                            </div>
+                        );
                     } else if (heroMovement) {
                         statusTitle = `${hero.name} (Traveling)`;
                         overlay = <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-2xl">✈️</span>;
@@ -15657,11 +15677,17 @@ const MovementModal = ({ mode, targetCity, playerCity, playerUnits: initialPlaye
             currentCount: currentUnits[unitId] || 0
         }));
 
-        const availableHeroes = Object.keys(currentHeroes).filter(heroId => 
-            currentHeroes[heroId].active && 
-            !currentHeroes[heroId].capturedIn && // #comment Filter out captured heroes
-            (currentHeroes[heroId].cityId === gameState.id || !currentHeroes[heroId].cityId)
-        );
+        const availableHeroes = Object.keys(currentHeroes).filter(heroId => {
+            const heroData = currentHeroes[heroId];
+            if (!heroData.active || heroData.capturedIn) return false;
+    
+            // #comment Check if the hero is wounded
+            const woundedUntilDate = heroData.woundedUntil?.toDate ? heroData.woundedUntil.toDate() : (heroData.woundedUntil ? new Date(heroData.woundedUntil) : null);
+            const isWounded = woundedUntilDate && woundedUntilDate > new Date();
+            if (isWounded) return false;
+    
+            return (heroData.cityId === gameState.id || !heroData.cityId);
+        });
 
         const selectedLandUnitsForFormation = Object.keys(selectedUnits).filter(unitId => 
             selectedUnits[unitId] > 0 && unitConfig[unitId]?.type === 'land'
@@ -24511,7 +24537,7 @@ export default app;
 </file>
 
 <file path="src/hooks/actions/useAdminActions.js">
-import { collection, doc, query, where, limit, getDocs, setDoc as firestoreSetDoc, runTransaction } from 'firebase/firestore';
+import { collection, doc, query, where, limit, getDocs, setDoc as firestoreSetDoc, runTransaction, writeBatch, deleteField } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useGame } from '../../contexts/GameContext';
 import { generateGodTowns } from '../../utils/worldGeneration';
@@ -24552,7 +24578,7 @@ export const useAdminActions = ({
         }
     };
 
-    const handleCheat = async (amounts, troop, farmLevels, warehouseLevels, isInstantBuild, unresearchId, isInstantResearch, isInstantUnits, favorAmount, foundSecondCity, forceRefresh) => {
+    const handleCheat = async (amounts, troop, farmLevels, warehouseLevels, isInstantBuild, unresearchId, isInstantResearch, isInstantUnits, favorAmount, foundSecondCity, forceRefresh, healHero) => {
         if (!cityGameState || !userProfile?.is_admin) return;
 
         // #comment Handle the new force refresh action
@@ -24666,6 +24692,38 @@ export const useAdminActions = ({
             return;
         }
 
+        if (healHero) {
+            const batch = writeBatch(db);
+            const citiesRef = collection(db, `users/${currentUser.uid}/games`, worldId, 'cities');
+            const citiesSnap = await getDocs(citiesRef);
+            let heroHealed = false;
+
+            citiesSnap.forEach(cityDoc => {
+                const cityData = cityDoc.data();
+                if (cityData.heroes) {
+                    for (const heroId in cityData.heroes) {
+                        if (cityData.heroes[heroId].woundedUntil) {
+                            // Use deleteField to remove the woundedUntil timestamp
+                            batch.update(cityDoc.ref, { [`heroes.${heroId}.woundedUntil`]: deleteField() });
+                            heroHealed = true;
+                        }
+                    }
+                }
+            });
+
+            if (heroHealed) {
+                try {
+                    await batch.commit();
+                    setMessage("Wounded hero has been healed!");
+                } catch (error) {
+                    setMessage(`Error healing hero: ${error.message}`);
+                    console.error(error);
+                }
+            } else {
+                setMessage("No wounded hero found to heal.");
+            }
+        }
+
         setIsInstantBuild(isInstantBuild);
         setIsInstantResearch(isInstantResearch);
         setIsInstantUnits(isInstantUnits);
@@ -24700,8 +24758,11 @@ export const useAdminActions = ({
             setMessage("No god is currently worshipped to add favor.");
         }
 
-        await saveGameState(newGameState);
-        setMessage("Admin cheat applied!");
+        // Only save game state if other cheats were applied, as healHero is handled separately.
+        if (Object.values(amounts).some(v => v > 0) || troop.amount > 0 || farmLevels > 0 || warehouseLevels > 0 || unresearchId || favorAmount > 0) {
+            await saveGameState(newGameState);
+            setMessage("Admin cheat applied!");
+        }
     };
 
     return { handleSpawnGodTown, handleCheat };
@@ -28079,19 +28140,21 @@ export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInsta
     return () => clearInterval(interval);
 }, [currentUser, worldId, activeCityId, getUpgradeCost, addNotification]);
 
-    useEffect(() => {
-        const autoSave = async () => {
-            if (gameStateRef.current) {
-                try {
-                    await saveGameState(gameStateRef.current);
-                } catch (error) {
-                    console.error("Auto-save failed:", error);
-                }
-            }
-        };
-        const saveInterval = setInterval(autoSave, 30000); // Save every 30 seconds
-        return () => clearInterval(saveInterval);
-    }, [saveGameState]);
+    // #comment Removed the periodic auto-save to prevent overwriting fresh data with stale client state.
+    // #comment All state changes are now saved explicitly through user actions.
+    // useEffect(() => {
+    //     const autoSave = async () => {
+    //         if (gameStateRef.current) {
+    //             try {
+    //                 await saveGameState(gameStateRef.current);
+    //             } catch (error) {
+    //                 console.error("Auto-save failed:", error);
+    //             }
+    //         }
+    //     };
+    //     const saveInterval = setInterval(autoSave, 30000); // Save every 30 seconds
+    //     return () => clearInterval(saveInterval);
+    // }, [saveGameState]);
     
     return {
         cityGameState,
@@ -29367,7 +29430,7 @@ export const useModalState = () => {
 // src/hooks/useMovementProcessor.js
 import { useEffect, useCallback } from 'react';
 import { db } from '../firebase/config';
-import { collection, query, where, getDocs, writeBatch, doc, getDoc, serverTimestamp, runTransaction, arrayUnion, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, writeBatch, doc, getDoc, serverTimestamp, runTransaction, arrayUnion, deleteDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { resolveCombat, resolveScouting, getVillageTroops } from '../utils/combat';
 import { useCityState } from './useCityState';
 import unitConfig from '../gameData/units.json';
@@ -29563,19 +29626,18 @@ export const useMovementProcessor = (worldId) => {
                 const heroOwnerCitiesRef = collection(db, `users/${movement.originOwnerId}/games`, worldId, 'cities');
                 const heroOwnerCitiesSnap = await getDocs(heroOwnerCitiesRef);
 
+                // #comment Atomically update only the necessary fields for the hero in all of the owner's cities.
+                // #comment This prevents race conditions where a stale 'woundedUntil' field might be overwritten.
                 heroOwnerCitiesSnap.forEach(cityDoc => {
                     const cityData = cityDoc.data();
-                    const heroes = cityData.heroes || {};
-                    if (heroes[movement.hero]) {
-                        const newHeroes = { ...heroes };
-                        const heroState = newHeroes[movement.hero];
+                    // #comment Check if the city has data for this hero before attempting an update.
+                    if (cityData.heroes && cityData.heroes[movement.hero]) {
+                        const updates = {};
+                        updates[`heroes.${movement.hero}.cityId`] = movement.originCityId;
+                        updates[`heroes.${movement.hero}.capturedIn`] = deleteField();
                         
-                        // #comment Update hero state: assign to city, clear negative statuses.
-                        heroState.cityId = movement.originCityId;
-                        delete heroState.capturedIn;
-                        delete heroState.woundedUntil;
-
-                        batch.update(cityDoc.ref, { heroes: newHeroes });
+                        // #comment Using updateDoc within the batch for targeted field updates.
+                        batch.update(cityDoc.ref, updates);
                     }
                 });
             }
@@ -29894,9 +29956,20 @@ export const useMovementProcessor = (worldId) => {
                         batch.delete(movementDoc.ref);
                         break;
                     }
+                    // #comment Combine defender's own units and reinforcements for combat
+                    const allDefendingUnits = { ...(targetCityState.units || {}) };
+                    if (targetCityState.reinforcements) {
+                        for (const originCityId in targetCityState.reinforcements) {
+                            const reinf = targetCityState.reinforcements[originCityId];
+                            for (const unitId in reinf.units) {
+                                allDefendingUnits[unitId] = (allDefendingUnits[unitId] || 0) + reinf.units[unitId];
+                            }
+                        }
+                    }
+
                     const result = resolveCombat(
                         movement.units,
-                        targetCityState.units,
+                        allDefendingUnits,
                         targetCityState.resources,
                         !!movement.isCrossIsland,
                         movement.attackFormation?.front,
@@ -29906,7 +29979,7 @@ export const useMovementProcessor = (worldId) => {
                         movement.hero,
                         Object.keys(targetCityState.heroes || {}).find(id => targetCityState.heroes[id].cityId === movement.targetCityId) || null
                     );
-
+                    
                     // #comment This transaction only handles battle points to avoid contention with other updates.
                     await runTransaction(db, async (transaction) => {
                         const attackerGameRef = doc(db, `users/${movement.originOwnerId}/games`, worldId);
@@ -29989,10 +30062,52 @@ export const useMovementProcessor = (worldId) => {
                         }
                     }
                     
-                    const newDefenderUnits = { ...targetCityState.units };
+                    // #comment Distribute losses proportionally
+                    const newDefenderUnits = { ...(targetCityState.units || {}) };
+                    const newReinforcements = JSON.parse(JSON.stringify(targetCityState.reinforcements || {}));
+                    const reinforcementLossesReport = {};
+
                     for (const unitId in result.defenderLosses) {
-                        newDefenderUnits[unitId] = Math.max(0, (newDefenderUnits[unitId] || 0) - result.defenderLosses[unitId]);
+                        const totalLosses = result.defenderLosses[unitId];
+                        const totalPresent = allDefendingUnits[unitId];
+                        if (totalPresent <= 0) continue;
+                
+                        // Apply losses to city owner
+                        const ownerCount = newDefenderUnits[unitId] || 0;
+                        if (ownerCount > 0) {
+                            const ownerLosses = Math.round((ownerCount / totalPresent) * totalLosses);
+                            newDefenderUnits[unitId] = Math.max(0, ownerCount - ownerLosses);
+                        }
+                
+                        // Apply losses to reinforcements
+                        for (const originCityId in newReinforcements) {
+                            const reinf = newReinforcements[originCityId];
+                            const reinfCount = reinf.units?.[unitId] || 0;
+                            if (reinfCount > 0) {
+                                const reinfLosses = Math.round((reinfCount / totalPresent) * totalLosses);
+                                const actualLosses = Math.min(reinfCount, reinfLosses);
+                                reinf.units[unitId] -= actualLosses;
+                                
+                                // Prepare report for reinforcing player
+                                if (actualLosses > 0) {
+                                    if (!reinforcementLossesReport[reinf.ownerId]) {
+                                        reinforcementLossesReport[reinf.ownerId] = { losses: {} };
+                                    }
+                                    reinforcementLossesReport[reinf.ownerId].losses[unitId] = (reinforcementLossesReport[reinf.ownerId].losses[unitId] || 0) + actualLosses;
+                                }
+                            }
+                        }
                     }
+
+                    // #comment Clean up zero-count units and empty reinforcement objects
+                    Object.keys(newDefenderUnits).forEach(id => { if (newDefenderUnits[id] <= 0) delete newDefenderUnits[id]; });
+                    for (const originCityId in newReinforcements) {
+                        Object.keys(newReinforcements[originCityId].units).forEach(id => {
+                            if (newReinforcements[originCityId].units[id] <= 0) delete newReinforcements[originCityId].units[id];
+                        });
+                        if (Object.keys(newReinforcements[originCityId].units).length === 0) delete newReinforcements[originCityId];
+                    }
+                    
                     const newDefenderResources = { ...targetCityState.resources };
                     if (result.attackerWon) {
                         newDefenderResources.wood = Math.max(0, newDefenderResources.wood - result.plunder.wood);
@@ -30089,22 +30204,29 @@ export const useMovementProcessor = (worldId) => {
                         },
                         read: false,
                     };
-                    batch.update(targetCityRef, { units: newDefenderUnits, resources: newDefenderResources });
+                    batch.update(targetCityRef, { units: newDefenderUnits, resources: newDefenderResources, reinforcements: newReinforcements });
+                    const targetCitySlotRef = doc(db, 'worlds', worldId, 'citySlots', movement.targetSlotId);
+                    batch.update(targetCitySlotRef, { reinforcements: newReinforcements });
                     batch.set(doc(collection(db, `users/${movement.originOwnerId}/worlds/${worldId}/reports`)), attackerReport);
                     if (movement.targetOwnerId) {
                         batch.set(doc(collection(db, `users/${movement.targetOwnerId}/worlds/${worldId}/reports`)), defenderReport);
                     }
-                    if (Object.keys(survivingAttackers).length > 0 || Object.keys(result.wounded).length > 0) {
+                    const heroSurvives = movement.hero && (!result.capturedHero || result.capturedHero.heroId !== movement.hero);
+                    if (Object.keys(survivingAttackers).length > 0 || Object.keys(result.wounded).length > 0 || heroSurvives) {
                         const travelDuration = movement.arrivalTime.toMillis() - movement.departureTime.toMillis();
                         const returnArrivalTime = new Date(movement.arrivalTime.toDate().getTime() + travelDuration);
-                        batch.update(movementDoc.ref, {
+                        const returningMovementData = {
                             status: 'returning',
                             units: survivingAttackers,
                             resources: result.plunder,
                             wounded: result.wounded,
                             arrivalTime: returnArrivalTime,
                             involvedParties: [movement.originOwnerId]
-                        });
+                        };
+                        if (heroSurvives) {
+                            returningMovementData.hero = movement.hero;
+                        }
+                        batch.update(movementDoc.ref, returningMovementData);
                     } else {
                         batch.delete(movementDoc.ref);
                     }
@@ -31557,7 +31679,7 @@ import heroesConfig from '../gameData/heroes.json';
  * @returns {object} Battle results including attackerWon, attackerLosses, defenderLosses.
  */
 const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero) => {
-    // Check if either side has units of the required type
+    // #comment Check if either side has units of the required type or a hero
     const hasAttackingUnits = Object.entries(attackingUnits || {}).some(
         ([unitId, count]) => count > 0 && unitConfig[unitId]?.type === unitType && unitConfig[unitId]?.attack > 0
     );
@@ -31565,8 +31687,8 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
         ([unitId, count]) => count > 0 && unitConfig[unitId]?.type === unitType
     );
 
-    // If the defender has no relevant units, the attacker automatically wins this phase.
-    if (!hasDefendingUnits) {
+    // #comment If the defender has no relevant units OR hero, the attacker automatically wins this phase.
+    if (!hasDefendingUnits && !(unitType === 'land' && defendingHero)) {
         return {
             attackerWon: true,
             attackerLosses: {},
@@ -31576,8 +31698,8 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
         };
     }
     
-    // If the attacker has no relevant combat units, but the defender does, the attacker loses.
-    if (!hasAttackingUnits && !attackingHero) {
+    // #comment If the attacker has no relevant combat units OR hero, but the defender does, the attacker loses.
+    if (!hasAttackingUnits && !(unitType === 'land' && attackingHero)) {
         return {
             attackerWon: false,
             attackerLosses: {},
@@ -31803,24 +31925,24 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
         capturedHero = { heroId: attackingHero, capturedBy: 'defender' };
     }
 
-    // #comment New Wounded Hero Logic
+    // #comment Increased Wounded Hero probability
     if (landBattle) {
         if (attackerWon) {
             // Attacker won, but check if it was a close call.
-            if (attackingHero && landBattle.attackerLossRatio > 0.7 && Math.random() < 0.5) { // 50% chance if winner's losses > 70%
+            if (attackingHero && landBattle.attackerLossRatio > 0.5 && Math.random() < 0.75) { // 75% chance if winner's losses > 50%
                 woundedHero = { heroId: attackingHero, side: 'attacker' };
             }
             // Defender lost, standard chance of being wounded.
-            if (defendingHero && Math.random() < 0.25) {
+            if (defendingHero && Math.random() < 0.75) { // 75% chance
                 woundedHero = { heroId: defendingHero, side: 'defender' };
             }
         } else { // Defender won
             // Attacker lost, standard chance of being wounded.
-            if (attackingHero && Math.random() < 0.25) {
+            if (attackingHero && Math.random() < 0.75) { // 75% chance
                 woundedHero = { heroId: attackingHero, side: 'attacker' };
             }
             // Defender won, but check if it was a close call.
-            if (defendingHero && landBattle.defenderLossRatio > 0.7 && Math.random() < 0.5) { // 50% chance if winner's losses > 70%
+            if (defendingHero && landBattle.defenderLossRatio > 0.5 && Math.random() < 0.75) { // 75% chance if winner's losses > 50%
                 woundedHero = { heroId: defendingHero, side: 'defender' };
             }
         }
