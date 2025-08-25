@@ -1,0 +1,53 @@
+{
+  "resource_boost_wood_25": {
+    "name": "Lumberjack's Blessing",
+    "description": "Increases wood production by 25% for 1 hour.",
+    "image": "resource_boost.png",
+    "effect": {
+      "type": "production_boost",
+      "resource": "wood",
+      "value": 0.25,
+      "duration": 3600
+    }
+  },
+  "construction_speed_10": {
+    "name": "Architect's Draft",
+    "description": "Reduces construction time by 10% for 1 hour.",
+    "image": "construction_speed.png",
+    "effect": {
+      "type": "construction_speed",
+      "value": 0.10,
+      "duration": 3600
+    }
+  },
+  "research_speed_10": {
+    "name": "Scholar's Insight",
+    "description": "Reduces research time by 10% for 1 hour.",
+    "image": "research_speed.png",
+    "effect": {
+      "type": "research_speed",
+      "value": 0.10,
+      "duration": 3600
+    }
+  },
+  "favor_production_10": {
+    "name": "Divine Offering",
+    "description": "Increases favor production by 10% for 1 hour.",
+    "image": "favor_production.png",
+    "effect": {
+      "type": "favor_production",
+      "value": 0.10,
+      "duration": 3600
+    }
+  },
+  "troop_speed_10": {
+    "name": "Winds of Haste",
+    "description": "Increases the speed of all troops by 10% for 1 hour.",
+    "image": "troop_speed.png",
+    "effect": {
+      "type": "troop_speed",
+      "value": 0.10,
+      "duration": 3600
+    }
+  }
+}
