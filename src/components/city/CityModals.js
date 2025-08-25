@@ -30,6 +30,7 @@ const CityModals = ({
   saveGameState,
   handleUpgrade,
   handleCancelBuild,
+  handleCompleteInstantly,
   handleTrainTroops,
   handleCancelTrain,
   handleFireTroops,
@@ -115,6 +116,7 @@ const CityModals = ({
           maxPopulation={getFarmCapacity(cityGameState.buildings?.farm?.level)}
           buildQueue={cityGameState.buildQueue}
           onCancelBuild={handleCancelBuild}
+          onCompleteInstantly={handleCompleteInstantly}
           cityGameState={cityGameState}
           onOpenSpecialBuildingMenu={() => openModal('isSpecialBuildingMenuOpen')}
           onDemolishSpecialBuilding={handleDemolishSpecialBuilding}

@@ -19,7 +19,7 @@ const formatTime = (seconds) => {
     const s = Math.floor(seconds % 60).toString().padStart(2, '0');
     return `${h}:${m}:${s}`;
 };
-const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredItem }) => {
+const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredItem, onCompleteInstantly }) => {
     const [timeLeft, setTimeLeft] = useState(0);
     useEffect(() => {
         if (!isFirst) return;
@@ -46,6 +46,7 @@ const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredI
         ? `Demolish ${building.name} to Lvl ${item.level}`
         : `${building.name} (Level ${item.level})`;
     const levelText = isDemolition ? ` Lvl ${item.level}` : `^${item.level}`;
+    const showCompleteButton = isFirst && timeLeft > 0 && timeLeft < 60;
     return (
         <div
             className={`relative w-16 h-16 bg-gray-700 border-2 rounded-md flex-shrink-0 ${isDemolition ? 'border-red-500' : 'border-gray-600'}`}
@@ -61,6 +62,15 @@ const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredI
                 <span className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-red-500 text-xs text-center py-0.5 font-mono">
                     {formatTime(timeLeft)}
                 </span>
+            )}
+            {showCompleteButton && (
+                <button
+                    onClick={() => onCompleteInstantly(item)}
+                    className="absolute bottom-5 left-1/2 -translate-x-1/2 w-8 h-8 flex items-center justify-center bg-green-500/80 text-white rounded-full font-bold text-base hover:bg-green-400 transition-colors z-20 border-2 border-green-300"
+                    title="Complete Now"
+                >
+                    🔨
+                </button>
             )}
             {isLast && (
                 <button
@@ -82,7 +92,7 @@ const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredI
         </div>
     );
 };
-const BuildQueue = ({ buildQueue, onCancel }) => {
+const BuildQueue = ({ buildQueue, onCancel, onCompleteInstantly }) => {
     const [hoveredItem, setHoveredItem] = useState(null);
     const tooltipTimeoutRef = useRef(null);
     const queueCapacity = 5;
@@ -112,6 +122,7 @@ const BuildQueue = ({ buildQueue, onCancel }) => {
                         onHover={handleMouseEnter}
                         onLeave={handleMouseLeave}
                         hoveredItem={hoveredItem}
+                        onCompleteInstantly={onCompleteInstantly}
                     />
                 ))}
                 {emptySlots.map((_, index) => (

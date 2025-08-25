@@ -163,7 +163,7 @@ const SpecialBuildingCard = ({ cityGameState, onOpenSpecialBuildingMenu }) => {
     );
 };
 
-const SenateView = ({ buildings, resources, onUpgrade, onDemolish, getUpgradeCost, onClose, usedPopulation, maxPopulation, buildQueue = [], onCancelBuild, setMessage, cityGameState, onOpenSpecialBuildingMenu, onDemolishSpecialBuilding, currentUser, worldId, onAddWorker, onRemoveWorker, getMaxWorkerSlots, availablePopulation, onApplyWorkerPreset }) => {
+const SenateView = ({ buildings, resources, onUpgrade, onDemolish, getUpgradeCost, onClose, usedPopulation, maxPopulation, buildQueue = [], onCancelBuild, onCompleteInstantly, setMessage, cityGameState, onOpenSpecialBuildingMenu, onDemolishSpecialBuilding, currentUser, worldId, onAddWorker, onRemoveWorker, getMaxWorkerSlots, availablePopulation, onApplyWorkerPreset }) => {
     const [activeTab, setActiveTab] = useState('upgrade');
     const [presets, setPresets] = useState([]);
     const [selectedPresetId, setSelectedPresetId] = useState('');
@@ -355,7 +355,7 @@ const SenateView = ({ buildings, resources, onUpgrade, onDemolish, getUpgradeCos
                     <h2 className="text-3xl font-bold font-title text-yellow-300">Senate</h2>
                     <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                 </div>
-                <BuildQueue buildQueue={buildQueue} onCancel={onCancelBuild} />
+                <BuildQueue buildQueue={buildQueue} onCancel={onCancelBuild} onCompleteInstantly={onCompleteInstantly} />
                 <div className='flex justify-between items-center mb-4 p-3 bg-gray-900 rounded-lg'>
                     <p className="text-lg">Population: <span className="font-bold text-green-400">{availablePopulation}</span> / {maxPopulation}</p>
                     <div className="flex gap-4">

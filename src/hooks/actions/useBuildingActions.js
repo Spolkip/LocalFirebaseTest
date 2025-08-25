@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import buildingConfig from '../../gameData/buildings.json';
+import researchConfig from '../../gameData/research.json';
 
 // #comment This hook provides actions related to building management in a city.
 export const useBuildingActions = ({
@@ -347,5 +348,86 @@ export const useBuildingActions = ({
         setMessage("The wonder has been demolished and half of its resources have been returned.");
     };
 
-    return { handleUpgrade, handleCancelBuild, handleDemolish, handleBuildSpecialBuilding, handleDemolishSpecialBuilding };
+    // #comment Instantly completes the first building in the queue.
+    const handleCompleteInstantly = async (itemToComplete) => {
+        const currentState = cityGameState;
+        if (!currentState || !currentState.buildQueue || !itemToComplete) return;
+
+        const queue = [...currentState.buildQueue];
+        const itemIndex = queue.findIndex(item => item.id === itemToComplete.id);
+        if (itemIndex !== 0) {
+            setMessage("Only the first item in the queue can be completed instantly.");
+            return;
+        }
+
+        const task = queue.shift(); // Remove the first item
+
+        const newGameState = { ...currentState, buildQueue: queue };
+        
+        if (task.type === 'demolish') {
+            if (newGameState.buildings[task.buildingId]) {
+                newGameState.buildings[task.buildingId].level = task.level;
+            }
+            if (task.buildingId === 'academy') {
+                const newAcademyLevel = task.level;
+                newGameState.research = newGameState.research || {};
+                Object.keys(newGameState.research).forEach(researchId => {
+                    const researchState = newGameState.research[researchId];
+                    const isCompleted = researchState === true || (researchState && researchState.completed);
+                    if (isCompleted) {
+                        const researchInfo = researchConfig[researchId];
+                        if (researchInfo && researchInfo.requirements.academy > newAcademyLevel) {
+                            newGameState.research[researchId] = { completed: true, active: false };
+                        }
+                    }
+                });
+            }
+        } else if (task.isSpecial) {
+            newGameState.specialBuilding = task.buildingId;
+        } else {
+            if (!newGameState.buildings[task.buildingId]) {
+                newGameState.buildings[task.buildingId] = { level: 0 };
+            }
+            newGameState.buildings[task.buildingId].level = task.level;
+            if (task.buildingId === 'academy') {
+                const newAcademyLevel = task.level;
+                newGameState.research = newGameState.research || {};
+                Object.keys(newGameState.research).forEach(researchId => {
+                    const researchState = newGameState.research[researchId];
+                    const isCompleted = researchState === true || (researchState && researchState.completed);
+                    const isActive = researchState === true || (researchState && researchState.active);
+                    if (isCompleted && !isActive) {
+                        const researchInfo = researchConfig[researchId];
+                        if (researchInfo && researchInfo.requirements.academy <= newAcademyLevel) {
+                            newGameState.research[researchId] = { completed: true, active: true };
+                        }
+                    }
+                });
+            }
+        }
+
+        let lastEndTime = Date.now();
+        newGameState.buildQueue = newGameState.buildQueue.map(item => {
+            let taskTime;
+            if (item.isSpecial) {
+                taskTime = 7200; 
+            } else if (item.type === 'demolish') {
+                const costConfig = buildingConfig[item.buildingId].baseCost;
+                const calculatedTime = Math.floor(costConfig.time * Math.pow(1.25, item.currentLevel - 1));
+                taskTime = isInstantBuild ? 1 : Math.floor(calculatedTime / 2);
+            }
+            else {
+                taskTime = getUpgradeCost(item.buildingId, item.level).time;
+            }
+            const endTime = new Date(lastEndTime + taskTime * 1000);
+            lastEndTime = endTime.getTime();
+            return { ...item, endTime };
+        });
+
+        await saveGameState(newGameState);
+        setCityGameState(newGameState);
+        setMessage(`${buildingConfig[task.buildingId]?.name || 'Wonder'} construction complete!`);
+    };
+
+    return { handleUpgrade, handleCancelBuild, handleDemolish, handleBuildSpecialBuilding, handleDemolishSpecialBuilding, handleCompleteInstantly };
 };

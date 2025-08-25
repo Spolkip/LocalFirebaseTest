@@ -153,6 +153,7 @@ const CityView = ({
                 saveGameState={saveGameState}
                 handleUpgrade={actions.handleUpgrade}
                 handleCancelBuild={actions.handleCancelBuild}
+                handleCompleteInstantly={actions.handleCompleteInstantly}
                 handleTrainTroops={actions.handleTrainTroops}
                 handleCancelTrain={actions.handleCancelTrain}
                 handleFireTroops={actions.handleFireTroops}
