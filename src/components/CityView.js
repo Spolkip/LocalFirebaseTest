@@ -38,6 +38,7 @@ const CityView = ({
     closeCityModal,
     setCityModalState,
     onOpenManagementPanel,
+    onOpenNotes,
 }) => {
     const { currentUser, userProfile } = useAuth();
     const { gameSettings, worldState } = useGame();
@@ -126,6 +127,7 @@ const CityView = ({
                     getWarehouseCapacity={getWarehouseCapacity}
                     onSwitchCity={onSwitchCity}
                     battlePoints={battlePoints}
+                    onOpenNotes={onOpenNotes}
                 />
                 <CityViewContent
                     cityGameState={cityGameState}

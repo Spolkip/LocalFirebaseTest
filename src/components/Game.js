@@ -31,6 +31,7 @@ import SharedReportView from './SharedReportView';
 import EventTrigger from './admin/EventTrigger';
 import GodTownModal from './map/GodTownModal';
 import ManagementPanel from './management/managementPanelpls'; // #comment Import ManagementPanel
+import Notes from './map/Notes'; // #comment Import Notes component
 import { collection, onSnapshot, query, where, doc, updateDoc, runTransaction, serverTimestamp, getDocs} from 'firebase/firestore';
 import unitConfig from '../gameData/units.json';
 import logoutIcon from '../images/logout.png';
@@ -72,6 +73,7 @@ const Game = ({ onBackToWorlds }) => {
     const prevActiveCityIdRef = useRef();
     const prevViewRef = useRef();
     const [isManagementPanelOpen, setIsManagementPanelOpen] = useState(false); // #comment State for ManagementPanel
+    const [isNotesOpen, setIsNotesOpen] = useState(false); // #comment State for Notes
 
     useMovementProcessor(worldId);
     const { modalState, openModal, closeModal } = useModalState();
@@ -458,6 +460,7 @@ const Game = ({ onBackToWorlds }) => {
                     closeCityModal={closeCityModal}
                     setCityModalState={setCityModalState}
                     onOpenManagementPanel={() => setIsManagementPanelOpen(true)}
+                    onOpenNotes={() => setIsNotesOpen(true)}
                 />
             )}
             {view === 'map' && (
@@ -491,6 +494,7 @@ const Game = ({ onBackToWorlds }) => {
                     initialMapAction={initialMapAction}
                     setInitialMapAction={setInitialMapAction}
                     onOpenManagementPanel={() => setIsManagementPanelOpen(true)}
+                    onOpenNotes={() => setIsNotesOpen(true)}
                 />
             )}
             {/* Global Modals */}
@@ -528,6 +532,7 @@ const Game = ({ onBackToWorlds }) => {
                 isAdmin={userProfile?.is_admin}
             />}
             {isManagementPanelOpen && <ManagementPanel onClose={() => setIsManagementPanelOpen(false)} />}
+            {isNotesOpen && <Notes onClose={() => setIsNotesOpen(false)} />}
             <div className="chat-container">
                 <button onClick={() => setIsChatOpen(prev => !prev)} className="chat-toggle-button">
                     💬

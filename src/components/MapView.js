@@ -66,6 +66,7 @@ const MapView = ({
     initialMapAction,
     setInitialMapAction,
     onOpenManagementPanel,
+    onOpenNotes,
 }) => {
     const { currentUser, userProfile } = useAuth();
     const { worldState, gameState, setGameState, worldId, playerCity, playerCities, conqueredVillages, conqueredRuins, gameSettings, activeCityId, playerCityPoints } = useGame();
@@ -561,6 +562,7 @@ const MapView = ({
                         onRenameCity={onRenameCity}
                         onSwitchCity={onSwitchCity}
                         battlePoints={battlePoints}
+                        onOpenNotes={onOpenNotes}
                     />
                     <SidebarNav
                         onToggleView={handleGoToActiveCity}

@@ -6,7 +6,8 @@ import silverImage from '../../images/resources/silver.png';
 import populationImage from '../../images/resources/population.png';
 import recruitmenticon from '../../images/helmet.png';
 import tradeicon from '../../images/trade.png';
-import movementicon from '../../images/movement.png'
+import movementicon from '../../images/movement.png';
+import notesicon from '../../images/notes_icon.png';
 import battlePointsImage from '../../images/battle_points.png';
 import './TopBar.css';
 import RecruitmentTooltip from '../city/RecruitmentToolTip';
@@ -105,7 +106,8 @@ const TopBar = ({
     hasUnclaimedQuests,
     getWarehouseCapacity,
     onSwitchCity,
-    battlePoints
+    battlePoints,
+    onOpenNotes,
 }) => {
     const { playerCities, activeCityId } = useGame();
     const [isCityListOpen, setIsCityListOpen] = useState(false);
@@ -400,6 +402,11 @@ const TopBar = ({
                             />
                         )}
                     </div>
+                </div>
+                <div className="relative ml-2">
+                    <button onClick={onOpenNotes} className="activity-icon-image-container" title="Notes">
+                        <img src={notesicon} alt="Notes" className="activity-icon-image" />
+                    </button>
                 </div>
                 <div
                     className="resource-display relative"
