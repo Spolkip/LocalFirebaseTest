@@ -201,13 +201,22 @@ export const useMovementProcessor = (worldId) => {
                     const cityData = cityDoc.data();
                     const heroes = cityData.heroes || {};
                     if (heroes[movement.hero]) {
-                        const newHeroes = { ...heroes };
-                        const heroState = newHeroes[movement.hero];
+                        const heroState = heroes[movement.hero];
                         
-                        // #comment Update hero state: assign to city, clear negative statuses.
-                        heroState.cityId = movement.originCityId;
-                        delete heroState.capturedIn;
-                        delete heroState.woundedUntil;
+                        // #comment Create a new hero object, preserving existing properties like woundedUntil
+                        const updatedHeroState = {
+                            ...heroState,
+                            cityId: movement.originCityId, // Set the new cityId
+                        };
+                        
+                        // #comment Explicitly remove the capturedIn field
+                        delete updatedHeroState.capturedIn;
+
+                        // #comment Create the new top-level heroes object
+                        const newHeroes = {
+                            ...heroes,
+                            [movement.hero]: updatedHeroState,
+                        };
 
                         batch.update(cityDoc.ref, { heroes: newHeroes });
                     }
@@ -528,9 +537,20 @@ export const useMovementProcessor = (worldId) => {
                         batch.delete(movementDoc.ref);
                         break;
                     }
+                    // #comment Combine defender's own units and reinforcements for combat
+                    const allDefendingUnits = { ...(targetCityState.units || {}) };
+                    if (targetCityState.reinforcements) {
+                        for (const originCityId in targetCityState.reinforcements) {
+                            const reinf = targetCityState.reinforcements[originCityId];
+                            for (const unitId in reinf.units) {
+                                allDefendingUnits[unitId] = (allDefendingUnits[unitId] || 0) + reinf.units[unitId];
+                            }
+                        }
+                    }
+
                     const result = resolveCombat(
                         movement.units,
-                        targetCityState.units,
+                        allDefendingUnits,
                         targetCityState.resources,
                         !!movement.isCrossIsland,
                         movement.attackFormation?.front,
@@ -540,7 +560,7 @@ export const useMovementProcessor = (worldId) => {
                         movement.hero,
                         Object.keys(targetCityState.heroes || {}).find(id => targetCityState.heroes[id].cityId === movement.targetCityId) || null
                     );
-
+                    
                     // #comment This transaction only handles battle points to avoid contention with other updates.
                     await runTransaction(db, async (transaction) => {
                         const attackerGameRef = doc(db, `users/${movement.originOwnerId}/games`, worldId);
@@ -623,10 +643,52 @@ export const useMovementProcessor = (worldId) => {
                         }
                     }
                     
-                    const newDefenderUnits = { ...targetCityState.units };
+                    // #comment Distribute losses proportionally
+                    const newDefenderUnits = { ...(targetCityState.units || {}) };
+                    const newReinforcements = JSON.parse(JSON.stringify(targetCityState.reinforcements || {}));
+                    const reinforcementLossesReport = {};
+
                     for (const unitId in result.defenderLosses) {
-                        newDefenderUnits[unitId] = Math.max(0, (newDefenderUnits[unitId] || 0) - result.defenderLosses[unitId]);
+                        const totalLosses = result.defenderLosses[unitId];
+                        const totalPresent = allDefendingUnits[unitId];
+                        if (totalPresent <= 0) continue;
+                
+                        // Apply losses to city owner
+                        const ownerCount = newDefenderUnits[unitId] || 0;
+                        if (ownerCount > 0) {
+                            const ownerLosses = Math.round((ownerCount / totalPresent) * totalLosses);
+                            newDefenderUnits[unitId] = Math.max(0, ownerCount - ownerLosses);
+                        }
+                
+                        // Apply losses to reinforcements
+                        for (const originCityId in newReinforcements) {
+                            const reinf = newReinforcements[originCityId];
+                            const reinfCount = reinf.units?.[unitId] || 0;
+                            if (reinfCount > 0) {
+                                const reinfLosses = Math.round((reinfCount / totalPresent) * totalLosses);
+                                const actualLosses = Math.min(reinfCount, reinfLosses);
+                                reinf.units[unitId] -= actualLosses;
+                                
+                                // Prepare report for reinforcing player
+                                if (actualLosses > 0) {
+                                    if (!reinforcementLossesReport[reinf.ownerId]) {
+                                        reinforcementLossesReport[reinf.ownerId] = { losses: {} };
+                                    }
+                                    reinforcementLossesReport[reinf.ownerId].losses[unitId] = (reinforcementLossesReport[reinf.ownerId].losses[unitId] || 0) + actualLosses;
+                                }
+                            }
+                        }
                     }
+
+                    // #comment Clean up zero-count units and empty reinforcement objects
+                    Object.keys(newDefenderUnits).forEach(id => { if (newDefenderUnits[id] <= 0) delete newDefenderUnits[id]; });
+                    for (const originCityId in newReinforcements) {
+                        Object.keys(newReinforcements[originCityId].units).forEach(id => {
+                            if (newReinforcements[originCityId].units[id] <= 0) delete newReinforcements[originCityId].units[id];
+                        });
+                        if (Object.keys(newReinforcements[originCityId].units).length === 0) delete newReinforcements[originCityId];
+                    }
+                    
                     const newDefenderResources = { ...targetCityState.resources };
                     if (result.attackerWon) {
                         newDefenderResources.wood = Math.max(0, newDefenderResources.wood - result.plunder.wood);
@@ -723,22 +785,29 @@ export const useMovementProcessor = (worldId) => {
                         },
                         read: false,
                     };
-                    batch.update(targetCityRef, { units: newDefenderUnits, resources: newDefenderResources });
+                    batch.update(targetCityRef, { units: newDefenderUnits, resources: newDefenderResources, reinforcements: newReinforcements });
+                    const targetCitySlotRef = doc(db, 'worlds', worldId, 'citySlots', movement.targetSlotId);
+                    batch.update(targetCitySlotRef, { reinforcements: newReinforcements });
                     batch.set(doc(collection(db, `users/${movement.originOwnerId}/worlds/${worldId}/reports`)), attackerReport);
                     if (movement.targetOwnerId) {
                         batch.set(doc(collection(db, `users/${movement.targetOwnerId}/worlds/${worldId}/reports`)), defenderReport);
                     }
-                    if (Object.keys(survivingAttackers).length > 0 || Object.keys(result.wounded).length > 0) {
+                    const heroSurvives = movement.hero && (!result.capturedHero || result.capturedHero.heroId !== movement.hero);
+                    if (Object.keys(survivingAttackers).length > 0 || Object.keys(result.wounded).length > 0 || heroSurvives) {
                         const travelDuration = movement.arrivalTime.toMillis() - movement.departureTime.toMillis();
                         const returnArrivalTime = new Date(movement.arrivalTime.toDate().getTime() + travelDuration);
-                        batch.update(movementDoc.ref, {
+                        const returningMovementData = {
                             status: 'returning',
                             units: survivingAttackers,
                             resources: result.plunder,
                             wounded: result.wounded,
                             arrivalTime: returnArrivalTime,
                             involvedParties: [movement.originOwnerId]
-                        });
+                        };
+                        if (heroSurvives) {
+                            returningMovementData.hero = movement.hero;
+                        }
+                        batch.update(movementDoc.ref, returningMovementData);
                     } else {
                         batch.delete(movementDoc.ref);
                     }

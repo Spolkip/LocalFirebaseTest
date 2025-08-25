@@ -2,6 +2,7 @@ import React from 'react';
 import heroesConfig from '../../gameData/heroes.json';
 import agentsConfig from '../../gameData/agents.json';
 import './HeroDisplay.css';
+import Countdown from '../map/Countdown'; // #comment Import Countdown component
 
 const heroImages = {};
 const heroImageContext = require.context('../../images/heroes', false, /\.(png|jpe?g|svg)$/);
@@ -57,6 +58,13 @@ const HeroDisplay = ({ heroes, agents, movements, activeCityId }) => {
                         statusTitle = `${hero.name} (Wounded)`;
                         backgroundClass = 'bg-red-500/50';
                         customClass = 'opacity-60';
+                        // #comment Add a wounded overlay with a countdown timer
+                        overlay = (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 text-white text-xs font-bold">
+                                <span>Wounded</span>
+                                <Countdown arrivalTime={heroData.woundedUntil} />
+                            </div>
+                        );
                     } else if (heroMovement) {
                         statusTitle = `${hero.name} (Traveling)`;
                         overlay = <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-2xl">✈️</span>;

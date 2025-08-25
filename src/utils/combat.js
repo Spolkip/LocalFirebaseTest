@@ -15,7 +15,7 @@ import heroesConfig from '../gameData/heroes.json';
  * @returns {object} Battle results including attackerWon, attackerLosses, defenderLosses.
  */
 const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx, attackerSupport, defenderPhalanx, defenderSupport, attackingHero, defendingHero) => {
-    // Check if either side has units of the required type
+    // #comment Check if either side has units of the required type or a hero
     const hasAttackingUnits = Object.entries(attackingUnits || {}).some(
         ([unitId, count]) => count > 0 && unitConfig[unitId]?.type === unitType && unitConfig[unitId]?.attack > 0
     );
@@ -23,8 +23,8 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
         ([unitId, count]) => count > 0 && unitConfig[unitId]?.type === unitType
     );
 
-    // If the defender has no relevant units, the attacker automatically wins this phase.
-    if (!hasDefendingUnits) {
+    // #comment If the defender has no relevant units OR hero, the attacker automatically wins this phase.
+    if (!hasDefendingUnits && !(unitType === 'land' && defendingHero)) {
         return {
             attackerWon: true,
             attackerLosses: {},
@@ -34,8 +34,8 @@ const resolveBattle = (attackingUnits, defendingUnits, unitType, attackerPhalanx
         };
     }
     
-    // If the attacker has no relevant combat units, but the defender does, the attacker loses.
-    if (!hasAttackingUnits && !attackingHero) {
+    // #comment If the attacker has no relevant combat units OR hero, but the defender does, the attacker loses.
+    if (!hasAttackingUnits && !(unitType === 'land' && attackingHero)) {
         return {
             attackerWon: false,
             attackerLosses: {},
@@ -261,24 +261,24 @@ export function resolveCombat(attackingUnits, defendingUnits, defendingResources
         capturedHero = { heroId: attackingHero, capturedBy: 'defender' };
     }
 
-    // #comment New Wounded Hero Logic
+    // #comment Increased Wounded Hero probability
     if (landBattle) {
         if (attackerWon) {
             // Attacker won, but check if it was a close call.
-            if (attackingHero && landBattle.attackerLossRatio > 0.7 && Math.random() < 0.5) { // 50% chance if winner's losses > 70%
+            if (attackingHero && landBattle.attackerLossRatio > 0.5 && Math.random() < 0.75) { // 75% chance if winner's losses > 50%
                 woundedHero = { heroId: attackingHero, side: 'attacker' };
             }
             // Defender lost, standard chance of being wounded.
-            if (defendingHero && Math.random() < 0.25) {
+            if (defendingHero && Math.random() < 0.75) { // 75% chance
                 woundedHero = { heroId: defendingHero, side: 'defender' };
             }
         } else { // Defender won
             // Attacker lost, standard chance of being wounded.
-            if (attackingHero && Math.random() < 0.25) {
+            if (attackingHero && Math.random() < 0.75) { // 75% chance
                 woundedHero = { heroId: attackingHero, side: 'attacker' };
             }
             // Defender won, but check if it was a close call.
-            if (defendingHero && landBattle.defenderLossRatio > 0.7 && Math.random() < 0.5) { // 50% chance if winner's losses > 70%
+            if (defendingHero && landBattle.defenderLossRatio > 0.5 && Math.random() < 0.75) { // 75% chance if winner's losses > 50%
                 woundedHero = { heroId: defendingHero, side: 'defender' };
             }
         }
