@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, updateEmail, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import { doc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from '../firebase/config';
 
@@ -62,7 +62,32 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const value = { currentUser, userProfile, loading, updateUserProfile };
+    // #comment Re-authenticates the user before sensitive operations
+    const reauthenticate = async (currentPassword) => {
+        const user = auth.currentUser;
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+    };
+
+    // #comment Updates the user's email after re-authentication
+    const updateUserEmail = async (currentPassword, newEmail) => {
+        if (!currentUser) throw new Error("No user is signed in.");
+        await reauthenticate(currentPassword);
+        await updateEmail(currentUser, newEmail);
+        // Also update the email in the Firestore user profile
+        const userDocRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userDocRef, { email: newEmail });
+    };
+
+    // #comment Updates the user's password after re-authentication
+    const updateUserPassword = async (currentPassword, newPassword) => {
+        if (!currentUser) throw new Error("No user is signed in.");
+        await reauthenticate(currentPassword);
+        await updatePassword(currentUser, newPassword);
+    };
+
+
+    const value = { currentUser, userProfile, loading, updateUserProfile, updateUserEmail, updateUserPassword };
 
     return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };

@@ -1,0 +1,12 @@
+{
+    "1": { "pointsRequired": 0, "bonuses": { "free_construction_speedup": 5, "resource_production_boost": 0.05 } },
+    "2": { "pointsRequired": 50, "bonuses": { "free_construction_speedup": 6, "resource_production_boost": 0.06, "player_xp_boost": 0.05 } },
+    "3": { "pointsRequired": 150, "bonuses": { "free_construction_speedup": 7, "resource_production_boost": 0.07, "player_xp_boost": 0.06, "troop_attack_boost": 0.02 } },
+    "4": { "pointsRequired": 350, "bonuses": { "free_construction_speedup": 8, "resource_production_boost": 0.08, "player_xp_boost": 0.07, "troop_attack_boost": 0.03, "gathering_speed_boost": 0.05 } },
+    "5": { "pointsRequired": 750, "bonuses": { "free_construction_speedup": 10, "resource_production_boost": 0.10, "player_xp_boost": 0.08, "troop_attack_boost": 0.04, "gathering_speed_boost": 0.06, "troop_defense_boost": 0.05 } },
+    "6": { "pointsRequired": 1500, "bonuses": { "free_construction_speedup": 12, "resource_production_boost": 0.12, "player_xp_boost": 0.10, "troop_attack_boost": 0.05, "gathering_speed_boost": 0.07, "troop_defense_boost": 0.06, "hospital_capacity_boost": 0.10 } },
+    "7": { "pointsRequired": 3000, "bonuses": { "free_construction_speedup": 15, "resource_production_boost": 0.15, "player_xp_boost": 0.12, "troop_attack_boost": 0.06, "gathering_speed_boost": 0.08, "troop_defense_boost": 0.07, "hospital_capacity_boost": 0.12, "research_speed_boost": 0.05 } },
+    "8": { "pointsRequired": 6000, "bonuses": { "free_construction_speedup": 18, "resource_production_boost": 0.18, "player_xp_boost": 0.15, "troop_attack_boost": 0.08, "gathering_speed_boost": 0.10, "troop_defense_boost": 0.08, "hospital_capacity_boost": 0.15, "research_speed_boost": 0.06, "troop_hp_boost": 0.05 } },
+    "9": { "pointsRequired": 12000, "bonuses": { "free_construction_speedup": 20, "resource_production_boost": 0.20, "player_xp_boost": 0.20, "troop_attack_boost": 0.10, "gathering_speed_boost": 0.12, "troop_defense_boost": 0.10, "hospital_capacity_boost": 0.20, "research_speed_boost": 0.08, "troop_hp_boost": 0.06, "travel_speed_boost": 0.10 } },
+    "10": { "pointsRequired": 25000, "bonuses": { "free_construction_speedup": 25, "resource_production_boost": 0.25, "player_xp_boost": 0.25, "troop_attack_boost": 0.12, "gathering_speed_boost": 0.15, "troop_defense_boost": 0.12, "hospital_capacity_boost": 0.25, "research_speed_boost": 0.10, "troop_hp_boost": 0.08, "travel_speed_boost": 0.15, "extra_march_queue": 1 } }
+}

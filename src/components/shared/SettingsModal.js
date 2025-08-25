@@ -26,9 +26,16 @@ const ConfirmationModal = ({ message, onConfirm, onCancel, confirmText = 'Confir
 
 const SettingsModal = ({ onClose }) => {
     const { gameSettings, setGameSettings, worldId, playerCity, activeCityId } = useGame();
-    const { currentUser } = useAuth();
+    const { currentUser, updateUserEmail, updateUserPassword } = useAuth();
     const [activeTab, setActiveTab] = useState('gameplay');
     const [confirmAction, setConfirmAction] = useState(null);
+    const [message, setMessage] = useState('');
+
+    // State for account changes
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newEmail, setNewEmail] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
     const handleChange = (e) => {
         const { name, type, checked, value } = e.target;
@@ -39,7 +46,6 @@ const SettingsModal = ({ onClose }) => {
     };
 
     const handleSave = () => {
-
         onClose();
     };
 
@@ -119,6 +125,44 @@ const SettingsModal = ({ onClose }) => {
         }
     };
 
+    const handleChangeEmail = async (e) => {
+        e.preventDefault();
+        setMessage('');
+        if (!newEmail || !currentPassword) {
+            setMessage("All fields are required.");
+            return;
+        }
+        try {
+            await updateUserEmail(currentPassword, newEmail);
+            setMessage("Email updated successfully!");
+            setNewEmail('');
+            setCurrentPassword('');
+        } catch (error) {
+            setMessage(`Error: ${error.message}`);
+        }
+    };
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        setMessage('');
+        if (!newPassword || !confirmNewPassword || !currentPassword) {
+            setMessage("All fields are required.");
+            return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            setMessage("New passwords do not match.");
+            return;
+        }
+        try {
+            await updateUserPassword(currentPassword, newPassword);
+            setMessage("Password updated successfully!");
+            setNewPassword('');
+            setConfirmNewPassword('');
+            setCurrentPassword('');
+        } catch (error) {
+            setMessage(`Error: ${error.message}`);
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" onClick={onClose}>
@@ -146,6 +190,7 @@ const SettingsModal = ({ onClose }) => {
                 </div>
 
                 <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+                    {message && <p className="text-center p-2 bg-gray-700 rounded mb-4">{message}</p>}
                     {activeTab === 'gameplay' && (
                         <>
                             <div className="flex justify-between items-center bg-gray-700 p-3 rounded-lg">
@@ -313,21 +358,37 @@ const SettingsModal = ({ onClose }) => {
                     )}
 
                     {activeTab === 'account' && (
-                        <>
-                            <p className="text-sm text-gray-400">Warning: This action is irreversible!</p>
-                            <button
-                                onClick={() => setConfirmAction({
-                                    message: "Are you absolutely sure you want to reset your game? This will destroy all your cities and cannot be undone.",
-                                    onConfirm: handleResetGame,
-                                    onCancel: () => setConfirmAction(null),
-                                    confirmText: 'Reset Forever',
-                                    cancelText: 'Cancel'
-                                })}
-                                className="btn btn-danger w-full py-2"
-                            >
-                                Reset Game
-                            </button>
-                        </>
+                        <div className="space-y-6">
+                            <form onSubmit={handleChangeEmail} className="bg-gray-700 p-4 rounded-lg space-y-3">
+                                <h4 className="font-bold text-yellow-400">Change Email</h4>
+                                <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="New Email" className="w-full bg-gray-600 p-2 rounded" />
+                                <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current Password" className="w-full bg-gray-600 p-2 rounded" />
+                                <button type="submit" className="btn btn-primary w-full">Update Email</button>
+                            </form>
+                            <form onSubmit={handleChangePassword} className="bg-gray-700 p-4 rounded-lg space-y-3">
+                                <h4 className="font-bold text-yellow-400">Change Password</h4>
+                                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New Password" className="w-full bg-gray-600 p-2 rounded" />
+                                <input type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} placeholder="Confirm New Password" className="w-full bg-gray-600 p-2 rounded" />
+                                <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current Password" className="w-full bg-gray-600 p-2 rounded" />
+                                <button type="submit" className="btn btn-primary w-full">Update Password</button>
+                            </form>
+                            <div>
+                                <h4 className="font-bold text-red-500">Danger Zone</h4>
+                                <p className="text-sm text-gray-400">Warning: This action is irreversible!</p>
+                                <button
+                                    onClick={() => setConfirmAction({
+                                        message: "Are you absolutely sure you want to reset your game? This will destroy all your cities and cannot be undone.",
+                                        onConfirm: handleResetGame,
+                                        onCancel: () => setConfirmAction(null),
+                                        confirmText: 'Reset Forever',
+                                        cancelText: 'Cancel'
+                                    })}
+                                    className="btn btn-danger w-full py-2 mt-2"
+                                >
+                                    Reset Game
+                                </button>
+                            </div>
+                        </div>
                     )}
                 </div>
 
