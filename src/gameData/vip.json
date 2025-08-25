@@ -1,0 +1,18 @@
+{
+  "pointsPerLevel": [
+    0,
+    100,
+    300,
+    700,
+    1500,
+    3100,
+    6300,
+    12700,
+    25500,
+    51100
+  ],
+  "dailyPoints": 20,
+  "bonuses": {
+    "freeCompletionMinutes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  }
+}

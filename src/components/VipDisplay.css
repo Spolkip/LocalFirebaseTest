@@ -1,0 +1,26 @@
+.vip-container {
+    @apply flex items-center gap-2 p-1 rounded-full;
+    background: rgba(0,0,0,0.1);
+    border: 1px solid #8B4513;
+}
+.vip-header {
+    @apply flex items-center gap-2;
+}
+.vip-header span {
+    @apply font-bold text-yellow-600 pl-1;
+}
+.vip-claim-btn {
+    @apply text-xs px-2 py-0.5 rounded-full font-bold;
+    background: linear-gradient(to bottom, #f0e68c, #cd853f);
+    color: #4a2c2a;
+    border: 1px solid #8B4513;
+}
+.vip-claim-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+.vip-progress-bar-bg {
+    @apply w-20 h-3 bg-black/20 rounded-full overflow-hidden cursor-pointer;
+}
+.vip-progress-bar {
+    @apply h-full bg-yellow-500 rounded-full;
+}

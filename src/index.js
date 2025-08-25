@@ -14,6 +14,7 @@ import './components/map/MapOverlay.css';
 import './components/city/ResearchQueue.css';
 import './components/shared/Notification.css';
 import './components/map/Notes.css';
+import './components/VipDisplay.css';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
 const root = ReactDOM.createRoot(document.getElementById('root'));
