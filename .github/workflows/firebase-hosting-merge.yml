@@ -9,19 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # #comment Set up Node.js and cache npm dependencies
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      # #comment Use npm ci for faster, more reliable installs in CI
-      - name: Install Dependencies
-        run: npm ci
-      - name: Build Project
-        run: npm run build
-      - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      # This next line is the crucial addition. It installs all the
+      # dependencies, including react-scripts, before trying to build.
+      - run: npm install
+      - run: npm run build
+      - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GREPOLLIKE }}'
