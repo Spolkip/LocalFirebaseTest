@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
 import { db } from '../../firebase/config';
-import { collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc, serverTimestamp, query, orderBy, setDoc } from 'firebase/firestore';
 import TextEditor from '../shared/TextEditor';
 import './Notes.css';
 
@@ -113,6 +113,29 @@ const Notes = ({ onClose }) => {
         setEditingNote(null); // Finish editing
     };
 
+    // #comment Share note by creating a public document and copying BBCode
+    const handleShareNote = async () => {
+        if (!activeNote) return;
+        setMessage('');
+        try {
+            const sharedNoteRef = doc(db, 'worlds', worldId, 'shared_notes', activeNote.id);
+            await setDoc(sharedNoteRef, {
+                title: activeNote.title,
+                content: activeNote.content,
+                author: currentUser.uid,
+                authorUsername: currentUser.displayName,
+                sharedAt: serverTimestamp()
+            });
+            const bbCode = `[note]${activeNote.id}[/note]`;
+            navigator.clipboard.writeText(bbCode);
+            setMessage('Note shared! BBCode copied to clipboard.');
+            setTimeout(() => setMessage(''), 3000);
+        } catch (error) {
+            console.error("Error sharing note:", error);
+            setMessage('Failed to share note.');
+        }
+    };
+
     // #comment Handlers for making the notes panel draggable
     const handleMouseDown = (e) => {
         if (e.target.classList.contains('notes-header') || e.target.classList.contains('notes-tabs')) {
@@ -201,6 +224,7 @@ const Notes = ({ onClose }) => {
             )}
             <div className="notes-footer">
                 {message && <span className="save-message">{message}</span>}
+                <button onClick={handleShareNote} className="share-btn">Share</button>
             </div>
         </div>
     );

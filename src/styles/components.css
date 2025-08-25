@@ -186,3 +186,16 @@
 .settings-tabs button {
     @apply transition-colors duration-200;
 }
+
+/* Keybindings List */
+.keybinding-list {
+    @apply space-y-2 bg-gray-700 p-3 rounded-lg;
+}
+
+.keybinding-item {
+    @apply flex justify-between items-center text-sm;
+}
+
+.keybinding-item span:first-child {
+    @apply font-mono bg-gray-800 text-yellow-300 px-2 py-1 rounded-md;
+}

@@ -38,18 +38,6 @@ const SettingsModal = ({ onClose }) => {
         }));
     };
 
-    // #comment handle changes for worker preset inputs
-    const handlePresetChange = (e) => {
-        const { name, value } = e.target;
-        setGameSettings(prev => ({
-            ...prev,
-            workerPresets: {
-                ...prev.workerPresets,
-                [name]: parseInt(value, 10) || 0
-            }
-        }));
-    };
-
     const handleSave = () => {
 
         onClose();
@@ -143,7 +131,7 @@ const SettingsModal = ({ onClose }) => {
                     cancelText={confirmAction.cancelText}
                 />
             )}
-            <div className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md border-2 border-gray-600 text-white" onClick={e => e.stopPropagation()}>
+            <div className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-lg border-2 border-gray-600 text-white" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold text-center text-yellow-400">Game Settings</h2>
                     <button onClick={onClose} className="text-gray-400 text-3xl leading-none hover:text-white">&times;</button>
@@ -153,10 +141,11 @@ const SettingsModal = ({ onClose }) => {
                     <button onClick={() => setActiveTab('gameplay')} className={`flex-1 p-2 text-lg font-bold transition-colors ${activeTab === 'gameplay' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-700'}`}>Gameplay</button>
                     <button onClick={() => setActiveTab('display')} className={`flex-1 p-2 text-lg font-bold transition-colors ${activeTab === 'display' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-700'}`}>Display</button>
                     <button onClick={() => setActiveTab('notifications')} className={`flex-1 p-2 text-lg font-bold transition-colors ${activeTab === 'notifications' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-700'}`}>Notifications</button>
+                    <button onClick={() => setActiveTab('keybindings')} className={`flex-1 p-2 text-lg font-bold transition-colors ${activeTab === 'keybindings' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-700'}`}>Keys</button>
                     <button onClick={() => setActiveTab('account')} className={`flex-1 p-2 text-lg font-bold transition-colors ${activeTab === 'account' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-700'}`}>Account</button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
                     {activeTab === 'gameplay' && (
                         <>
                             <div className="flex justify-between items-center bg-gray-700 p-3 rounded-lg">
@@ -239,48 +228,39 @@ const SettingsModal = ({ onClose }) => {
                             </div>
                         </>
                     )}
-
-                    {activeTab === 'automation' && (
-                        <>
-                            <h3 className="text-xl font-semibold text-center">Worker Presets</h3>
-                            <p className="text-sm text-gray-400 text-center mb-4">Set the desired number of workers for each resource building. You can apply these presets from the Senate.</p>
-                            <div className="flex justify-between items-center bg-gray-700 p-3 rounded-lg">
-                                <label htmlFor="timber_camp_preset" className="text-lg font-semibold">Timber Camp</label>
-                                <input
-                                    type="number"
-                                    id="timber_camp_preset"
-                                    name="timber_camp"
-                                    value={gameSettings.workerPresets?.timber_camp || 0}
-                                    onChange={handlePresetChange}
-                                    className="bg-gray-600 text-white p-2 rounded w-24 text-center"
-                                    min="0"
-                                />
+                    
+                    {activeTab === 'keybindings' && (
+                        <div>
+                            <h3 className="text-xl font-semibold text-center mb-4">Keybindings</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <h4 className="font-bold text-yellow-400 mb-2">General</h4>
+                                    <div className="keybinding-list">
+                                        <div className="keybinding-item"><span>M</span><span>Toggle Map/City View</span></div>
+                                        <div className="keybinding-item"><span>G</span><span>Open Alliance</span></div>
+                                        <div className="keybinding-item"><span>Q</span><span>Open Quests</span></div>
+                                        <div className="keybinding-item"><span>Space</span><span>Center on Active City</span></div>
+                                        <div className="keybinding-item"><span>F</span><span>Open Forum</span></div>
+                                        <div className="keybinding-item"><span>I</span><span>Open Messages</span></div>
+                                        <div className="keybinding-item"><span>L</span><span>Open Leaderboard</span></div>
+                                        <div className="keybinding-item"><span>P</span><span>Open Profile</span></div>
+                                        <div className="keybinding-item"><span>O</span><span>Open Settings</span></div>
+                                        <div className="keybinding-item"><span>← / →</span><span>Cycle Cities</span></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-yellow-400 mb-2">City View</h4>
+                                    <div className="keybinding-list">
+                                        <div className="keybinding-item"><span>S</span><span>Open Senate</span></div>
+                                        <div className="keybinding-item"><span>B</span><span>Open Barracks</span></div>
+                                        <div className="keybinding-item"><span>H</span><span>Open Shipyard</span></div>
+                                        <div className="keybinding-item"><span>U</span><span>Open Academy</span></div>
+                                        <div className="keybinding-item"><span>K</span><span>Open Market</span></div>
+                                        <div className="keybinding-item"><span>T</span><span>Open Temple</span></div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex justify-between items-center bg-gray-700 p-3 rounded-lg">
-                                <label htmlFor="quarry_preset" className="text-lg font-semibold">Quarry</label>
-                                <input
-                                    type="number"
-                                    id="quarry_preset"
-                                    name="quarry"
-                                    value={gameSettings.workerPresets?.quarry || 0}
-                                    onChange={handlePresetChange}
-                                    className="bg-gray-600 text-white p-2 rounded w-24 text-center"
-                                    min="0"
-                                />
-                            </div>
-                            <div className="flex justify-between items-center bg-gray-700 p-3 rounded-lg">
-                                <label htmlFor="silver_mine_preset" className="text-lg font-semibold">Silver Mine</label>
-                                <input
-                                    type="number"
-                                    id="silver_mine_preset"
-                                    name="silver_mine"
-                                    value={gameSettings.workerPresets?.silver_mine || 0}
-                                    onChange={handlePresetChange}
-                                    className="bg-gray-600 text-white p-2 rounded w-24 text-center"
-                                    min="0"
-                                />
-                            </div>
-                        </>
+                        </div>
                     )}
 
                     {activeTab === 'notifications' && (

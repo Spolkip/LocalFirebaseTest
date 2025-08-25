@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useGame } from '../../contexts/GameContext';
 import { parseBBCode } from '../../utils/bbcodeParser';
 import SharedReportView from '../SharedReportView';
+import SharedNoteView from '../SharedNoteView';
 import ReactDOM from 'react-dom';
 import './MessagesView.css';
 import TextEditor from '../shared/TextEditor';
@@ -146,11 +147,20 @@ const MessagesView = ({ onClose, initialRecipientId = null, initialRecipientUser
     }, [messages]);
     useEffect(() => {
         if (messageContainerRef.current) {
-            const placeholders = messageContainerRef.current.querySelectorAll('.shared-report-placeholder');
-            placeholders.forEach(placeholder => {
+            // Render reports
+            const reportPlaceholders = messageContainerRef.current.querySelectorAll('.shared-report-placeholder');
+            reportPlaceholders.forEach(placeholder => {
                 const reportId = placeholder.dataset.reportId;
                 if (reportId) {
                     ReactDOM.render(<SharedReportView reportId={reportId} worldId={worldId} onClose={() => {}} isEmbedded={true} onActionClick={onActionClick} />, placeholder);
+                }
+            });
+            // Render notes
+            const notePlaceholders = messageContainerRef.current.querySelectorAll('.shared-note-placeholder');
+            notePlaceholders.forEach(placeholder => {
+                const noteId = placeholder.dataset.noteId;
+                if (noteId) {
+                    ReactDOM.render(<SharedNoteView noteId={noteId} worldId={worldId} isEmbedded={true} onActionClick={onActionClick} />, placeholder);
                 }
             });
         }

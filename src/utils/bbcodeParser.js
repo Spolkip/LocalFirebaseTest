@@ -30,6 +30,8 @@ export const parseBBCode = (text) => {
     });
     // [report]reportId[/report] - This will now be a placeholder for React to render the component
     html = html.replace(/\[report\](.*?)\[\/report\]/gs, '<div class="shared-report-placeholder" data-report-id="$1"></div>');
+    // [note]noteId[/note] - Placeholder for shared notes
+    html = html.replace(/\[note\](.*?)\[\/note\]/gs, '<div class="shared-note-placeholder" data-note-id="$1"></div>');
     // #comment New BBCode formats for reports
     // [player id=userId]Player Name[/player]
     html = html.replace(/\[player id=([^\]]+)\](.*?)\[\/player\]/gs, '<span class="bbcode-action" data-action-type="profile" data-action-id="$1">$2</span>');
