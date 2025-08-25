@@ -12,23 +12,24 @@ const AdminCheatMenu = ({ onCheat, onClose, InstantBuildActive}) => {
     const [unresearchId, setUnresearchId] = useState(''); // New state for unresearch
     const [favorAmount, setFavorAmount] = useState(0); // #comment Re-added favor cheat state
     const [farmLevels, SetFarmLevel] = useState(0);
+    const [healHero, setHealHero] = useState(false); // New state for healing hero
     
     
 
     const handleCheat = () => {
-        onCheat(amounts, troop, farmLevels, warehouseLevels, isInstantBuild, unresearchId, isInstantResearch, isInstantUnits, favorAmount, false); // #comment Pass false for foundSecondCity
+        onCheat(amounts, troop, farmLevels, warehouseLevels, isInstantBuild, unresearchId, isInstantResearch, isInstantUnits, favorAmount, false, false, healHero); // Pass healHero
         onClose();
     };
 
     // #comment Handler for the new "Found Second City" button
     const handleFoundCity = () => {
-        onCheat({}, {}, 0, false, '', false, false, 0, true); // #comment Pass true only for foundSecondCity
+        onCheat({}, {}, 0, false, '', false, false, 0, true, false, false); 
         onClose();
     };
 
     // #comment Handler for the "Force Refresh Data" button
     const handleForceRefresh = () => {
-        onCheat({}, {}, 0, false, '', false, false, 0, false, true); // Pass true for forceRefresh
+        onCheat({}, {}, 0, false, '', false, false, 0, false, true, false); // Pass true for forceRefresh
         onClose();
     };
 
@@ -144,6 +145,17 @@ const AdminCheatMenu = ({ onCheat, onClose, InstantBuildActive}) => {
                             type="checkbox"
                             checked={isInstantUnits}
                             onChange={(e) => setIsInstantUnits(e.target.checked)}
+                            className="w-6 h-6 rounded"
+                        />
+                    </div>
+                    {/* New Checkbox for Healing Hero */}
+                    <div className="flex justify-between items-center pt-4 border-t border-gray-600">
+                        <label htmlFor="healHero" className="text-white capitalize">Instantly Heal Hero</label>
+                        <input
+                            id="healHero"
+                            type="checkbox"
+                            checked={healHero}
+                            onChange={(e) => setHealHero(e.target.checked)}
                             className="w-6 h-6 rounded"
                         />
                     </div>

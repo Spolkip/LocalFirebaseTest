@@ -1,7 +1,7 @@
 // src/hooks/useMovementProcessor.js
 import { useEffect, useCallback } from 'react';
 import { db } from '../firebase/config';
-import { collection, query, where, getDocs, writeBatch, doc, getDoc, serverTimestamp, runTransaction, arrayUnion, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, writeBatch, doc, getDoc, serverTimestamp, runTransaction, arrayUnion, deleteDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { resolveCombat, resolveScouting, getVillageTroops } from '../utils/combat';
 import { useCityState } from './useCityState';
 import unitConfig from '../gameData/units.json';
@@ -197,28 +197,18 @@ export const useMovementProcessor = (worldId) => {
                 const heroOwnerCitiesRef = collection(db, `users/${movement.originOwnerId}/games`, worldId, 'cities');
                 const heroOwnerCitiesSnap = await getDocs(heroOwnerCitiesRef);
 
+                // #comment Atomically update only the necessary fields for the hero in all of the owner's cities.
+                // #comment This prevents race conditions where a stale 'woundedUntil' field might be overwritten.
                 heroOwnerCitiesSnap.forEach(cityDoc => {
                     const cityData = cityDoc.data();
-                    const heroes = cityData.heroes || {};
-                    if (heroes[movement.hero]) {
-                        const heroState = heroes[movement.hero];
+                    // #comment Check if the city has data for this hero before attempting an update.
+                    if (cityData.heroes && cityData.heroes[movement.hero]) {
+                        const updates = {};
+                        updates[`heroes.${movement.hero}.cityId`] = movement.originCityId;
+                        updates[`heroes.${movement.hero}.capturedIn`] = deleteField();
                         
-                        // #comment Create a new hero object, preserving existing properties like woundedUntil
-                        const updatedHeroState = {
-                            ...heroState,
-                            cityId: movement.originCityId, // Set the new cityId
-                        };
-                        
-                        // #comment Explicitly remove the capturedIn field
-                        delete updatedHeroState.capturedIn;
-
-                        // #comment Create the new top-level heroes object
-                        const newHeroes = {
-                            ...heroes,
-                            [movement.hero]: updatedHeroState,
-                        };
-
-                        batch.update(cityDoc.ref, { heroes: newHeroes });
+                        // #comment Using updateDoc within the batch for targeted field updates.
+                        batch.update(cityDoc.ref, updates);
                     }
                 });
             }

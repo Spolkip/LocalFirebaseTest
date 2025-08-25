@@ -1,4 +1,4 @@
-import { collection, doc, query, where, limit, getDocs, setDoc as firestoreSetDoc, runTransaction } from 'firebase/firestore';
+import { collection, doc, query, where, limit, getDocs, setDoc as firestoreSetDoc, runTransaction, writeBatch, deleteField } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { useGame } from '../../contexts/GameContext';
 import { generateGodTowns } from '../../utils/worldGeneration';
@@ -39,7 +39,7 @@ export const useAdminActions = ({
         }
     };
 
-    const handleCheat = async (amounts, troop, farmLevels, warehouseLevels, isInstantBuild, unresearchId, isInstantResearch, isInstantUnits, favorAmount, foundSecondCity, forceRefresh) => {
+    const handleCheat = async (amounts, troop, farmLevels, warehouseLevels, isInstantBuild, unresearchId, isInstantResearch, isInstantUnits, favorAmount, foundSecondCity, forceRefresh, healHero) => {
         if (!cityGameState || !userProfile?.is_admin) return;
 
         // #comment Handle the new force refresh action
@@ -153,6 +153,38 @@ export const useAdminActions = ({
             return;
         }
 
+        if (healHero) {
+            const batch = writeBatch(db);
+            const citiesRef = collection(db, `users/${currentUser.uid}/games`, worldId, 'cities');
+            const citiesSnap = await getDocs(citiesRef);
+            let heroHealed = false;
+
+            citiesSnap.forEach(cityDoc => {
+                const cityData = cityDoc.data();
+                if (cityData.heroes) {
+                    for (const heroId in cityData.heroes) {
+                        if (cityData.heroes[heroId].woundedUntil) {
+                            // Use deleteField to remove the woundedUntil timestamp
+                            batch.update(cityDoc.ref, { [`heroes.${heroId}.woundedUntil`]: deleteField() });
+                            heroHealed = true;
+                        }
+                    }
+                }
+            });
+
+            if (heroHealed) {
+                try {
+                    await batch.commit();
+                    setMessage("Wounded hero has been healed!");
+                } catch (error) {
+                    setMessage(`Error healing hero: ${error.message}`);
+                    console.error(error);
+                }
+            } else {
+                setMessage("No wounded hero found to heal.");
+            }
+        }
+
         setIsInstantBuild(isInstantBuild);
         setIsInstantResearch(isInstantResearch);
         setIsInstantUnits(isInstantUnits);
@@ -187,8 +219,11 @@ export const useAdminActions = ({
             setMessage("No god is currently worshipped to add favor.");
         }
 
-        await saveGameState(newGameState);
-        setMessage("Admin cheat applied!");
+        // Only save game state if other cheats were applied, as healHero is handled separately.
+        if (Object.values(amounts).some(v => v > 0) || troop.amount > 0 || farmLevels > 0 || warehouseLevels > 0 || unresearchId || favorAmount > 0) {
+            await saveGameState(newGameState);
+            setMessage("Admin cheat applied!");
+        }
     };
 
     return { handleSpawnGodTown, handleCheat };

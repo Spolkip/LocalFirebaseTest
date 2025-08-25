@@ -537,19 +537,21 @@ export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInsta
     return () => clearInterval(interval);
 }, [currentUser, worldId, activeCityId, getUpgradeCost, addNotification]);
 
-    useEffect(() => {
-        const autoSave = async () => {
-            if (gameStateRef.current) {
-                try {
-                    await saveGameState(gameStateRef.current);
-                } catch (error) {
-                    console.error("Auto-save failed:", error);
-                }
-            }
-        };
-        const saveInterval = setInterval(autoSave, 30000); // Save every 30 seconds
-        return () => clearInterval(saveInterval);
-    }, [saveGameState]);
+    // #comment Removed the periodic auto-save to prevent overwriting fresh data with stale client state.
+    // #comment All state changes are now saved explicitly through user actions.
+    // useEffect(() => {
+    //     const autoSave = async () => {
+    //         if (gameStateRef.current) {
+    //             try {
+    //                 await saveGameState(gameStateRef.current);
+    //             } catch (error) {
+    //                 console.error("Auto-save failed:", error);
+    //             }
+    //         }
+    //     };
+    //     const saveInterval = setInterval(autoSave, 30000); // Save every 30 seconds
+    //     return () => clearInterval(saveInterval);
+    // }, [saveGameState]);
     
     return {
         cityGameState,
