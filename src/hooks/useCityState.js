@@ -10,6 +10,7 @@ import { useGame } from '../contexts/GameContext';
 import { v4 as uuidv4 } from 'uuid';
 import { useAlliance } from '../contexts/AllianceContext';
 import allianceWonders from '../gameData/alliance_wonders.json';
+import vipConfig from '../gameData/vip.json';
 
 export const calculateTotalPointsForCity = (gameState, playerAlliance) => {
     if (!gameState) return 0;
@@ -53,7 +54,7 @@ const getMarketCapacity = (level) => {
 
 export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInstantUnits) => {
     const { currentUser } = useAuth();
-    const { activeCityId, addNotification } = useGame();
+    const { activeCityId, addNotification, playerGameData } = useGame();
     const { playerAlliance } = useAlliance();
     const [cityGameState, setCityGameState] = useState(null);
     const gameStateRef = useRef(cityGameState);
@@ -374,6 +375,9 @@ export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInsta
             const now = Date.now();
             let updates = {};
             let hasUpdates = false;
+            const vipLevel = playerGameData?.vipLevel || 1;
+            const freeCompletionTime = (vipConfig.bonuses.freeCompletionMinutes[vipLevel - 1] || 0) * 60 * 1000;
+
             const processSingleQueue = (queueName, processCompleted) => {
                 if (!currentState[queueName]?.length) return;
                 const activeQueue = [];
@@ -386,7 +390,7 @@ export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInsta
                             console.error('Invalid endTime', task);
                             return;
                         }
-                        if (now >= endTime.getTime()) {
+                        if (now >= endTime.getTime() || (endTime.getTime() - now <= freeCompletionTime)) {
                             completedTasks.push(task);
                         } else {
                             activeQueue.push(task);
@@ -535,7 +539,7 @@ export const useCityState = (worldId, isInstantBuild, isInstantResearch, isInsta
     };
     const interval = setInterval(processQueue, 1000);
     return () => clearInterval(interval);
-}, [currentUser, worldId, activeCityId, getUpgradeCost, addNotification]);
+}, [currentUser, worldId, activeCityId, getUpgradeCost, addNotification, playerGameData]);
 
     // #comment Removed the periodic auto-save to prevent overwriting fresh data with stale client state.
     // #comment All state changes are now saved explicitly through user actions.

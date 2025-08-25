@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import buildingConfig from '../../gameData/buildings.json';
 import specialBuildingsConfig from '../../gameData/specialBuildings.json';
+import vipConfig from '../../gameData/vip.json';
+import { useGame } from '../../contexts/GameContext';
+
 const buildingImages = {};
 const contexts = [
     require.context('../../images/buildings', false, /\.(png|jpe?g|svg)$/),
@@ -20,7 +23,11 @@ const formatTime = (seconds) => {
     return `${h}:${m}:${s}`;
 };
 const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredItem, onCompleteInstantly }) => {
+    const { playerGameData } = useGame();
     const [timeLeft, setTimeLeft] = useState(0);
+    const vipLevel = playerGameData?.vipLevel || 1;
+    const freeCompletionTime = (vipConfig.bonuses.freeCompletionMinutes[vipLevel - 1] || 0) * 60;
+
     useEffect(() => {
         if (!isFirst) return;
         const calculateTimeLeft = () => {
@@ -36,6 +43,7 @@ const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredI
         const interval = setInterval(calculateTimeLeft, 1000);
         return () => clearInterval(interval);
     }, [item.endTime, isFirst]);
+
     const building = item.isSpecial
         ? specialBuildingsConfig[item.buildingId]
         : buildingConfig[item.buildingId];
@@ -46,7 +54,7 @@ const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredI
         ? `Demolish ${building.name} to Lvl ${item.level}`
         : `${building.name} (Level ${item.level})`;
     const levelText = isDemolition ? ` Lvl ${item.level}` : `^${item.level}`;
-    const showCompleteButton = isFirst && timeLeft > 0 && timeLeft < 60;
+    const showCompleteButton = isFirst && timeLeft > 0 && timeLeft <= freeCompletionTime;
     return (
         <div
             className={`relative w-16 h-16 bg-gray-700 border-2 rounded-md flex-shrink-0 ${isDemolition ? 'border-red-500' : 'border-gray-600'}`}

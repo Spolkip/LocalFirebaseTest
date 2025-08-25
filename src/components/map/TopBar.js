@@ -13,6 +13,7 @@ import './TopBar.css';
 import RecruitmentTooltip from '../city/RecruitmentToolTip';
 import TradesTooltip from './TradesToolTip';
 import MovementsTooltip from './MovementsToolTip';
+import VipDisplay from '../VipDisplay';
 
 const CityListDropdown = ({ cities, onSelect, onClose, activeCityId }) => {
     const dropdownRef = useRef(null);
@@ -314,6 +315,7 @@ const TopBar = ({
                     <img src={battlePointsImage} alt="Battle Points" className="w-6 h-6 mr-2"/>
                     <span className="font-bold text-red-800">{battlePoints.toLocaleString()}</span>
                 </div>
+                 <VipDisplay />
             </div>
 
             {/* Center: City Name */}

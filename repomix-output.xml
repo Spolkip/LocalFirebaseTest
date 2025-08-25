@@ -192,6 +192,8 @@ src/components/SharedReportView.js
 src/components/SideInfoPanel.js
 src/components/Temple.js
 src/components/TroopDisplay.js
+src/components/VipDisplay.css
+src/components/VipDisplay.js
 src/components/WorldSelectionScreen.css
 src/components/WorldSelectionScreen.js
 src/contexts/AllianceContext.js
@@ -214,6 +216,7 @@ src/gameData/research.json
 src/gameData/ruinsResearch.json
 src/gameData/specialBuildings.json
 src/gameData/units.json
+src/gameData/vip.json
 src/hooks/actions/useAdminActions.js
 src/hooks/actions/useAgentActions.js
 src/hooks/actions/useAllianceActions.js
@@ -5907,7 +5910,7 @@ const formatTime = (seconds) => {
     const s = Math.floor(seconds % 60).toString().padStart(2, '0');
     return `${h}:${m}:${s}`;
 };
-const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredItem }) => {
+const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredItem, onCompleteInstantly }) => {
     const [timeLeft, setTimeLeft] = useState(0);
     useEffect(() => {
         if (!isFirst) return;
@@ -5934,6 +5937,7 @@ const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredI
         ? `Demolish ${building.name} to Lvl ${item.level}`
         : `${building.name} (Level ${item.level})`;
     const levelText = isDemolition ? ` Lvl ${item.level}` : `^${item.level}`;
+    const showCompleteButton = isFirst && timeLeft > 0 && timeLeft < 60;
     return (
         <div
             className={`relative w-16 h-16 bg-gray-700 border-2 rounded-md flex-shrink-0 ${isDemolition ? 'border-red-500' : 'border-gray-600'}`}
@@ -5949,6 +5953,15 @@ const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredI
                 <span className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-red-500 text-xs text-center py-0.5 font-mono">
                     {formatTime(timeLeft)}
                 </span>
+            )}
+            {showCompleteButton && (
+                <button
+                    onClick={() => onCompleteInstantly(item)}
+                    className="absolute bottom-5 left-1/2 -translate-x-1/2 w-8 h-8 flex items-center justify-center bg-green-500/80 text-white rounded-full font-bold text-base hover:bg-green-400 transition-colors z-20 border-2 border-green-300"
+                    title="Complete Now"
+                >
+                    🔨
+                </button>
             )}
             {isLast && (
                 <button
@@ -5970,7 +5983,7 @@ const QueueItem = ({ item, isFirst, onCancel, isLast, onHover, onLeave, hoveredI
         </div>
     );
 };
-const BuildQueue = ({ buildQueue, onCancel }) => {
+const BuildQueue = ({ buildQueue, onCancel, onCompleteInstantly }) => {
     const [hoveredItem, setHoveredItem] = useState(null);
     const tooltipTimeoutRef = useRef(null);
     const queueCapacity = 5;
@@ -6000,6 +6013,7 @@ const BuildQueue = ({ buildQueue, onCancel }) => {
                         onHover={handleMouseEnter}
                         onLeave={handleMouseLeave}
                         hoveredItem={hoveredItem}
+                        onCompleteInstantly={onCompleteInstantly}
                     />
                 ))}
                 {emptySlots.map((_, index) => (
@@ -6293,6 +6307,7 @@ const CityModals = ({
   saveGameState,
   handleUpgrade,
   handleCancelBuild,
+  handleCompleteInstantly,
   handleTrainTroops,
   handleCancelTrain,
   handleFireTroops,
@@ -6378,6 +6393,7 @@ const CityModals = ({
           maxPopulation={getFarmCapacity(cityGameState.buildings?.farm?.level)}
           buildQueue={cityGameState.buildQueue}
           onCancelBuild={handleCancelBuild}
+          onCompleteInstantly={handleCompleteInstantly}
           cityGameState={cityGameState}
           onOpenSpecialBuildingMenu={() => openModal('isSpecialBuildingMenuOpen')}
           onDemolishSpecialBuilding={handleDemolishSpecialBuilding}
@@ -9661,7 +9677,7 @@ const SpecialBuildingCard = ({ cityGameState, onOpenSpecialBuildingMenu }) => {
     );
 };
 
-const SenateView = ({ buildings, resources, onUpgrade, onDemolish, getUpgradeCost, onClose, usedPopulation, maxPopulation, buildQueue = [], onCancelBuild, setMessage, cityGameState, onOpenSpecialBuildingMenu, onDemolishSpecialBuilding, currentUser, worldId, onAddWorker, onRemoveWorker, getMaxWorkerSlots, availablePopulation, onApplyWorkerPreset }) => {
+const SenateView = ({ buildings, resources, onUpgrade, onDemolish, getUpgradeCost, onClose, usedPopulation, maxPopulation, buildQueue = [], onCancelBuild, onCompleteInstantly, setMessage, cityGameState, onOpenSpecialBuildingMenu, onDemolishSpecialBuilding, currentUser, worldId, onAddWorker, onRemoveWorker, getMaxWorkerSlots, availablePopulation, onApplyWorkerPreset }) => {
     const [activeTab, setActiveTab] = useState('upgrade');
     const [presets, setPresets] = useState([]);
     const [selectedPresetId, setSelectedPresetId] = useState('');
@@ -9853,7 +9869,7 @@ const SenateView = ({ buildings, resources, onUpgrade, onDemolish, getUpgradeCos
                     <h2 className="text-3xl font-bold font-title text-yellow-300">Senate</h2>
                     <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
                 </div>
-                <BuildQueue buildQueue={buildQueue} onCancel={onCancelBuild} />
+                <BuildQueue buildQueue={buildQueue} onCancel={onCancelBuild} onCompleteInstantly={onCompleteInstantly} />
                 <div className='flex justify-between items-center mb-4 p-3 bg-gray-900 rounded-lg'>
                     <p className="text-lg">Population: <span className="font-bold text-green-400">{availablePopulation}</span> / {maxPopulation}</p>
                     <div className="flex gap-4">
@@ -11438,6 +11454,7 @@ const CityView = ({
                 saveGameState={saveGameState}
                 handleUpgrade={actions.handleUpgrade}
                 handleCancelBuild={actions.handleCancelBuild}
+                handleCompleteInstantly={actions.handleCompleteInstantly}
                 handleTrainTroops={actions.handleTrainTroops}
                 handleCancelTrain={actions.handleCancelTrain}
                 handleFireTroops={actions.handleFireTroops}
@@ -23057,6 +23074,111 @@ const TroopDisplay = ({ units, reinforcements, title }) => {
 export default TroopDisplay;
 </file>
 
+<file path="src/components/VipDisplay.css">
+.vip-container {
+    @apply flex items-center gap-2 p-1 rounded-full;
+    background: rgba(0,0,0,0.1);
+    border: 1px solid #8B4513;
+}
+.vip-header {
+    @apply flex items-center gap-2;
+}
+.vip-header span {
+    @apply font-bold text-yellow-600 pl-1;
+}
+.vip-claim-btn {
+    @apply text-xs px-2 py-0.5 rounded-full font-bold;
+    background: linear-gradient(to bottom, #f0e68c, #cd853f);
+    color: #4a2c2a;
+    border: 1px solid #8B4513;
+}
+.vip-claim-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+.vip-progress-bar-bg {
+    @apply w-20 h-3 bg-black/20 rounded-full overflow-hidden cursor-pointer;
+}
+.vip-progress-bar {
+    @apply h-full bg-yellow-500 rounded-full;
+}
+</file>
+
+<file path="src/components/VipDisplay.js">
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useGame } from '../contexts/GameContext';
+import { db } from '../firebase/config';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import vipConfig from '../gameData/vip.json';
+import './VipDisplay.css';
+
+const VipDisplay = () => {
+    const { currentUser } = useAuth();
+    const { worldId, playerGameData } = useGame();
+    const [canClaim, setCanClaim] = useState(false);
+    const [isClaiming, setIsClaiming] = useState(false);
+
+    useEffect(() => {
+        if (playerGameData?.lastVipPointsClaimed) {
+            const lastClaimDate = playerGameData.lastVipPointsClaimed.toDate();
+            const now = new Date();
+            if (now.getDate() !== lastClaimDate.getDate() || now.getMonth() !== lastClaimDate.getMonth() || now.getFullYear() !== lastClaimDate.getFullYear()) {
+                setCanClaim(true);
+            } else {
+                setCanClaim(false);
+            }
+        } else if (playerGameData) {
+            setCanClaim(true);
+        }
+    }, [playerGameData]);
+
+    const handleClaimVipPoints = async () => {
+        if (!canClaim || isClaiming || !playerGameData) return;
+        setIsClaiming(true);
+
+        const gameDocRef = doc(db, `users/${currentUser.uid}/games`, worldId);
+        const currentPoints = playerGameData.vipPoints || 0;
+        const newPoints = currentPoints + vipConfig.dailyPoints;
+        let newLevel = playerGameData.vipLevel || 1;
+
+        if (newLevel < vipConfig.pointsPerLevel.length && newPoints >= vipConfig.pointsPerLevel[newLevel]) {
+            newLevel++;
+        }
+
+        try {
+            await updateDoc(gameDocRef, {
+                vipPoints: newPoints,
+                vipLevel: newLevel,
+                lastVipPointsClaimed: serverTimestamp()
+            });
+        } catch (error) {
+            console.error("Error claiming VIP points:", error);
+        } finally {
+            setIsClaiming(false);
+        }
+    };
+    
+    const vipLevel = playerGameData?.vipLevel || 1;
+    const currentVipPoints = playerGameData?.vipPoints || 0;
+    const pointsForNextLevel = vipConfig.pointsPerLevel[vipLevel] || Infinity;
+    const progress = pointsForNextLevel === Infinity ? 100 : (currentVipPoints / pointsForNextLevel) * 100;
+
+    return (
+        <div className="vip-container">
+            <div className="vip-header">
+                <span>VIP {vipLevel}</span>
+                {canClaim && <button className="vip-claim-btn" onClick={handleClaimVipPoints} disabled={isClaiming}>Claim</button>}
+            </div>
+            <div className="vip-progress-bar-bg" title={`${currentVipPoints} / ${pointsForNextLevel === Infinity ? 'MAX' : pointsForNextLevel} VIP Points`}>
+                <div className="vip-progress-bar" style={{ width: `${progress}%` }}></div>
+            </div>
+        </div>
+    );
+};
+
+export default VipDisplay;
+</file>
+
 <file path="src/components/WorldSelectionScreen.css">
 /* src/components/WorldSelectionScreen.css */
 .world-selection-container {
@@ -25079,6 +25201,27 @@ export default app;
 }
 </file>
 
+<file path="src/gameData/vip.json">
+{
+  "pointsPerLevel": [
+    0,
+    100,
+    300,
+    700,
+    1500,
+    3100,
+    6300,
+    12700,
+    25500,
+    51100
+  ],
+  "dailyPoints": 20,
+  "bonuses": {
+    "freeCompletionMinutes": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  }
+}
+</file>
+
 <file path="src/hooks/actions/useAdminActions.js">
 import { collection, doc, query, where, limit, getDocs, setDoc as firestoreSetDoc, runTransaction, writeBatch, deleteField } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -26715,6 +26858,7 @@ export const useAllianceWonderActions = (playerAlliance) => {
 <file path="src/hooks/actions/useBuildingActions.js">
 import { v4 as uuidv4 } from 'uuid';
 import buildingConfig from '../../gameData/buildings.json';
+import researchConfig from '../../gameData/research.json';
 
 // #comment This hook provides actions related to building management in a city.
 export const useBuildingActions = ({
@@ -27062,7 +27206,88 @@ export const useBuildingActions = ({
         setMessage("The wonder has been demolished and half of its resources have been returned.");
     };
 
-    return { handleUpgrade, handleCancelBuild, handleDemolish, handleBuildSpecialBuilding, handleDemolishSpecialBuilding };
+    // #comment Instantly completes the first building in the queue.
+    const handleCompleteInstantly = async (itemToComplete) => {
+        const currentState = cityGameState;
+        if (!currentState || !currentState.buildQueue || !itemToComplete) return;
+
+        const queue = [...currentState.buildQueue];
+        const itemIndex = queue.findIndex(item => item.id === itemToComplete.id);
+        if (itemIndex !== 0) {
+            setMessage("Only the first item in the queue can be completed instantly.");
+            return;
+        }
+
+        const task = queue.shift(); // Remove the first item
+
+        const newGameState = { ...currentState, buildQueue: queue };
+        
+        if (task.type === 'demolish') {
+            if (newGameState.buildings[task.buildingId]) {
+                newGameState.buildings[task.buildingId].level = task.level;
+            }
+            if (task.buildingId === 'academy') {
+                const newAcademyLevel = task.level;
+                newGameState.research = newGameState.research || {};
+                Object.keys(newGameState.research).forEach(researchId => {
+                    const researchState = newGameState.research[researchId];
+                    const isCompleted = researchState === true || (researchState && researchState.completed);
+                    if (isCompleted) {
+                        const researchInfo = researchConfig[researchId];
+                        if (researchInfo && researchInfo.requirements.academy > newAcademyLevel) {
+                            newGameState.research[researchId] = { completed: true, active: false };
+                        }
+                    }
+                });
+            }
+        } else if (task.isSpecial) {
+            newGameState.specialBuilding = task.buildingId;
+        } else {
+            if (!newGameState.buildings[task.buildingId]) {
+                newGameState.buildings[task.buildingId] = { level: 0 };
+            }
+            newGameState.buildings[task.buildingId].level = task.level;
+            if (task.buildingId === 'academy') {
+                const newAcademyLevel = task.level;
+                newGameState.research = newGameState.research || {};
+                Object.keys(newGameState.research).forEach(researchId => {
+                    const researchState = newGameState.research[researchId];
+                    const isCompleted = researchState === true || (researchState && researchState.completed);
+                    const isActive = researchState === true || (researchState && researchState.active);
+                    if (isCompleted && !isActive) {
+                        const researchInfo = researchConfig[researchId];
+                        if (researchInfo && researchInfo.requirements.academy <= newAcademyLevel) {
+                            newGameState.research[researchId] = { completed: true, active: true };
+                        }
+                    }
+                });
+            }
+        }
+
+        let lastEndTime = Date.now();
+        newGameState.buildQueue = newGameState.buildQueue.map(item => {
+            let taskTime;
+            if (item.isSpecial) {
+                taskTime = 7200; 
+            } else if (item.type === 'demolish') {
+                const costConfig = buildingConfig[item.buildingId].baseCost;
+                const calculatedTime = Math.floor(costConfig.time * Math.pow(1.25, item.currentLevel - 1));
+                taskTime = isInstantBuild ? 1 : Math.floor(calculatedTime / 2);
+            }
+            else {
+                taskTime = getUpgradeCost(item.buildingId, item.level).time;
+            }
+            const endTime = new Date(lastEndTime + taskTime * 1000);
+            lastEndTime = endTime.getTime();
+            return { ...item, endTime };
+        });
+
+        await saveGameState(newGameState);
+        setCityGameState(newGameState);
+        setMessage(`${buildingConfig[task.buildingId]?.name || 'Wonder'} construction complete!`);
+    };
+
+    return { handleUpgrade, handleCancelBuild, handleDemolish, handleBuildSpecialBuilding, handleDemolishSpecialBuilding, handleCompleteInstantly };
 };
 </file>
 
@@ -31391,6 +31616,7 @@ import './components/map/MapOverlay.css';
 import './components/city/ResearchQueue.css';
 import './components/shared/Notification.css';
 import './components/map/Notes.css';
+import './components/VipDisplay.css';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
 const root = ReactDOM.createRoot(document.getElementById('root'));
